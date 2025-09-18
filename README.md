@@ -17,43 +17,43 @@
 
 ## 📦 Installation
 
-Install QuickNode CLI globally:
+Install the CLI globally:
 
 ```bash
-npm install -g @dakson/quicknode-cli
+npm install -g @10565/quicknode-cli
 ```
 
 Alternatively, you can run it without a global installation using `npx`:
 
 ```bash
-npx @dakson/quicknode-cli create my-awesome-app
+npx @10565/quicknode-cli create my-awesome-app
 ```
 
 ## 🎯 Usage
 
 ### Create a new project
 
-If you have installed the CLI globally, you can use the `quicknode` command directly.
+If you have installed the CLI globally, you can use the `qn` command directly.
 
 ```bash
 # Create a new project in a new directory
-quicknode create my-awesome-app
+qn create my-awesome-app
 
 # Create a project in the current directory
-quicknode create .
+qn create .
 
 # Interactive mode (will prompt for options)
-quicknode create
+qn create
 ```
 
 ### Command Options
 
 ```bash
 # Use TypeScript template (default)
-quicknode create my-app --typescript
+qn create my-app --typescript
 
 # Use JavaScript template
-quicknode create my-app --javascript
+qn create my-app --javascript
 ```
 
 ## 🏗️ What's Included

@@ -44,5 +44,6 @@ jobs:
       - name: 📊 Test generated project
         run: |
           cd test-project
+          git init
           npm install
           npm run build || npm run lint || true

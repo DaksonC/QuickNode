@@ -64,7 +64,7 @@ jobs:
         id: version-check
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          PUBLISHED_VERSION=$(npm view quicknode-cli version 2>/dev/null || echo "0.0.0")
+          PUBLISHED_VERSION=$(npm view @dakson/quicknode-cli version 2>/dev/null || echo "0.0.0")
           echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "published=$PUBLISHED_VERSION" >> $GITHUB_OUTPUT
           if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
@@ -77,7 +77,7 @@ jobs:
 
       - name: 🚀 Publish to NPM
         if: steps.version-check.outputs.should_publish == 'true'
-        run: npm publish
+        run: npm publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -101,11 +101,11 @@ jobs:
           body: |
             ## 🚀 What's New
             
-            Version ${{ steps.version-check.outputs.current }} of QuickNode CLI is now available!
+            Version ${{ steps.version-check.outputs.current }} of @dakson/quicknode-cli is now available!
             
             ### 📦 Installation
             ```bash
-            npm install -g quicknode-cli@${{ steps.version-check.outputs.current }}
+            npm install -g @dakson/quicknode-cli@${{ steps.version-check.outputs.current }}
             ```
             
             ### 📋 Changes
@@ -113,13 +113,13 @@ jobs:
             - See commit history for detailed changes
             
             ### 🐛 Bug Reports
-            Found an issue? [Report it here](https://github.com/daksonfilho/quicknode/issues)
+            Found an issue? [Report it here](https://github.com/DaksonC/QuickNode/issues)
           draft: false
           prerelease: false
 
       - name: 📢 Notify Success
         if: steps.version-check.outputs.should_publish == 'true'
         run: |
-          echo "✅ Successfully published quicknode-cli@${{ steps.version-check.outputs.current }} to NPM!"
-          echo "🔗 NPM: https://www.npmjs.com/package/quicknode-cli"
-          echo "🏷️ GitHub Release: https://github.com/daksonfilho/quicknode/releases/tag/v${{ steps.version-check.outputs.current }}"
+          echo "✅ Successfully published @dakson/quicknode-cli@${{ steps.version-check.outputs.current }} to NPM!"
+          echo "🔗 NPM: https://www.npmjs.com/package/@dakson/quicknode-cli"
+          echo "🏷️ GitHub Release: https://github.com/DaksonC/QuickNode/releases/tag/v${{ steps.version-check.outputs.current }}"

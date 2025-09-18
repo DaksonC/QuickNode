@@ -1,5 +1,5 @@
 {
-  "name": "quicknode-cli",
+  "name": "@dakson/quicknode-cli",
   "version": "1.0.0",
   "description": "A CLI tool to quickly bootstrap Node.js projects with pre-configured dependencies and clean architecture",
   "main": "dist/index.js",

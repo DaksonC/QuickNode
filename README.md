@@ -20,12 +20,20 @@
 Install QuickNode CLI globally:
 
 ```bash
-npm install -g quicknode-cli
+npm install -g @dakson/quicknode-cli
+```
+
+Alternatively, you can run it without a global installation using `npx`:
+
+```bash
+npx @dakson/quicknode-cli create my-awesome-app
 ```
 
 ## 🎯 Usage
 
 ### Create a new project
+
+If you have installed the CLI globally, you can use the `quicknode` command directly.
 
 ```bash
 # Create a new project in a new directory
@@ -229,7 +237,7 @@ All endpoints include:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'feat: add amazing feature'`
+3. Commit changes: `git commit -m '''feat: add amazing feature'''`
 4. Push to branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
@@ -247,7 +255,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you have any questions or issues:
 
-1. Check the [GitHub Issues](https://github.com/your-username/quicknode-cli/issues)
+1. Check the [GitHub Issues](https://github.com/DaksonC/QuickNode/issues)
 2. Create a new issue if needed
 3. Contribute to make it better!
 

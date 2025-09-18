@@ -18,7 +18,11 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
     "prepare": "husky install",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "release:patch": "./scripts/release.sh patch",
+    "release:minor": "./scripts/release.sh minor",
+    "release:major": "./scripts/release.sh major",
+    "release:prerelease": "./scripts/release.sh prerelease"
   },
   "keywords": [
     "nodejs",
@@ -29,11 +33,21 @@
     "clean-architecture",
     "boilerplate"
   ],
-  "author": "Your Name",
+  "author": "Dakson C <daksonmendes@outlook.com>",
   "license": "MIT",
+  "homepage": "https://github.com/DaksonC/QuickNode#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DaksonC/QuickNode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DaksonC/QuickNode/issues"
+  },
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "README.md",
+    "LICENSE"
   ],
   "dependencies": {
     "chalk": "^5.3.0",

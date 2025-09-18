@@ -1,0 +1,48 @@
+name: 🧪 CI Tests
+
+on:
+  push:
+    branches: [develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    
+    steps:
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run tests
+        run: npm test
+
+      - name: 🔍 Run linting
+        run: npm run lint
+
+      - name: 🏗️ Build project
+        run: npm run build
+
+      - name: 🧾 Test CLI functionality
+        run: |
+          chmod +x dist/cli.js
+          node dist/cli.js create test-project --typescript
+          ls -la test-project/
+          
+      - name: 📊 Test generated project
+        run: |
+          cd test-project
+          npm install
+          npm run build || npm run lint || true

@@ -19,7 +19,7 @@ async function main() {
   const program = new Command();
 
   program
-    .name('quicknode')
+    .name('qn')
     .description('CLI tool to bootstrap Node.js projects with clean architecture')
     .version(getVersion());
 
@@ -41,9 +41,9 @@ async function main() {
       }
     });
 
-  // Show banner if no command is provided or help is requested
+  // Show banner if no command is provided
   const args = process.argv.slice(2);
-  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
+  if (args.length === 0) {
     await showBanner();
   }
 

@@ -1,5 +1,9 @@
 # QuickNode CLI
 
+[![NPM version](https://img.shields.io/npm/v/@10565/quicknode-cli.svg)]()
+[![npm](https://img.shields.io/npm/dt/@10565/quicknode-cli.svg)]()
+[![GitHub stars](https://img.shields.io/github/stars/DaksonC/QuickNode.svg?style=social&label=Star)](https://github.com/DaksonC/QuickNode)
+
 🚀 A powerful CLI tool to quickly bootstrap Node.js projects with clean architecture and pre-configured dependencies.
 
 ## ✨ Features

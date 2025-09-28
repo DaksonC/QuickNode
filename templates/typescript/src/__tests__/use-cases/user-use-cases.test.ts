@@ -1,6 +1,6 @@
-import { CreateUserUseCase, GetUserUseCase } from '../../domain/use-cases/user-use-cases.js';
-import { UserRepository } from '../../domain/repositories/user-repository.js';
-import { User } from '../../domain/entities/user.js';
+import { CreateUserUseCase, GetUserUseCase } from '../../domain/use-cases/user-use-cases';
+import { UserRepository } from '../../domain/repositories/user-repository';
+import { User } from '../../domain/entities/user';
 
 describe('User Use Cases', () => {
   let mockUserRepository: jest.Mocked<UserRepository>;
@@ -25,16 +25,16 @@ describe('User Use Cases', () => {
     it('should create a new user successfully', async () => {
       // Arrange
       const userData = {
-        email: 'test@example.com',
         name: 'Test User',
-        password: 'password123',
+        email: 'test@example.com',
+        age: 30,
       };
       
       const expectedUser = new User(
         '1',
-        userData.email,
         userData.name,
-        userData.password,
+        userData.email,
+        30,
         new Date(),
         new Date()
       );
@@ -54,16 +54,16 @@ describe('User Use Cases', () => {
     it('should throw error if user already exists', async () => {
       // Arrange
       const userData = {
-        email: 'test@example.com',
         name: 'Test User',
-        password: 'password123',
+        email: 'test@example.com',
+        age: 30,
       };
 
       const existingUser = new User(
         '1',
-        userData.email,
         userData.name,
-        userData.password,
+        userData.email,
+        30,
         new Date(),
         new Date()
       );
@@ -84,9 +84,9 @@ describe('User Use Cases', () => {
       const userId = '1';
       const expectedUser = new User(
         userId,
-        'test@example.com',
         'Test User',
-        'password123',
+        'test@example.com',
+        30,
         new Date(),
         new Date()
       );

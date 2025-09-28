@@ -1,6 +1,6 @@
-import { logger } from '../logging/logger.js';
+const { logger } = require('../logging/logger');
 
-export class AppError extends Error {
+class AppError extends Error {
   constructor(message, statusCode = 500, isOperational = true) {
     super(message);
     this.statusCode = statusCode;
@@ -10,7 +10,7 @@ export class AppError extends Error {
   }
 }
 
-export const errorHandler = (error, req, res, next) => {
+const errorHandler = (error, req, res, next) => {
   let statusCode = 500;
   let message = 'Internal Server Error';
 
@@ -32,3 +32,5 @@ export const errorHandler = (error, req, res, next) => {
     ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
   });
 };
+
+module.exports = { AppError, errorHandler };

@@ -5,14 +5,14 @@ export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ unique: true })
-  email!: string;
-
-  @Column()
+  @Column('varchar', { length: 255 })
   name!: string;
 
-  @Column()
-  password!: string;
+  @Column('varchar', { length: 255, unique: true })
+  email!: string;
+
+  @Column('int', { nullable: true })
+  age?: number;
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['jest-extended/all'],
   collectCoverageFrom: [

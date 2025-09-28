@@ -1,21 +1,15 @@
 const User = require('../../../domain/entities/user');
-const modelsRegistry = require('../models');
 
 /**
  * Sequelize User Repository Implementation
  * Works with PostgreSQL, MySQL, and SQLite through Sequelize ORM
  */
 class SequelizeUserRepository {
-  constructor() {
-    this.UserModel = null;
-  }
-
-  /**
-   * Initialize repository with Sequelize models
-   */
-  initialize() {
-    const models = modelsRegistry.getModels();
-    this.UserModel = models.User;
+  constructor(UserModel) {
+    if (!UserModel) {
+      throw new Error('Sequelize User model must be provided to the repository');
+    }
+    this.UserModel = UserModel;
   }
 
   /**
@@ -35,8 +29,6 @@ class SequelizeUserRepository {
   }
 
   async create(userData) {
-    if (!this.UserModel) this.initialize();
-    
     try {
       const userModel = await this.UserModel.create({
         id: userData.id,
@@ -55,15 +47,11 @@ class SequelizeUserRepository {
   }
 
   async findById(id) {
-    if (!this.UserModel) this.initialize();
-    
     const userModel = await this.UserModel.findByPk(id);
     return this.toDomainEntity(userModel);
   }
 
   async findByEmail(email) {
-    if (!this.UserModel) this.initialize();
-    
     const userModel = await this.UserModel.findOne({
       where: { email }
     });
@@ -71,8 +59,6 @@ class SequelizeUserRepository {
   }
 
   async findAll() {
-    if (!this.UserModel) this.initialize();
-    
     const userModels = await this.UserModel.findAll({
       order: [['createdAt', 'DESC']]
     });
@@ -81,8 +67,6 @@ class SequelizeUserRepository {
   }
 
   async update(id, userData) {
-    if (!this.UserModel) this.initialize();
-    
     try {
       const [updatedRowsCount] = await this.UserModel.update(
         {
@@ -113,8 +97,6 @@ class SequelizeUserRepository {
   }
 
   async delete(id) {
-    if (!this.UserModel) this.initialize();
-    
     const deletedRowsCount = await this.UserModel.destroy({
       where: { id }
     });

@@ -1,4 +1,5 @@
 const SequelizeUserRepository = require('./repositories/user-repository');
+const modelsRegistry = require('./models');
 
 /**
  * Repository Factory
@@ -14,9 +15,8 @@ class RepositoryFactory {
       case 'mysql':
       case 'sqlite':
         // All SQL databases use Sequelize repository
-        const repo = new SequelizeUserRepository();
-        repo.initialize();
-        return repo;
+        const { User } = modelsRegistry.getModels();
+        return new SequelizeUserRepository(User);
       
       case 'mongodb':
       case 'mongo':

@@ -12,8 +12,7 @@ export class RepositoryFactory {
     switch (dbType) {
       case 'postgresql': {
         const { PostgreSQLUserRepository } = await import('./repositories/user-repository');
-        const repository = new PostgreSQLUserRepository();
-        await repository.initialize();
+        const repository = await PostgreSQLUserRepository.create();
         return repository;
       }
 

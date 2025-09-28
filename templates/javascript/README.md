@@ -59,7 +59,16 @@ cp .env.example .env
    - Configure database connection settings
    - Update other environment variables as needed
 
-4. Start development server:
+4. Set up Git hooks (optional, but recommended for contributors):
+```bash
+# First, initialize your git repository
+git init
+
+# Then, install Husky hooks
+npx husky install
+```
+
+5. Start development server:
 ```bash
 npm run dev
 ```

@@ -64,9 +64,13 @@ NODE_ENV=development
 JWT_SECRET=your-super-secure-jwt-secret-key
 ```
 
-4. Set up git hooks (optional but recommended):
+4. Set up Git hooks (optional, but recommended for contributors):
 ```bash
-npm run prepare
+# First, initialize your git repository
+git init
+
+# Then, install Husky hooks
+npx husky install
 ```
 
 ## 🏃‍♂️ Usage

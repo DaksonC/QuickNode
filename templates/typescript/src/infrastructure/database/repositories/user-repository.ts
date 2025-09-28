@@ -7,13 +7,14 @@ import { databaseConnection } from '../connection';
 export class PostgreSQLUserRepository implements UserRepository {
   private repository: Repository<UserEntity>;
 
-  constructor() {
-    // Repository will be initialized in the initialize method
+  private constructor(repository: Repository<UserEntity>) {
+    this.repository = repository;
   }
 
-  async initialize(): Promise<void> {
+  static async create(): Promise<PostgreSQLUserRepository> {
     const dataSource = databaseConnection.getDataSource();
-    this.repository = dataSource.getRepository(UserEntity);
+    const repository = dataSource.getRepository(UserEntity);
+    return new PostgreSQLUserRepository(repository);
   }
 
   async findById(id: string): Promise<User | null> {

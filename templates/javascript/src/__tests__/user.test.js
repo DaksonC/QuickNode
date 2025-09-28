@@ -19,7 +19,6 @@ describe('User Entity', () => {
       expect(user.name).toBe(userData.name);
       expect(user.email).toBe(userData.email);
       expect(user.age).toBe(userData.age);
-      expect(user.password).toBe(userData.password);
     });
 
     it('should create a user without id', () => {

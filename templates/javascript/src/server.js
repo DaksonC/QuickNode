@@ -14,17 +14,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize database connection
-async function initializeDatabase() {
-  try {
-    await sequelizeConnection.initialize();
-    modelsRegistry.initialize();
-    logger.info('✅ Database connection and models initialized successfully');
-  } catch (error) {
-    logger.error('❌ Failed to initialize database connection:', error);
-    process.exit(1);
-  }
-}
+
 
 // Security middleware
 app.use(helmet());
@@ -50,19 +40,6 @@ app.use(errorHandler);
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
-});
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  await databaseConnection.close();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  await databaseConnection.close();
-  process.exit(0);
 });
 
 // Start the server

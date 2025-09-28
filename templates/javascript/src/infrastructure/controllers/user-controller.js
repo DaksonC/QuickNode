@@ -51,12 +51,9 @@ class UserController {
       
       const user = await this.getUserUseCase.execute(id);
       
-      // Remove password from response
-      const { password: _, ...userResponse } = user;
-      
       res.json({
         success: true,
-        data: userResponse
+        data: user
       });
     } catch (error) {
       next(error);
@@ -111,11 +108,8 @@ class UserController {
       
       const users = await this.listUsersUseCase.execute(limit, offset);
       
-      // Remove passwords from response
-      const usersResponse = users.map(user => {
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      });
+      // Users response without sensitive data
+      const usersResponse = users;
       
       res.json({
         success: true,

@@ -1,14 +1,20 @@
 import { Repository } from 'typeorm';
-import { UserRepository } from '../../../domain/repositories/user-repository.js';
-import { User, CreateUserData } from '../../../domain/entities/user.js';
-import { UserEntity } from '../entities/user-entity.js';
-import { AppDataSource } from '../data-source.js';
+import { UserRepository } from '../../../domain/repositories/user-repository';
+import { User, CreateUserData } from '../../../domain/entities/user';
+import { UserEntity } from '../entities/user-entity';
+import { databaseConnection } from '../connection';
 
 export class PostgreSQLUserRepository implements UserRepository {
   private repository: Repository<UserEntity>;
 
-  constructor() {
-    this.repository = AppDataSource.getRepository(UserEntity);
+  private constructor(repository: Repository<UserEntity>) {
+    this.repository = repository;
+  }
+
+  static async create(): Promise<PostgreSQLUserRepository> {
+    const dataSource = databaseConnection.getDataSource();
+    const repository = dataSource.getRepository(UserEntity);
+    return new PostgreSQLUserRepository(repository);
   }
 
   async findById(id: string): Promise<User | null> {
@@ -40,15 +46,15 @@ export class PostgreSQLUserRepository implements UserRepository {
 
   async findAll(): Promise<User[]> {
     const userEntities = await this.repository.find();
-    return userEntities.map(entity => this.toDomain(entity));
+    return userEntities.map((entity: UserEntity) => this.toDomain(entity));
   }
 
   private toDomain(entity: UserEntity): User {
     return new User(
       entity.id,
-      entity.email,
       entity.name,
-      entity.password,
+      entity.email,
+      entity.age,
       entity.createdAt,
       entity.updatedAt
     );

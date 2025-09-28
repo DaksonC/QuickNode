@@ -64,9 +64,13 @@ NODE_ENV=development
 JWT_SECRET=your-super-secure-jwt-secret-key
 ```
 
-4. Set up git hooks (optional but recommended):
+4. Set up Git hooks (optional, but recommended for contributors):
 ```bash
-npm run prepare
+# First, initialize your git repository
+git init
+
+# Then, install Husky hooks
+npx husky install
 ```
 
 ## 🏃‍♂️ Usage
@@ -77,6 +81,12 @@ Start the development server with hot reload:
 ```bash
 npm run dev
 ```
+
+For development with a database, use the Dockerized setup:
+```bash
+npm run dev:docker
+```
+This will start the required services (like PostgreSQL) and then run the development server.
 
 ### Production
 
@@ -122,23 +132,27 @@ npm run format
 
 ## 📊 Database Setup
 
-### PostgreSQL with TypeORM
+This template is configured to use Docker for database management, simplifying setup.
 
-1. Install PostgreSQL
-2. Create database: `quicknode_db`
-3. Update `DATABASE_URL` in `.env`
-4. Run migrations:
-```bash
-npm run db:migrate
-```
+1.  **Start Database Container**:
+    ```bash
+    npm run docker:up
+    ```
+    This command starts a PostgreSQL container in the background.
 
-### MongoDB with Mongoose
+2.  **Seed Database**:
+    To populate the database with initial data, run:
+    ```bash
+    npm run db:seed
+    ```
 
-1. Install MongoDB
-2. Update `MONGO_URL` in `.env`
-3. The connection will be established automatically
+3.  **Combined Setup**:
+    To start the database and seed it in one command, run:
+    ```bash
+    npm run db:setup
+    ```
 
-To switch between databases, update the repository imports in your route files.
+To stop the database container, run `npm run docker:down`.
 
 ## 📖 API Documentation
 
@@ -148,18 +162,17 @@ Once the server is running, visit:
 
 ## 🔧 Available Scripts
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build TypeScript to JavaScript
-- `npm start` - Start production server
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
-- `npm run lint` - Lint TypeScript files
-- `npm run lint:fix` - Lint and fix TypeScript files
-- `npm run format` - Format code with Prettier
-- `npm run db:migrate` - Run TypeORM migrations
-- `npm run db:migration:generate` - Generate new migration
-- `npm run db:migration:create` - Create empty migration
+- `npm run dev` - Start development server with hot reload.
+- `npm run dev:docker` - Start database and development server together.
+- `npm run build` - Build TypeScript to JavaScript.
+- `npm start` - Start production server.
+- `npm test` - Run all tests.
+- `npm run lint` - Lint all TypeScript files.
+- `npm run format` - Format code with Prettier.
+- `npm run docker:up` - Start Docker containers (e.g., database).
+- `npm run docker:down` - Stop Docker containers.
+- `npm run db:seed` - Populate the database with seed data.
+- `npm run db:setup` - A utility script to start and seed the database.
 
 ## 🎯 Usage Examples
 

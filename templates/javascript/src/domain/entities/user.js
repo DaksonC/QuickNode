@@ -1,9 +1,9 @@
-export class User {
-  constructor(id, email, name, password, createdAt = new Date(), updatedAt = new Date()) {
+class User {
+  constructor(id, name, email, age, createdAt = new Date(), updatedAt = new Date()) {
     this.id = id;
-    this.email = email;
     this.name = name;
-    this.password = password;
+    this.email = email;
+    this.age = age;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -11,11 +11,24 @@ export class User {
   updateName(newName) {
     return new User(
       this.id,
-      this.email,
       newName,
-      this.password,
+      this.email,
+      this.age,
+      this.createdAt,
+      new Date()
+    );
+  }
+
+  updateAge(newAge) {
+    return new User(
+      this.id,
+      this.name,
+      this.email,
+      newAge,
       this.createdAt,
       new Date()
     );
   }
 }
+
+module.exports = User;

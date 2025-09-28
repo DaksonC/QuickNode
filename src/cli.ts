@@ -27,7 +27,7 @@ async function main() {
     .command('create')
     .description('Create a new QuickNode project')
     .argument('[project-name]', 'Project name (use "." for current directory)')
-    .option('-t, --typescript', 'Use TypeScript template', false)
+    .option('-ts, --typescript', 'Use TypeScript template', false)
     .option('-js, --javascript', 'Use JavaScript template', false)
     .action(async (projectName, options) => {
       try {

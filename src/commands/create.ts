@@ -63,6 +63,13 @@ export async function createProject(projectName?: string, options: CreateOptions
     // Copiar template
     await fs.copy(templateDir, targetDir);
 
+    // Renomear gitignore para .gitignore
+    const gitignorePath = path.join(targetDir, 'gitignore');
+    const dotGitignorePath = path.join(targetDir, '.gitignore');
+    if (fs.existsSync(gitignorePath)) {
+      await fs.rename(gitignorePath, dotGitignorePath);
+    }
+
     // Atualizar package.json com o nome do projeto
     if (projectName !== '.') {
       const packageJsonPath = path.join(targetDir, 'package.json');

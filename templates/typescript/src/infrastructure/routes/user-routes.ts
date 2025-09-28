@@ -157,9 +157,6 @@ router.get('/:id',
  *                 type: string
  *                 format: email
  *                 description: The user's email
- *               password:
- *                 type: string
- *                 description: The user's password
  *     responses:
  *       201:
  *         description: User created successfully
@@ -179,10 +176,6 @@ router.post(
       .isEmail()
       .withMessage('Please provide a valid email')
       .normalizeEmail(),
-    body('password')
-      .optional()
-      .isLength({ min: 6 })
-      .withMessage('Password must be at least 6 characters long')
   ],
   validate,
   async (req: Request, res: Response, next: NextFunction) => {
@@ -213,8 +206,6 @@ router.post(
  *                 format: email
  *               name:
  *                 type: string
- *               password:
- *                 type: string
  *     responses:
  *       200:
  *         description: The user was updated successfully
@@ -226,8 +217,7 @@ router.put('/:id',
   [
     param('id').notEmpty().withMessage('User ID is required'),
     body('email').optional().isEmail().withMessage('Valid email is required'),
-    body('name').optional().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
-    body('password').optional().isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    body('name').optional().isLength({ min: 2 }).withMessage('Name must be at least 2 characters')
   ],
   validate,
   async (req: Request, res: Response, next: NextFunction) => {

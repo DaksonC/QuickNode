@@ -35,6 +35,12 @@
   ],
   "author": "Dakson C <daksonmendes@outlook.com>",
   "license": "MIT",
+  "funding": [
+    {
+      "type": "paypal",
+      "url": "https://www.paypal.com/donate/?hosted_button_id=EA36NAFVH6LDY"
+    }
+  ],
   "homepage": "https://github.com/DaksonC/QuickNode#readme",
   "repository": {
     "type": "git",

@@ -1,96 +1,99 @@
-import fs from 'fs-extra';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { fileURLToPath } from 'url';
+import { createEnvFile } from '../core/env.js';
+import { templateDir, type TemplateName } from '../core/paths.js';
+import { resolveProject, validateProjectName } from '../core/project-name.js';
+import { scaffold, TargetNotEmptyError } from '../core/scaffold.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-interface CreateOptions {
+export interface CreateOptions {
   typescript?: boolean;
   javascript?: boolean;
+  force?: boolean;
 }
 
-export async function createProject(projectName?: string, options: CreateOptions = {}) {
-  // Se não foi especificado um nome, perguntar
-  if (!projectName) {
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'projectName',
-        message: 'Project name (use "." for current directory):',
-        default: 'my-quicknode-app'
-      }
-    ]);
-    projectName = answers.projectName;
+const MAX_LISTED_FILES = 10;
+
+async function askProjectName(): Promise<string> {
+  const answers = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'projectName',
+      message: 'Project name (use "." for current directory):',
+      default: 'my-quicknode-app',
+      validate: (value: string) => value === '.' || validateProjectName(value) || true
+    }
+  ]);
+  return answers.projectName;
+}
+
+async function chooseTemplate(options: CreateOptions): Promise<TemplateName> {
+  if (options.typescript && options.javascript) {
+    throw new Error('Choose only one template: --typescript or --javascript.');
   }
+  if (options.typescript) return 'typescript';
+  if (options.javascript) return 'javascript';
 
-  // Garantir que projectName não seja undefined
-  if (!projectName) {
-    throw new Error('Project name is required');
-  }
+  const answers = await inquirer.prompt([
+    { type: 'confirm', name: 'useTypeScript', message: 'Use TypeScript?', default: true }
+  ]);
+  return answers.useTypeScript ? 'typescript' : 'javascript';
+}
 
-  // Determinar se deve usar TypeScript ou JavaScript
-  let useTypeScript = options.typescript;
-  
-  if (!options.typescript && !options.javascript) {
-    const answers = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'useTypeScript',
-        message: 'Use TypeScript?',
-        default: true
-      }
-    ]);
-    useTypeScript = answers.useTypeScript;
-  }
+async function setPackageName(projectDir: string, name: string): Promise<void> {
+  const packageJsonPath = path.join(projectDir, 'package.json');
+  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+  packageJson.name = name;
+  await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+}
 
-  const targetDir = projectName === '.' ? process.cwd() : path.resolve(process.cwd(), projectName);
-  const templateDir = path.join(__dirname, '..', 'templates', useTypeScript ? 'typescript' : 'javascript');
+function describeNotEmpty(error: TargetNotEmptyError): string {
+  const files = error.conflicts.length > 0 ? error.conflicts : error.entries;
+  const label = error.conflicts.length > 0 ? 'Files that would be overwritten' : 'Existing entries';
+  const listed = files.slice(0, MAX_LISTED_FILES).map((file) => `  - ${file}`);
+  if (files.length > MAX_LISTED_FILES) listed.push(`  ... and ${files.length - MAX_LISTED_FILES} more`);
+  return [error.message, `${label}:`, ...listed].join('\n');
+}
 
-  console.log(chalk.blue(`Creating QuickNode project in ${targetDir}`));
-  
+export async function createProject(projectName?: string, options: CreateOptions = {}): Promise<void> {
+  const name = projectName ?? (await askProjectName());
+  const project = resolveProject(name);
+  const template = await chooseTemplate(options);
+
+  console.log(chalk.blue(`Creating QuickNode project in ${project.targetDir}`));
   const spinner = ora('Setting up project...').start();
 
   try {
-    // Criar diretório se necessário
-    if (projectName !== '.') {
-      await fs.ensureDir(targetDir);
-    }
-
-    // Copiar template
-    await fs.copy(templateDir, targetDir);
-
-    // Atualizar package.json com o nome do projeto
-    if (projectName !== '.') {
-      const packageJsonPath = path.join(targetDir, 'package.json');
-      const packageJson = await fs.readJson(packageJsonPath);
-      packageJson.name = projectName;
-      await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
-    }
-
-    spinner.succeed('Project created successfully!');
-
-    console.log(chalk.green('\n✅ QuickNode project created!'));
-    console.log(chalk.yellow('\nNext steps:'));
-    
-    if (projectName !== '.') {
-      console.log(chalk.white(`  cd ${projectName}`));
-    }
-    
-    console.log(chalk.white('  npm install'));
-    console.log(chalk.white('  npm run dev'));
-    
-    console.log(chalk.gray('\nAvailable scripts:'));
-    console.log(chalk.gray('  npm run dev     - Start development server'));
-    console.log(chalk.gray('  npm run build   - Build for production'));
-    console.log(chalk.gray('  npm test        - Run tests'));
-    console.log(chalk.gray('  npm run lint    - Lint code'));
-
+    await scaffold({
+      templateDir: templateDir(template),
+      targetDir: project.targetDir,
+      force: options.force,
+      preserve: ['.env'],
+      transform: async (stagingDir) => {
+        await setPackageName(stagingDir, project.packageName);
+        await createEnvFile(stagingDir);
+      }
+    });
   } catch (error) {
     spinner.fail('Failed to create project');
+    if (error instanceof TargetNotEmptyError) throw new Error(describeNotEmpty(error));
     throw error;
   }
+
+  spinner.succeed('Project created successfully!');
+
+  console.log(chalk.green('\n✅ QuickNode project created!'));
+  console.log(chalk.gray('A .env file with random secrets was generated (it is git-ignored).'));
+  console.log(chalk.yellow('\nNext steps:'));
+  if (!project.inCurrentDir) console.log(chalk.white(`  cd ${name}`));
+  console.log(chalk.white('  npm install'));
+  console.log(chalk.white('  npm run dev'));
+
+  console.log(chalk.gray('\nAvailable scripts:'));
+  console.log(chalk.gray('  npm run dev     - Start development server'));
+  console.log(chalk.gray('  npm run build   - Build for production'));
+  console.log(chalk.gray('  npm test        - Run tests'));
+  console.log(chalk.gray('  npm run lint    - Lint code'));
 }

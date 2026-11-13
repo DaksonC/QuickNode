@@ -1,6 +1,6 @@
+require('./infrastructure/config/load-env');
 const express = require('express');
 const helmet = require('helmet');
-const dotenv = require('dotenv');
 const { logger } = require('./infrastructure/logging/logger');
 const { setupSwagger } = require('./infrastructure/docs/swagger');
 const { errorHandler } = require('./infrastructure/middleware/error-handler');
@@ -9,9 +9,6 @@ const sequelizeConnection = require('./infrastructure/database/connection');
 const modelsRegistry = require('./infrastructure/database/models');
 const { RepositoryFactory } = require('./infrastructure/database/repository-factory');
 const { UserController } = require('./infrastructure/controllers/user-controller');
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

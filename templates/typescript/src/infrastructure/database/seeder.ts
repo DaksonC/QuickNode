@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '../config/load-env';
 import { RepositoryFactory } from './repository-factory';
 import { databaseConnection } from './connection';
 

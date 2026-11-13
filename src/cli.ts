@@ -1,57 +1,12 @@
 #!/usr/bin/env node
+import { isSupportedNode, MIN_NODE } from './node-version.js';
 
-import { Command } from 'commander';
-import chalk from 'chalk';
-import { createProject } from './commands/create.js';
-import { getVersion, createBanner, createSimpleBanner } from './utils/banner.js';
-
-async function showBanner() {
-  try {
-    const banner = await createBanner();
-    console.log(banner);
-  } catch {
-    // Fallback to simple banner if figlet fails
-    console.log(createSimpleBanner());
-  }
+if (isSupportedNode(process.versions.node)) {
+  // Loaded lazily so older Node versions get a clear message instead of a
+  // SyntaxError about missing exports (e.g. util.styleText).
+  const { main } = await import('./main.js');
+  process.exitCode = await main(process.argv.slice(2));
+} else {
+  console.error(`QuickNode CLI requires Node.js ${MIN_NODE.join('.')} or newer (current: ${process.version}).`);
+  process.exitCode = 1;
 }
-
-async function main() {
-  const program = new Command();
-
-  program
-    .name('qn')
-    .description('CLI tool to bootstrap Node.js projects with clean architecture')
-    .version(getVersion());
-
-  program
-    .command('create')
-    .description('Create a new QuickNode project')
-    .argument('[project-name]', 'Project name (use "." for current directory)')
-    .option('-ts, --typescript', 'Use TypeScript template', false)
-    .option('-js, --javascript', 'Use JavaScript template', false)
-    .option('-f, --force', 'Write into a non-empty directory, overwriting conflicting files', false)
-    .action(async (projectName, options) => {
-      try {
-        // Show banner before creating project
-        await showBanner();
-        await createProject(projectName, options);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error(chalk.red('Error creating project:'), errorMessage);
-        process.exit(1);
-      }
-    });
-
-  // Show banner if no command is provided
-  const args = process.argv.slice(2);
-  if (args.length === 0) {
-    await showBanner();
-  }
-
-  program.parse();
-}
-
-main().catch((error) => {
-  console.error(chalk.red('Fatal error:'), error);
-  process.exit(1);
-});

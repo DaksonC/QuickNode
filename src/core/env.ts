@@ -13,30 +13,38 @@ const SECRET_GENERATORS: Record<string, () => string> = {
  * Fills the secret variables of an `.env.example` content with random values.
  * Other lines are kept as they are.
  */
-export function fillSecrets(exampleContent: string, generators = SECRET_GENERATORS): string {
+export function fillSecrets(exampleContent: string): string {
   return exampleContent
     .split('\n')
     .map((line) => {
       const match = /^([A-Z0-9_]+)=/.exec(line);
-      const generate = match && generators[match[1]];
+      const generate = match && SECRET_GENERATORS[match[1]];
       return generate ? `${match[1]}=${generate()}` : line;
     })
     .join('\n');
 }
 
+export const ENV_FILE = '.env';
+export const ENV_EXAMPLE_FILE = '.env.example';
+
+/** Whether a project with these files gets a generated `.env` (see createEnvFile). */
+export function generatesEnvFile(projectFiles: string[]): boolean {
+  return projectFiles.includes(ENV_EXAMPLE_FILE);
+}
+
 /**
  * Creates `<projectDir>/.env` from `.env.example` with freshly generated
- * secrets. Does nothing when there is no `.env.example`.
+ * secrets. Returns false (and writes nothing) when there is no `.env.example`.
  */
 export async function createEnvFile(projectDir: string): Promise<boolean> {
   let example: string;
   try {
-    example = await fs.readFile(path.join(projectDir, '.env.example'), 'utf8');
+    example = await fs.readFile(path.join(projectDir, ENV_EXAMPLE_FILE), 'utf8');
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
     throw error;
   }
 
-  await fs.writeFile(path.join(projectDir, '.env'), fillSecrets(example), { mode: 0o600 });
+  await fs.writeFile(path.join(projectDir, ENV_FILE), fillSecrets(example), { mode: 0o600 });
   return true;
 }

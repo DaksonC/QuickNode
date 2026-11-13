@@ -15,11 +15,14 @@
 - **API Documentation**: Swagger/OpenAPI 3.0 integration
 - **Security & Validation**: Helmet, express-validator, and class-validator
 - **Testing Setup**: Jest with extended matchers and coverage
-- **Code Quality**: ESLint, Prettier, and optional Husky pre-commit hooks
-- **Development Tools**: Hot reload with tsx (TypeScript) / nodemon (JavaScript)
+- **Code Quality**: ESLint 10 (flat config), Prettier, Husky 9 hooks and commitlint
+- **Development Tools**: Hot reload with tsx (TypeScript) / `node --watch` (JavaScript)
+- **Zero runtime dependencies**: the CLI itself is a single package built only on Node.js APIs
 - **Logging**: Structured logging with Pino
 
 ## 📦 Installation
+
+Requires **Node.js 22.13 or newer**.
 
 Install the CLI globally:
 
@@ -61,6 +64,35 @@ qn create my-app --javascript
 
 # Write into a non-empty directory, overwriting conflicting files
 qn create . --force
+
+# Initialize git and install dependencies right away
+qn create my-app -ts --git --install
+
+# Preview the files without writing anything
+qn create my-app --dry-run
+```
+
+| Option | Description |
+| --- | --- |
+| `-t`, `--typescript` (`-ts`) | Use the TypeScript template |
+| `-j`, `--javascript` (`-js`) | Use the JavaScript template |
+| `-f`, `--force` | Write into a non-empty directory, overwriting conflicting files |
+| `-y`, `--yes` | Accept defaults without prompting (name `my-quicknode-app`, TypeScript) |
+| `--dry-run` | Show what would be created without writing anything |
+| `--install` | Run `npm install` after creating the project |
+| `--git` | Initialize a git repository (enables the Husky hooks on install) |
+| `--json` | Print a JSON result (or error) to stdout; no prompts or colors |
+
+Run `qn help create` (or `qn create --help`) for the full reference.
+
+### Scripts and CI
+
+`qn` never prompts when stdin is not a terminal: pass the name and template (or `--yes`).
+Prompts and progress go to stderr and results to stdout, so `--json` output can be piped.
+Exit codes: `0` success, `1` error, `2` invalid usage.
+
+```bash
+qn create api --yes --json | jq .targetDir
 ```
 
 ### Safety
@@ -94,7 +126,6 @@ qn create . --force
 
 - **TypeScript**: Type checking (TypeScript template)
 - **tsx**: Development server with hot reload (TypeScript)
-- **Nodemon**: Development server with hot reload (JavaScript)
 - **Jest**: Testing framework
 - **Jest-extended**: Additional Jest matchers
 - **ESLint**: Code linting
@@ -213,9 +244,9 @@ npm run format        # Format code
 
 ### Git Hooks
 
-Husky hooks are opt-in: run `git init && npx husky install` in the project. Once enabled, they:
-- Lint and fix code
-- Format code
+Husky 9 installs the hooks on `npm install` when the project is a git repository
+(`qn create --git` does `git init` for you). They:
+- Lint the code before each commit
 - Validate commit messages (conventional commits)
 
 ### Conventional Commits
@@ -256,6 +287,17 @@ All endpoints include:
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## ⬆️ Migrating from v1 to v2
+
+- **Node.js 22.13+** is required, for both the CLI and the generated projects.
+- `-ts` / `-js` still work; the new short forms are `-t` / `-j`.
+- Without a terminal (CI, pipes), `qn create` no longer waits for prompts: pass the
+  project name and `--typescript`/`--javascript`, or use `--yes`.
+- `qn create` refuses non-empty directories unless `--force` (since v1.2).
+- Generated projects load `.env` with `process.loadEnvFile()` (no `dotenv`), use
+  `node --watch` instead of nodemon (JavaScript), ESLint 10 flat config and Husky 9.
+- The banner and donation link are shown only in `qn --help`.
 
 ## 🙏 Acknowledgments
 

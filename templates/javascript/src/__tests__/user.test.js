@@ -8,7 +8,7 @@ describe('User Entity', () => {
         id: '1',
         name: 'John Doe',
         email: 'john@example.com',
-        age: 30
+        age: 30,
       };
 
       // Act
@@ -26,7 +26,7 @@ describe('User Entity', () => {
       const userData = {
         name: 'Jane Doe',
         email: 'jane@example.com',
-        age: 25
+        age: 25,
       };
 
       // Act

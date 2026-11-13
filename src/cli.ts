@@ -9,7 +9,7 @@ async function showBanner() {
   try {
     const banner = await createBanner();
     console.log(banner);
-  } catch (error) {
+  } catch {
     // Fallback to simple banner if figlet fails
     console.log(createSimpleBanner());
   }
@@ -29,6 +29,7 @@ async function main() {
     .argument('[project-name]', 'Project name (use "." for current directory)')
     .option('-ts, --typescript', 'Use TypeScript template', false)
     .option('-js, --javascript', 'Use JavaScript template', false)
+    .option('-f, --force', 'Write into a non-empty directory, overwriting conflicting files', false)
     .action(async (projectName, options) => {
       try {
         // Show banner before creating project

@@ -17,7 +17,7 @@ class SequelizeUserRepository {
    */
   toDomainEntity(userModel) {
     if (!userModel) return null;
-    
+
     return new User(
       userModel.id,
       userModel.name,
@@ -34,9 +34,9 @@ class SequelizeUserRepository {
         id: userData.id,
         name: userData.name,
         email: userData.email,
-        age: userData.age
+        age: userData.age,
       });
-      
+
       return this.toDomainEntity(userModel);
     } catch (error) {
       if (error.name === 'SequelizeUniqueConstraintError') {
@@ -53,16 +53,16 @@ class SequelizeUserRepository {
 
   async findByEmail(email) {
     const userModel = await this.UserModel.findOne({
-      where: { email }
+      where: { email },
     });
     return this.toDomainEntity(userModel);
   }
 
   async findAll() {
     const userModels = await this.UserModel.findAll({
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
-    
+
     return userModels.map(userModel => this.toDomainEntity(userModel));
   }
 
@@ -72,11 +72,11 @@ class SequelizeUserRepository {
         {
           name: userData.name,
           email: userData.email,
-          age: userData.age
+          age: userData.age,
         },
         {
           where: { id },
-          returning: true
+          returning: true,
         }
       );
 
@@ -98,9 +98,9 @@ class SequelizeUserRepository {
 
   async delete(id) {
     const deletedRowsCount = await this.UserModel.destroy({
-      where: { id }
+      where: { id },
     });
-    
+
     return deletedRowsCount > 0;
   }
 }

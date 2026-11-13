@@ -15,7 +15,7 @@ class SequelizeConnection {
    */
   async initialize() {
     const dbType = process.env.DB_TYPE || 'postgresql';
-    
+
     try {
       switch (dbType.toLowerCase()) {
         case 'postgresql':
@@ -36,7 +36,6 @@ class SequelizeConnection {
       await this.sequelize.authenticate();
       console.log(`Connected to ${dbType} database successfully`);
       this.isConnected = true;
-
     } catch (error) {
       console.error('Unable to connect to the database:', error);
       throw error;
@@ -51,7 +50,7 @@ class SequelizeConnection {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432'),
       username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
+      password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME || 'quicknode_db',
       dialect: 'postgres',
       logging: process.env.NODE_ENV === 'development' ? console.log : false,
@@ -59,8 +58,8 @@ class SequelizeConnection {
         max: 20,
         min: 0,
         acquire: 30000,
-        idle: 10000
-      }
+        idle: 10000,
+      },
     };
 
     this.sequelize = new Sequelize(config);
@@ -74,7 +73,7 @@ class SequelizeConnection {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '3306'),
       username: process.env.DB_USERNAME || 'root',
-      password: process.env.DB_PASSWORD || 'password',
+      password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME || 'quicknode_db',
       dialect: 'mysql',
       logging: process.env.NODE_ENV === 'development' ? console.log : false,
@@ -82,8 +81,8 @@ class SequelizeConnection {
         max: 20,
         min: 0,
         acquire: 30000,
-        idle: 10000
-      }
+        idle: 10000,
+      },
     };
 
     this.sequelize = new Sequelize(config);
@@ -93,12 +92,12 @@ class SequelizeConnection {
    * Initialize SQLite connection
    */
   async initializeSQLite() {
-    const dbPath = process.env.DB_PATH || './database.sqlite';
-    
+    const dbPath = process.env.SQLITE_PATH || './database.sqlite';
+
     this.sequelize = new Sequelize({
       dialect: 'sqlite',
       storage: dbPath,
-      logging: process.env.NODE_ENV === 'development' ? console.log : false
+      logging: process.env.NODE_ENV === 'development' ? console.log : false,
     });
   }
 

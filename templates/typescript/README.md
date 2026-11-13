@@ -45,24 +45,16 @@ src/
 npm install
 ```
 
-2. Copy environment variables:
+2. Review the environment variables in `.env`:
+
+`qn create` already generated a `.env` (git-ignored) from `.env.example`, with a random
+`DB_PASSWORD` and `JWT_SECRET`. Never commit it. If you cloned the project instead,
+create it yourself and replace every `change-me` value:
 ```bash
 cp .env.example .env
 ```
 
-3. Update environment variables in `.env`:
-```env
-# Database Configuration
-DATABASE_URL=postgresql://username:password@localhost:5432/quicknode_db
-MONGO_URL=mongodb://localhost:27017/quicknode_db
-
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-
-# JWT Secret (generate a secure secret for production)
-JWT_SECRET=your-super-secure-jwt-secret-key
-```
+3. Adjust the remaining settings as needed (`DB_TYPE`, `PORT`, `LOG_LEVEL`...).
 
 4. Set up Git hooks (optional, but recommended for contributors):
 ```bash

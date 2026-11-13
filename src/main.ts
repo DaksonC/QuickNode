@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { PassThrough } from 'node:stream';
 import { createInputFromFlags, createProject, type CreateResult } from './commands/create.js';
 import { packageRoot } from './core/paths.js';
 import { PathBlockedError, TargetNotEmptyError } from './core/scaffold.js';
-import { COMMANDS, GLOBAL_OPTIONS, parseCommandLine, UsageError, type OptionSpec } from './spec.js';
+import { COMMANDS, GLOBAL_OPTIONS, parseCommandLine, UsageError, wantsJson, type OptionSpec } from './spec.js';
 import { renderBanner } from './ui/banner.js';
 import { createPrompter, PromptAbortedError } from './ui/prompt.js';
 import { createStyle, type Style } from './ui/style.js';
@@ -34,16 +35,21 @@ export function getVersion(): string {
 export async function main(argv: string[], io: IO = defaultIO()): Promise<number> {
   const out = createStyle(io.stdout);
   const err = createStyle(io.stderr);
-  const json = argv.includes('--json');
+  let json = wantsJson(argv);
+  const writeJson = (value: unknown) => io.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 
   try {
     const parsed = parseCommandLine(argv);
+    json = parsed.json;
     if (parsed.kind === 'version') {
-      io.stdout.write(`${getVersion()}\n`);
+      if (json) writeJson({ ok: true, version: getVersion() });
+      else io.stdout.write(`${getVersion()}\n`);
       return EXIT_OK;
     }
     if (parsed.kind === 'help') {
-      io.stdout.write(renderHelp(parsed.command, out, Boolean(io.stdout.isTTY)));
+      const help = renderHelp(parsed.command, json ? createStyle(new PassThrough()) : out, !json && Boolean(io.stdout.isTTY));
+      if (json) writeJson({ ok: true, help });
+      else io.stdout.write(help);
       return EXIT_OK;
     }
 
@@ -64,11 +70,12 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
     }
 
     const stepsOk = result.git?.ok !== false && result.install?.ok !== false;
-    io.stdout.write(json ? `${JSON.stringify({ ok: stepsOk, ...result }, null, 2)}\n` : renderCreate(result, out));
+    if (json) writeJson({ ok: stepsOk, ...result });
+    else io.stdout.write(renderCreate(result, out));
     return stepsOk ? EXIT_OK : EXIT_ERROR;
   } catch (error) {
     if (json) {
-      io.stdout.write(`${JSON.stringify({ ok: false, error: serializeError(error) }, null, 2)}\n`);
+      writeJson({ ok: false, error: serializeError(error) });
     } else {
       io.stderr.write(renderError(error, err));
     }
@@ -123,6 +130,7 @@ function renderCreate(result: CreateResult, style: Style): string {
       lines.push(overwritten.has(file) ? style.accent(`  ~ ${file} (overwrite)`) : `  + ${file}`);
     }
     if (result.env === 'kept') lines.push(style.muted('  = .env (existing file kept)'));
+    if (result.steps.length > 0) lines.push(`Then would run: ${result.steps.join(', ')}`);
     return `${lines.join('\n')}\n`;
   }
 

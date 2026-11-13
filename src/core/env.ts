@@ -27,6 +27,11 @@ export function fillSecrets(exampleContent: string): string {
 export const ENV_FILE = '.env';
 export const ENV_EXAMPLE_FILE = '.env.example';
 
+/** Whether a project with these files gets a generated `.env` (see createEnvFile). */
+export function generatesEnvFile(projectFiles: string[]): boolean {
+  return projectFiles.includes(ENV_EXAMPLE_FILE);
+}
+
 /**
  * Creates `<projectDir>/.env` from `.env.example` with freshly generated
  * secrets. Returns false (and writes nothing) when there is no `.env.example`.

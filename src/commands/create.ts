@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { createEnvFile, ENV_EXAMPLE_FILE, ENV_FILE } from '../core/env.js';
+import { createEnvFile, ENV_FILE, generatesEnvFile } from '../core/env.js';
 import { templateDir, type TemplateName } from '../core/paths.js';
 import { projectNameError, resolveProject } from '../core/project-name.js';
 import { npmCommand, run, type RunResult } from '../core/run.js';
@@ -44,9 +44,13 @@ export interface CreateResult {
   /** Existing files that are (or would be) overwritten. */
   overwritten: string[];
   env: EnvStatus;
+  /** Steps requested after generation, in order (also listed on dry runs). */
+  steps: Step[];
   git?: RunResult;
   install?: RunResult;
 }
+
+export type Step = 'git init' | 'npm install';
 
 /** Converts parsed flags into a CreateInput, rejecting contradictions early. */
 export function createInputFromFlags(
@@ -112,7 +116,7 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
 
   const env: EnvStatus = plan.preserved.includes(ENV_FILE)
     ? 'kept'
-    : plan.files.includes(ENV_EXAMPLE_FILE)
+    : generatesEnvFile(plan.files)
       ? 'generated'
       : 'none';
 
@@ -125,7 +129,8 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
     template,
     files: env === 'generated' ? [...plan.files, ENV_FILE] : plan.files,
     overwritten: plan.conflicts,
-    env
+    env,
+    steps: [...(input.git ? (['git init'] as const) : []), ...(input.install ? (['npm install'] as const) : [])]
   };
   if (input.dryRun) return result;
 
@@ -143,8 +148,10 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
   }
   if (input.install) {
     ctx.progress?.('Installing dependencies (npm install)');
-    const [command, args] = npmCommand(['install']);
-    result.install = await run(command, args, project.targetDir);
+    const npm = npmCommand(['install']);
+    result.install = npm
+      ? await run(npm[0], npm[1], project.targetDir)
+      : { ok: false, error: 'npm was not found; run "npm install" manually' };
   }
 
   return result;

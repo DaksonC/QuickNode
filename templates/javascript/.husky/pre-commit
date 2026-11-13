@@ -1,1 +1,4 @@
-npm run lint
+npm run lint || {
+  echo 'Lint failed. Run "npm run lint:fix", review and stage the changes, then commit again.'
+  exit 1
+}

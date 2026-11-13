@@ -19,7 +19,7 @@
     "db:seed": "node src/infrastructure/database/seeder.js",
     "db:setup": "npm run docker:up && sleep 5 && npm run db:seed",
     "dev:docker": "npm run db:setup && npm run dev",
-    "prepare": "husky"
+    "prepare": "node .husky/install.mjs"
   },
   "dependencies": {
     "express": "^4.18.2",

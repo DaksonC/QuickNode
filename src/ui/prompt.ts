@@ -53,8 +53,8 @@ export function createPrompter(
     },
 
     async choose(question, choices) {
-      const lines = choices.map((choice, index) => `  ${index + 1}) ${choice.label}${index === 0 ? ' (default)' : ''}`);
-      output.write(`? ${question}\n${lines.join('\n')}\n`);
+      const options = choices.map((choice, index) => `  ${index + 1}) ${choice.label}${index === 0 ? ' (default)' : ''}`);
+      output.write(`? ${question}\n${options.join('\n')}\n`);
       for (;;) {
         const answer = await ask(`  Choose 1-${choices.length}: `);
         if (answer === '') return choices[0].value;

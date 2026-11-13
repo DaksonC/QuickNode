@@ -20,7 +20,7 @@
     "db:seed": "tsx src/infrastructure/database/seeder.ts",
     "db:setup": "npm run docker:up && sleep 5 && npm run db:seed",
     "dev:docker": "npm run db:setup && npm run dev",
-    "prepare": "husky"
+    "prepare": "node .husky/install.mjs"
   },
   "dependencies": {
     "class-transformer": "^0.5.1",

@@ -43,6 +43,14 @@ describe('help and version', () => {
     assert.match(stdout, /Examples:/);
   });
 
+  it('prints version and help as JSON with --json', async (t) => {
+    const cwd = await makeTmp(t);
+    assert.deepEqual(JSON.parse((await qn(cwd, '--json', '--version')).stdout), { ok: true, version: getVersion() });
+    const help = JSON.parse((await qn(cwd, 'create', '--json', '-h')).stdout);
+    assert.equal(help.ok, true);
+    assert.match(help.help, /--dry-run/);
+  });
+
   it('fails with a usage error for unknown commands', async (t) => {
     const { code, stderr } = await qn(await makeTmp(t), 'help', 'nope');
     assert.equal(code, EXIT_USAGE);
@@ -82,6 +90,16 @@ describe('create', () => {
     assert.match(stdout, /\+ src/);
     assert.equal(await read(cwd, 'app', 'README.md'), 'mine');
     assert.deepEqual(await fs.readdir(path.join(cwd, 'app')), ['README.md']);
+  });
+
+  it('--dry-run lists the steps that would run, without running them', async (t) => {
+    const cwd = await makeTmp(t);
+    const text = await qn(cwd, 'create', 'app', '-js', '--dry-run', '--git', '--install');
+    assert.match(text.stdout, /Then would run: git init, npm install/);
+    const json = JSON.parse((await qn(cwd, 'create', 'app', '-js', '--dry-run', '--git', '--json')).stdout);
+    assert.deepEqual(json.steps, ['git init']);
+    assert.equal(json.git, undefined);
+    assert.equal(await exists(cwd, 'app'), false);
   });
 
   it('--dry-run still reports a non-empty target', async (t) => {

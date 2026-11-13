@@ -20,7 +20,8 @@ export interface CommandSpec {
 
 export const GLOBAL_OPTIONS: Record<string, OptionSpec> = {
   help: { type: 'boolean', short: 'h', description: 'Show help' },
-  version: { type: 'boolean', short: 'v', description: 'Show the version' }
+  version: { type: 'boolean', short: 'v', description: 'Show the version' },
+  json: { type: 'boolean', description: 'Print a JSON result to stdout (no prompts, no colors)' }
 };
 
 export const COMMANDS: Record<string, CommandSpec> = {
@@ -35,8 +36,7 @@ export const COMMANDS: Record<string, CommandSpec> = {
       yes: { type: 'boolean', short: 'y', description: 'Accept defaults without prompting (name, TypeScript)' },
       'dry-run': { type: 'boolean', description: 'Show what would be created without writing anything' },
       install: { type: 'boolean', description: 'Run npm install after creating the project' },
-      git: { type: 'boolean', description: 'Initialize a git repository' },
-      json: { type: 'boolean', description: 'Print a JSON result to stdout (no prompts, no colors)' }
+      git: { type: 'boolean', description: 'Initialize a git repository' }
     },
     examples: [
       'qn create my-api',
@@ -51,6 +51,15 @@ export const COMMANDS: Record<string, CommandSpec> = {
 /** Legacy two-letter flags from v1, which util.parseArgs cannot express. */
 const LEGACY_FLAGS: Record<string, string> = { '-ts': '--typescript', '-js': '--javascript' };
 
+/**
+ * Best-effort --json detection for errors thrown before parsing succeeded
+ * (arguments after "--" are positionals, not flags).
+ */
+export function wantsJson(argv: string[]): boolean {
+  const end = argv.indexOf('--');
+  return (end === -1 ? argv : argv.slice(0, end)).includes('--json');
+}
+
 export class UsageError extends Error {
   readonly code = 'USAGE';
 
@@ -63,10 +72,11 @@ export class UsageError extends Error {
   }
 }
 
-export type ParsedArgs =
+export type ParsedArgs = { json: boolean } & (
   | { kind: 'help'; command?: string }
   | { kind: 'version' }
-  | { kind: 'command'; command: string; positionals: string[]; values: FlagValues };
+  | { kind: 'command'; command: string; positionals: string[]; values: FlagValues }
+);
 
 function toParseArgsOptions(options: Record<string, OptionSpec>): ParseArgsConfig['options'] {
   return Object.fromEntries(
@@ -79,21 +89,24 @@ export function parseCommandLine(argv: string[]): ParsedArgs {
   const args = argv.map((arg) => LEGACY_FLAGS[arg] ?? arg);
   const [first, ...rest] = args;
 
-  if (first === undefined) return { kind: 'help' };
-  if (first === 'help') return { kind: 'help', command: rest[0] };
+  if (first === undefined) return { kind: 'help', json: false };
 
-  if (first.startsWith('-')) {
-    const { values } = parse(args, GLOBAL_OPTIONS, undefined);
-    if (values.version) return { kind: 'version' };
-    return { kind: 'help' };
+  if (first === 'help' || first.startsWith('-')) {
+    // Global flags, possibly followed by a command name: "qn --help create".
+    const { values, positionals } = parse(first === 'help' ? rest : args, GLOBAL_OPTIONS, undefined);
+    const json = Boolean(values.json);
+    if (values.version && first !== 'help') return { kind: 'version', json };
+    return { kind: 'help', command: positionals[0], json };
   }
 
   const spec = COMMANDS[first];
   if (!spec) throw new UsageError(`Unknown command "${first}".`);
 
   const { values, positionals } = parse(rest, { ...GLOBAL_OPTIONS, ...spec.options }, spec.name);
-  if (values.help) return { kind: 'help', command: spec.name };
-  return { kind: 'command', command: spec.name, positionals, values };
+  const json = Boolean(values.json);
+  if (values.help) return { kind: 'help', command: spec.name, json };
+  if (values.version) return { kind: 'version', json };
+  return { kind: 'command', command: spec.name, positionals, values, json };
 }
 
 type FlagValues = Record<string, boolean | string | undefined>;

@@ -1,4 +1,6 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 
 export interface RunResult {
   ok: boolean;
@@ -19,12 +21,27 @@ export function run(command: string, args: string[], cwd: string): Promise<RunRe
 }
 
 /**
- * Command line for `npm <args>` without a shell. When the CLI was started by
- * npm/npx, npm's own entry point is reused (this also works on Windows, where
- * `npm` is a .cmd file that cannot be spawned without a shell).
+ * Command line for `npm <args>` without a shell. npm's JavaScript entry point
+ * is run with the current Node binary whenever it can be found: Windows
+ * refuses to spawn `npm.cmd` without a shell (EINVAL), so a bare `npm` is
+ * only used on other platforms.
  */
-export function npmCommand(args: string[], env: NodeJS.ProcessEnv = process.env): [string, string[]] {
-  const npmCli = env.npm_execpath;
-  if (npmCli && /npm-cli\.[cm]?js$/.test(npmCli)) return [process.execPath, [npmCli, ...args]];
-  return [process.platform === 'win32' ? 'npm.cmd' : 'npm', args];
+export function npmCommand(
+  args: string[],
+  env: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
+  execPath: string = process.execPath,
+  fileExists: (file: string) => boolean = existsSync
+): [string, string[]] | undefined {
+  const execCli = env.npm_execpath;
+  const candidates = [
+    // Started by npm or npx: reuse the same npm (npx-cli.js sits next to npm-cli.js).
+    execCli && /np[mx]-cli\.[cm]?js$/.test(execCli) ? path.join(path.dirname(execCli), 'npm-cli.js') : undefined,
+    // npm bundled with this Node installation (Windows and Unix layouts).
+    path.join(path.dirname(execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+    path.join(path.dirname(execPath), '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js')
+  ];
+  const npmCli = candidates.find((file) => file !== undefined && fileExists(file));
+  if (npmCli) return [execPath, [npmCli, ...args]];
+  return platform === 'win32' ? undefined : ['npm', args];
 }

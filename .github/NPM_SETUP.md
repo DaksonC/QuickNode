@@ -1,65 +1,78 @@
-# 🔐 Configuração do NPM Token para GitHub Actions
+# 🔐 Publicação no npm: Trusted Publishing (OIDC)
 
-Para configurar a publicação automática no NPM, você precisa adicionar seu token NPM como secret no GitHub:
+Desde a v2 (ADR-001, D5) o pacote é publicado **somente** pelo workflow
+[`.github/workflows/publish.yml`](workflows/publish.yml), quando é enviada uma tag `v*` que
+aponta para um commit da `main`. O npm autentica o workflow por OIDC (Trusted Publishing):
+**não existe `NPM_TOKEN`** e toda versão sai com atestado de provenance.
 
-## 1. 🔑 Gerar Token NPM
+Os passos abaixo são feitos uma única vez, pelo dono do pacote.
 
-1. Acesse: https://www.npmjs.com/settings/tokens
-2. Clique em "Generate New Token"
-3. Escolha "Automation" (recommended)
-4. Copie o token gerado
+## 1. npmjs.com: conta
 
-## 2. 📝 Adicionar Secret no GitHub
+1. **Account → Two-Factor Authentication**: ativar 2FA com app autenticador ou chave de
+   segurança, no modo **Authorization and writes**.
+2. **Access Tokens**: revogar qualquer token clássico/automation usado para publicar
+   (inclusive o que está como `NPM_TOKEN` no GitHub).
 
-1. Vá para seu repositório no GitHub
-2. Acesse: Settings → Secrets and variables → Actions
-3. Clique em "New repository secret"
-4. Nome: `NPM_TOKEN`
-5. Value: cole o token do NPM
-6. Clique em "Add secret"
+## 2. npmjs.com: Trusted Publisher
 
-## 3. ✅ Verificar Configuração
+Na [página de configurações do pacote](https://www.npmjs.com/package/@10565/quicknode-cli/access):
 
-Após configurar o secret, o workflow automaticamente:
-- ✅ Executará testes em Node.js 18, 20, 22
-- ✅ Fará build do projeto
-- ✅ Verificará se a versão mudou
-- ✅ Publicará no NPM se a versão for nova
-- ✅ Criará uma tag Git
-- ✅ Criará um GitHub Release
+1. **Trusted Publisher → GitHub Actions**, com:
+   | Campo | Valor |
+   | --- | --- |
+   | Organization or user | `DaksonC` |
+   | Repository | `QuickNode` |
+   | Workflow filename | `publish.yml` |
+   | Environment name | `npm` |
+2. **Publishing access**: escolher **Require two-factor authentication and disallow tokens**.
+   O Trusted Publishing continua funcionando; um token vazado deixa de funcionar.
 
-## 4. 🚀 Fluxo de Release
+## 3. GitHub: repositório
 
-### Opção 1: Script Automático
+1. **Settings → Secrets and variables → Actions**: apagar o secret `NPM_TOKEN`.
+2. **Settings → Environments → New environment** `npm` (o workflow cria no primeiro uso se
+   não existir). Recomendado: **Deployment branches and tags → Selected** com a regra de tag
+   `v*` e você como **Required reviewer**, para aprovar manualmente cada publicação.
+3. **Settings → Advanced Security** (ou *Code security*): ativar **Private vulnerability
+   reporting**, **Dependabot alerts**, **Dependabot security updates** e **CodeQL** (o
+   `codeql.yml` é o *advanced setup*, então deixe o *default setup* desligado).
+4. **Settings → Rules → Rulesets** (recomendado, também melhora o Scorecard):
+   - Branch `main`: exigir PR, exigir os checks do `CI Tests`, bloquear force push e exclusão.
+   - Tag `v*`: criação só por admins, bloquear atualização e exclusão.
+
+## 4. Publicar uma versão
+
 ```bash
-# Bump patch version (1.0.0 → 1.0.1)
-npm run release:patch
-
-# Bump minor version (1.0.0 → 1.1.0)
-npm run release:minor
-
-# Bump major version (1.0.0 → 2.0.0)
-npm run release:major
+git checkout main && git pull --ff-only
+npm run release:patch   # ou release:minor / release:major / release:prerelease
 ```
 
-### Opção 2: Manual
-```bash
-# Bump version
-npm version patch|minor|major
+O script faz o bump, cria a tag anotada `vX.Y.Z` e envia as duas coisas. O workflow então:
 
-# Push para main (triggera CI/CD)
-git push origin main
+1. confere se a tag é igual à versão do `package.json` e se aponta para a `main`;
+2. roda `npm ci`, `npm audit signatures`, lint, testes com cobertura e `npm audit`;
+3. publica com `npm publish --provenance` (prerelease vai para a dist-tag `next`);
+4. cria o GitHub Release com notas geradas e a SBOM CycloneDX anexada.
+
+Se o bump foi feito na `develop`, depois do merge na `main` basta criar a tag:
+
+```bash
+git checkout main && git pull --ff-only
+git tag -a v2.1.0 -m "Release v2.1.0" && git push origin v2.1.0
 ```
 
-### Opção 3: Via GitHub UI
-1. Merge PR da develop → main
-2. GitHub Actions publican automaticamente
+## 5. Verificar
 
-## 5. 📊 Monitoring
+- A página do pacote no npm mostra a seção **Provenance**, com o commit e a execução do CI.
+- `npm view @10565/quicknode-cli@latest dist.attestations --json`
+- Em qualquer projeto que instalou a CLI: `npm audit signatures`
 
-Após configurar, você pode monitorar:
-- 🔍 **GitHub Actions**: https://github.com/daksonfilho/quicknode/actions
-- 📦 **NPM Package**: https://www.npmjs.com/package/quicknode-cli
-- 🏷️ **GitHub Releases**: https://github.com/daksonfilho/quicknode/releases
+## Problemas comuns
 
-O processo está totalmente automatizado! 🎉
+| Sintoma | Causa |
+| --- | --- |
+| `404`/`ENEEDAUTH` no `npm publish` | Campos do Trusted Publisher diferentes do workflow (nome do arquivo, environment `npm`, maiúsculas em owner/repo). |
+| `npm >= 11.5.1 is required` | O job de publicação precisa rodar em Node 24 (que traz o npm 11). |
+| `Tag … does not match package.json` | Tag criada sem bump; apague a tag, faça o bump e crie de novo. |
+| `points to a commit that is not on main` | Tag criada em outra branch; só tags da `main` são publicadas. |

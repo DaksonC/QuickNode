@@ -4,7 +4,8 @@ import path from 'node:path';
 const MAX_LENGTH = 214;
 const RESERVED = new Set(['node_modules', 'favicon.ico']);
 // Unscoped npm package name: lowercase, URL-safe, cannot start with "." or "_".
-const VALID_NAME = /^[a-z0-9-~][a-z0-9-._~]*$/;
+// npm also rejects ~'!()* in new package names.
+const VALID_NAME = /^[a-z0-9-][a-z0-9-._]*$/;
 
 export interface ResolvedProject {
   /** Name written to package.json. */
@@ -27,7 +28,7 @@ export function validateProjectName(name: string): string | undefined {
   if (name.includes('..')) return 'name cannot contain ".."';
   if (name.startsWith('.') || name.startsWith('_')) return 'name cannot start with "." or "_"';
   if (name.toLowerCase() !== name) return 'name must be lowercase';
-  if (!VALID_NAME.test(name)) return 'name can only contain lowercase letters, digits, "-", ".", "_" and "~"';
+  if (!VALID_NAME.test(name)) return 'name can only contain lowercase letters, digits, "-", "." and "_"';
   if (RESERVED.has(name)) return `"${name}" is a reserved name`;
   if (builtinModules.includes(name)) return `"${name}" is a Node.js core module name`;
   return undefined;

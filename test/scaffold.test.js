@@ -39,10 +39,11 @@ const stagingLeftovers = async (dir) => (await fs.readdir(dir)).filter((name) =>
 
 describe('listTemplateFiles', () => {
   it('lists files recursively, skipping lockfiles and node_modules', async () => {
+    // Code-unit order (uppercase first), independent of locale/ICU.
     assert.deepEqual(await listTemplateFiles(template), [
+      'README.md',
       'gitignore',
       'package.json',
-      'README.md',
       path.join('src', 'server.js')
     ]);
   });
@@ -98,7 +99,7 @@ describe('scaffold', () => {
 
     await assert.rejects(scaffold({ templateDir: template, targetDir: target }), (error) => {
       assert.ok(error instanceof TargetNotEmptyError);
-      assert.deepEqual(error.conflicts, ['.gitignore', 'README.md']);
+      assert.deepEqual(error.conflicts, ['README.md', '.gitignore']);
       assert.deepEqual(error.entries, ['.gitignore', 'README.md', 'notes.txt']);
       return true;
     });
@@ -141,6 +142,36 @@ describe('scaffold', () => {
     );
     await assert.rejects(fs.access(target));
     assert.deepEqual(await stagingLeftovers(root), []);
+  });
+
+  it('ignores staging folders left by an interrupted run', async () => {
+    const target = path.join(root, 'app');
+    await fs.mkdir(path.join(target, `${STAGING_PREFIX}stale`), { recursive: true });
+    const plan = await planScaffold(template, target);
+    assert.deepEqual(plan.existingEntries, []);
+    await scaffold({ templateDir: template, targetDir: target });
+    assert.equal(await read(path.join(target, 'README.md')), 'template readme');
+  });
+
+  it('with force, refuses before writing when a path is blocked by another type', async () => {
+    const target = path.join(root, 'app');
+    await write(path.join(target, 'src'), 'a file where the template has a folder');
+    await write(path.join(target, 'README.md'), 'mine');
+
+    await assert.rejects(scaffold({ templateDir: template, targetDir: target, force: true }), /blocked/);
+    assert.equal(await read(path.join(target, 'README.md')), 'mine');
+    assert.deepEqual((await fs.readdir(target)).sort(), ['README.md', 'src']);
+  });
+
+  it('plans files, existing entries and conflicts', async () => {
+    const target = path.join(root, 'app');
+    await write(path.join(target, 'package.json'), '{}');
+    await fs.mkdir(path.join(target, '.git'));
+    const plan = await planScaffold(template, target);
+    assert.deepEqual(plan.files, ['README.md', '.gitignore', 'package.json', path.join('src', 'server.js')]);
+    assert.deepEqual(plan.existingEntries, ['package.json']);
+    assert.deepEqual(plan.conflicts, ['package.json']);
+    assert.deepEqual(plan.typeClashes, []);
   });
 
   it('refuses a target that is a file', async () => {

@@ -72,6 +72,10 @@ describe('qn create', () => {
     assert.doesNotMatch(stdout, /random secrets was generated/);
   });
 
+  it('rejects conflicting template flags before prompting', async () => {
+    await assert.rejects(qn('create', '-ts', '-js'), (error) => /Choose only one template/.test(error.stderr));
+  });
+
   it('refuses "." in a non-empty directory', async () => {
     await fs.writeFile(path.join(cwd, 'README.md'), 'mine');
     await assert.rejects(qn('create', '.', '-js'), /not empty/);

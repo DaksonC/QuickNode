@@ -92,7 +92,7 @@ class SequelizeConnection {
    * Initialize SQLite connection
    */
   async initializeSQLite() {
-    const dbPath = process.env.DB_PATH || './database.sqlite';
+    const dbPath = process.env.SQLITE_PATH || './database.sqlite';
 
     this.sequelize = new Sequelize({
       dialect: 'sqlite',

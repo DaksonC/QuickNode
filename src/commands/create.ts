@@ -32,9 +32,6 @@ async function askProjectName(): Promise<string> {
 }
 
 async function chooseTemplate(options: CreateOptions): Promise<TemplateName> {
-  if (options.typescript && options.javascript) {
-    throw new Error('Choose only one template: --typescript or --javascript.');
-  }
   if (options.typescript) return 'typescript';
   if (options.javascript) return 'javascript';
 
@@ -60,6 +57,9 @@ function describeNotEmpty(error: TargetNotEmptyError): string {
 }
 
 export async function createProject(projectName?: string, options: CreateOptions = {}): Promise<void> {
+  if (options.typescript && options.javascript) {
+    throw new Error('Choose only one template: --typescript or --javascript.');
+  }
   const name = projectName ?? (await askProjectName());
   const project = resolveProject(name);
   const template = await chooseTemplate(options);

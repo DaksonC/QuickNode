@@ -6,7 +6,7 @@ import { resolveProject, validateProjectName } from '../dist/core/project-name.j
 const cwd = path.resolve('/work/projects');
 
 describe('validateProjectName', () => {
-  for (const name of ['my-app', 'api', 'app.v2', 'a_b', 'x~y', '123']) {
+  for (const name of ['my-app', 'api', 'app.v2', 'a_b', '123']) {
     it(`accepts "${name}"`, () => assert.equal(validateProjectName(name), undefined));
   }
 
@@ -21,6 +21,8 @@ describe('validateProjectName', () => {
     '.hidden': 'start with',
     '_private': 'start with',
     'has space': 'can only contain',
+    'my~app': 'can only contain',
+    'app(1)': 'can only contain',
     ' padded': 'leading or trailing',
     'node_modules': 'reserved',
     'http': 'core module',

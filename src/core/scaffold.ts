@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 /** Template entries that are never copied into a generated project. */
-const IGNORED = new Set(['node_modules', 'package-lock.json', '.env', 'dist', 'coverage']);
+const IGNORED = new Set(['node_modules', 'package-lock.json', '.env', 'dist', 'coverage', '.DS_Store']);
 /**
  * npm never publishes `.gitignore` files, so templates store them without the
  * dot and they are renamed when the project is generated.
@@ -39,6 +39,8 @@ export interface ScaffoldPlan {
   existingEntries: string[];
   /** Template files that already exist in the target. */
   conflicts: string[];
+  /** Template files blocked by a directory/file of the same path in the target. */
+  typeClashes: string[];
 }
 
 export interface ScaffoldOptions {
@@ -64,7 +66,7 @@ export async function listTemplateFiles(
   const entries = await fs.readdir(path.join(templateDir, relativeDir), { withFileTypes: true });
   const files: string[] = [];
 
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+  for (const entry of entries.sort((a, b) => compareCodeUnits(a.name, b.name))) {
     if (ignored.has(entry.name)) continue;
     const relativePath = path.join(relativeDir, entry.name);
 
@@ -87,12 +89,46 @@ export function destinationOf(templateFile: string): string {
   return renamed ? path.join(path.dirname(templateFile), renamed) : templateFile;
 }
 
+/** Locale-independent ordering, so plans and messages are stable everywhere. */
+function compareCodeUnits(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/** Leftovers of an interrupted run, or our own staging folder. */
+const isIgnoredInTarget = (name: string) => IGNORED_IN_TARGET.has(name) || name.startsWith(STAGING_PREFIX);
+
+/**
+ * Template files that cannot be written over what is in the target: the
+ * destination is a directory, or one of its parent paths is not a directory.
+ * Checked before writing anything so --force never fails halfway through.
+ */
+async function findTypeClashes(targetDir: string, files: string[]): Promise<string[]> {
+  const clashes: string[] = [];
+  for (const file of files) {
+    let current = targetDir;
+    const parts = file.split(path.sep);
+    for (const [index, part] of parts.entries()) {
+      current = path.join(current, part);
+      const stats = await fs.lstat(current).catch(() => undefined);
+      if (!stats) break;
+      const isLast = index === parts.length - 1;
+      if (isLast ? stats.isDirectory() : !stats.isDirectory()) {
+        clashes.push(file);
+        break;
+      }
+    }
+  }
+  return clashes;
+}
+
 async function pathExists(target: string): Promise<boolean> {
   try {
     await fs.lstat(target);
     return true;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
+    const { code } = error as NodeJS.ErrnoException;
+    // ENOTDIR: a parent path is a file, so this path cannot exist.
+    if (code === 'ENOENT' || code === 'ENOTDIR') return false;
     throw error;
   }
 }
@@ -108,23 +144,27 @@ export async function planScaffold(templateDir: string, targetDir: string): Prom
   }
 
   const existingEntries = targetExists
-    ? (await fs.readdir(targetDir)).filter((name) => !IGNORED_IN_TARGET.has(name)).sort()
+    ? (await fs.readdir(targetDir)).filter((name) => !isIgnoredInTarget(name)).sort(compareCodeUnits)
     : [];
 
   const conflicts: string[] = [];
+  let typeClashes: string[] = [];
   if (existingEntries.length > 0) {
     for (const file of files) {
       if (await pathExists(path.join(targetDir, file))) conflicts.push(file);
     }
+    typeClashes = await findTypeClashes(targetDir, files);
   }
 
-  return { targetDir, targetExists, sources, files, existingEntries, conflicts };
+  return { targetDir, targetExists, sources, files, existingEntries, conflicts, typeClashes };
 }
 
 /**
  * Generates the project in a staging directory next to (or inside) the target
- * and only then moves it into place, so a failure never leaves a half-written
- * project behind. Refuses non-empty targets unless `force` is set.
+ * and only then moves it into place. A new target appears atomically (single
+ * rename); for an existing target (only allowed with `force`) every file is
+ * validated before the first move, so the remaining failure modes are I/O
+ * errors such as a full disk or missing permissions.
  */
 export async function scaffold(options: ScaffoldOptions): Promise<ScaffoldPlan> {
   const { templateDir, targetDir, force = false, transform, preserve = [] } = options;
@@ -132,6 +172,12 @@ export async function scaffold(options: ScaffoldOptions): Promise<ScaffoldPlan> 
 
   if (plan.existingEntries.length > 0 && !force) {
     throw new TargetNotEmptyError(targetDir, plan.conflicts, plan.existingEntries);
+  }
+  if (plan.typeClashes.length > 0) {
+    throw new Error(
+      `Cannot write into ${targetDir}: these paths are blocked by an existing file or directory:\n` +
+        plan.typeClashes.map((file) => `  - ${file}`).join('\n')
+    );
   }
 
   // Staging must live on the same filesystem as the target so rename() works.

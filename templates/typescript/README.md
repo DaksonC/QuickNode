@@ -175,8 +175,7 @@ curl -X POST http://localhost:3000/api/v1/users \\
   -H "Content-Type: application/json" \\
   -d '{
     "email": "user@example.com",
-    "name": "John Doe",
-    "password": "password123"
+    "name": "John Doe"
   }'
 ```
 

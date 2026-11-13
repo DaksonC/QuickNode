@@ -1,4 +1,13 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, IsInt, Min, Max } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class User {
   constructor(
@@ -12,25 +21,11 @@ export class User {
 
   // Business logic methods can be added here
   public updateName(newName: string): User {
-    return new User(
-      this.id,
-      newName,
-      this.email,
-      this.age,
-      this.createdAt,
-      new Date()
-    );
+    return new User(this.id, newName, this.email, this.age, this.createdAt, new Date());
   }
 
   public updateAge(newAge: number): User {
-    return new User(
-      this.id,
-      this.name,
-      this.email,
-      newAge,
-      this.createdAt,
-      new Date()
-    );
+    return new User(this.id, this.name, this.email, newAge, this.createdAt, new Date());
   }
 }
 

@@ -29,15 +29,8 @@ describe('User Use Cases', () => {
         email: 'test@example.com',
         age: 30,
       };
-      
-      const expectedUser = new User(
-        '1',
-        userData.name,
-        userData.email,
-        30,
-        new Date(),
-        new Date()
-      );
+
+      const expectedUser = new User('1', userData.name, userData.email, 30, new Date(), new Date());
 
       mockUserRepository.findByEmail.mockResolvedValue(null);
       mockUserRepository.create.mockResolvedValue(expectedUser);
@@ -59,14 +52,7 @@ describe('User Use Cases', () => {
         age: 30,
       };
 
-      const existingUser = new User(
-        '1',
-        userData.name,
-        userData.email,
-        30,
-        new Date(),
-        new Date()
-      );
+      const existingUser = new User('1', userData.name, userData.email, 30, new Date(), new Date());
 
       mockUserRepository.findByEmail.mockResolvedValue(existingUser);
 

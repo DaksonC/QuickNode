@@ -14,7 +14,7 @@ class DatabaseConnection {
    */
   async initialize(): Promise<void> {
     const dbType = process.env.DB_TYPE || 'postgresql';
-    
+
     switch (dbType.toLowerCase()) {
       case 'postgresql':
       case 'postgres':
@@ -28,7 +28,9 @@ class DatabaseConnection {
         break;
       case 'mongodb':
       case 'mongo':
-        throw new Error('MongoDB is not supported with TypeORM. Use native MongoDB driver or Mongoose.');
+        throw new Error(
+          'MongoDB is not supported with TypeORM. Use native MongoDB driver or Mongoose.'
+        );
       default:
         throw new Error(`Unsupported database type: ${dbType}`);
     }

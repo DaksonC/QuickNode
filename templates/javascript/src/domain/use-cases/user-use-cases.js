@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('node:crypto');
 const User = require('../entities/user');
 
 /**
@@ -22,14 +22,14 @@ class CreateUserUseCase {
     }
 
     // Create user domain object
-    const user = new User(uuidv4(), userData.name, userData.email, userData.age);
-    
+    const user = new User(randomUUID(), userData.name, userData.email, userData.age);
+
     // Save to repository
     return await this.userRepository.create({
       id: user.id,
       name: user.name,
       email: user.email,
-      age: user.age
+      age: user.age,
     });
   }
 }
@@ -127,5 +127,5 @@ module.exports = {
   GetUserUseCase,
   UpdateUserUseCase,
   DeleteUserUseCase,
-  ListUsersUseCase
+  ListUsersUseCase,
 };

@@ -12,6 +12,7 @@
     "start": "node dist/cli.js",
     "test": "npm run build && node --test test/*.test.js",
     "test:coverage": "npm run build && node --test --experimental-test-coverage --test-coverage-include=dist/** --test-coverage-lines=80 test/*.test.js",
+    "test:templates": "npm run build && node --test test/templates.e2e.test.js",
     "lint": "eslint src test",
     "lint:fix": "eslint src test --fix",
     "format": "prettier --write src test",

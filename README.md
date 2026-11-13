@@ -11,12 +11,12 @@
 - **TypeScript & JavaScript Support**: Choose between TypeScript or JavaScript templates
 - **Clean Architecture**: Domain-driven design with clear separation of concerns
 - **Pre-configured Dependencies**: All essential tools ready to use
-- **Multiple Database Support**: PostgreSQL (TypeORM) and MongoDB (Mongoose)
+- **SQL Databases**: PostgreSQL by default (via Docker), plus MySQL and SQLite — TypeORM (TypeScript) or Sequelize (JavaScript)
 - **API Documentation**: Swagger/OpenAPI 3.0 integration
 - **Security & Validation**: Helmet, express-validator, and class-validator
 - **Testing Setup**: Jest with extended matchers and coverage
-- **Code Quality**: ESLint, Prettier, and Husky pre-commit hooks
-- **Development Tools**: Hot reload with ts-node-dev/nodemon
+- **Code Quality**: ESLint, Prettier, and optional Husky pre-commit hooks
+- **Development Tools**: Hot reload with tsx (TypeScript) / nodemon (JavaScript)
 - **Logging**: Structured logging with Pino
 
 ## 📦 Installation
@@ -53,7 +53,7 @@ qn create
 ### Command Options
 
 ```bash
-# Use TypeScript template (default)
+# Use TypeScript template (without a flag, the CLI asks)
 qn create my-app --typescript
 
 # Use JavaScript template
@@ -86,14 +86,14 @@ qn create . --force
 - **Express-validator**: Request validation
 - **Pino**: Structured logging
 - **Swagger**: API documentation
-- **TypeORM**: PostgreSQL ORM (TypeScript template)
-- **Mongoose**: MongoDB ODM
+- **TypeORM**: SQL ORM (TypeScript template)
+- **Sequelize**: SQL ORM (JavaScript template)
 - **Class-transformer & Class-validator**: DTO validation (TypeScript)
 
 ### Development Dependencies
 
 - **TypeScript**: Type checking (TypeScript template)
-- **ts-node-dev**: Development server with hot reload (TypeScript)
+- **tsx**: Development server with hot reload (TypeScript)
 - **Nodemon**: Development server with hot reload (JavaScript)
 - **Jest**: Testing framework
 - **Jest-extended**: Additional Jest matchers
@@ -130,7 +130,7 @@ src/
 │   ├── controllers/       # HTTP controllers
 │   ├── database/          # Database configuration
 │   │   ├── entities/      # TypeORM entities (TypeScript)
-│   │   ├── models/        # Mongoose models
+│   │   ├── models/        # Sequelize models (JavaScript)
 │   │   └── repositories/  # Repository implementations
 │   ├── docs/             # API documentation setup
 │   ├── logging/          # Logging configuration
@@ -173,18 +173,15 @@ After creating your project:
 
 ## 📊 Database Setup
 
-### PostgreSQL (TypeScript template)
+### PostgreSQL (default)
 
-1. Install PostgreSQL
-2. Create a database
-3. Update `DATABASE_URL` in `.env`
-4. Run migrations: `npm run db:migrate` (TypeScript only)
+1. Start the database: `npm run docker:up` (credentials come from `.env`)
+2. Seed sample data (optional): `npm run db:seed`
+3. Tables are synchronized automatically when `NODE_ENV=development`
 
-### MongoDB
+### MySQL / SQLite
 
-1. Install MongoDB
-2. Update `MONGO_URL` in `.env`
-3. Connection is automatic
+Set `DB_TYPE=mysql` or `DB_TYPE=sqlite` in `.env` and adjust the `DB_*` variables.
 
 ## 🧪 Testing
 
@@ -216,7 +213,7 @@ npm run format        # Format code
 
 ### Git Hooks
 
-Pre-commit hooks automatically:
+Husky hooks are opt-in: run `git init && npx husky install` in the project. Once enabled, they:
 - Lint and fix code
 - Format code
 - Validate commit messages (conventional commits)

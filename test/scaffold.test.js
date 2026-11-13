@@ -3,7 +3,13 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
-import { listTemplateFiles, planScaffold, scaffold, TargetNotEmptyError } from '../dist/core/scaffold.js';
+import {
+  listTemplateFiles,
+  planScaffold,
+  scaffold,
+  STAGING_PREFIX,
+  TargetNotEmptyError
+} from '../dist/core/scaffold.js';
 
 let root;
 let template;
@@ -29,7 +35,7 @@ afterEach(async () => {
 });
 
 const read = (file) => fs.readFile(file, 'utf8');
-const stagingLeftovers = async (dir) => (await fs.readdir(dir)).filter((name) => name.startsWith('.qn-staging-'));
+const stagingLeftovers = async (dir) => (await fs.readdir(dir)).filter((name) => name.startsWith(STAGING_PREFIX));
 
 describe('listTemplateFiles', () => {
   it('lists files recursively, skipping lockfiles and node_modules', async () => {
@@ -57,6 +63,13 @@ describe('scaffold', () => {
     await assert.rejects(fs.access(path.join(target, 'gitignore')));
     await assert.rejects(fs.access(path.join(target, 'package-lock.json')));
     assert.deepEqual(await stagingLeftovers(root), []);
+  });
+
+  it('creates the project root with umask permissions, not 0700', { skip: process.platform === 'win32' }, async () => {
+    const target = path.join(root, 'app');
+    await scaffold({ templateDir: template, targetDir: target });
+    const expected = (await fs.stat(path.join(target, 'src'))).mode & 0o777;
+    assert.equal((await fs.stat(target)).mode & 0o777, expected);
   });
 
   it('applies the transform before moving into place', async () => {

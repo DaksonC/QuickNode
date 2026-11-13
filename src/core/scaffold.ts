@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { constants } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -9,6 +10,8 @@ const IGNORED = new Set(['node_modules', 'package-lock.json', '.env', 'dist', 'c
  * dot and they are renamed when the project is generated.
  */
 const RENAMED_ON_COPY: Record<string, string> = { gitignore: '.gitignore' };
+/** Prefix of the temporary folder the project is generated in. */
+export const STAGING_PREFIX = '.qn-staging-';
 /** Entries in the target directory that do not count as "non empty". */
 const IGNORED_IN_TARGET = new Set(['.git']);
 
@@ -133,7 +136,10 @@ export async function scaffold(options: ScaffoldOptions): Promise<ScaffoldPlan> 
 
   // Staging must live on the same filesystem as the target so rename() works.
   const stagingParent = plan.targetExists ? targetDir : path.dirname(targetDir);
-  const stagingDir = await fs.mkdtemp(path.join(stagingParent, '.qn-staging-'));
+  // mkdir (unlike mkdtemp, which forces 0700) honors the umask, so a new
+  // project root ends up with the same permissions as any other folder.
+  const stagingDir = path.join(stagingParent, `${STAGING_PREFIX}${randomBytes(6).toString('hex')}`);
+  await fs.mkdir(stagingDir);
 
   try {
     for (const source of plan.sources) {

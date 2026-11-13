@@ -7,15 +7,15 @@ A complete Node.js TypeScript API template with clean architecture, pre-configur
 - **Clean Architecture**: Domain-driven design with clear separation of concerns
 - **TypeScript**: Full TypeScript support with strict configuration
 - **Express.js**: Fast and minimalist web framework
-- **Database Support**: Both PostgreSQL (TypeORM) and MongoDB (Mongoose) ready
+- **Database Support**: PostgreSQL (default, via Docker), MySQL and SQLite with TypeORM
 - **API Documentation**: Swagger/OpenAPI 3.0 with swagger-ui-express
 - **Validation**: Request validation with express-validator and class-validator
 - **Security**: Helmet for security headers
 - **Logging**: Structured logging with Pino
 - **Testing**: Jest with TypeScript support and jest-extended
-- **Code Quality**: ESLint, Prettier, and pre-commit hooks with Husky
+- **Code Quality**: ESLint, Prettier, and optional pre-commit hooks with Husky
 - **Git Hooks**: Conventional commits with commitlint
-- **Development**: Hot reload with ts-node-dev
+- **Development**: Hot reload with tsx
 
 ## 📁 Project Structure
 
@@ -29,7 +29,6 @@ src/
 │   ├── controllers/       # HTTP controllers
 │   ├── database/          # Database configuration and implementations
 │   │   ├── entities/      # TypeORM entities
-│   │   ├── models/        # Mongoose models
 │   │   └── repositories/  # Repository implementations
 │   ├── docs/             # API documentation setup
 │   ├── logging/          # Logging configuration

@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import chalk from 'chalk';
@@ -15,6 +16,7 @@ export interface CreateOptions {
 }
 
 const MAX_LISTED_FILES = 10;
+const ENV_FILE = '.env';
 
 async function askProjectName(): Promise<string> {
   const answers = await inquirer.prompt([
@@ -63,17 +65,20 @@ export async function createProject(projectName?: string, options: CreateOptions
   const template = await chooseTemplate(options);
 
   console.log(chalk.blue(`Creating QuickNode project in ${project.targetDir}`));
+  // An existing .env is never replaced (it may hold the user's real secrets).
+  const envExisted = existsSync(path.join(project.targetDir, ENV_FILE));
   const spinner = ora('Setting up project...').start();
+  let envGenerated = false;
 
   try {
     await scaffold({
       templateDir: templateDir(template),
       targetDir: project.targetDir,
       force: options.force,
-      preserve: ['.env'],
+      preserve: [ENV_FILE],
       transform: async (stagingDir) => {
         await setPackageName(stagingDir, project.packageName);
-        await createEnvFile(stagingDir);
+        envGenerated = await createEnvFile(stagingDir);
       }
     });
   } catch (error) {
@@ -85,7 +90,11 @@ export async function createProject(projectName?: string, options: CreateOptions
   spinner.succeed('Project created successfully!');
 
   console.log(chalk.green('\n✅ QuickNode project created!'));
-  console.log(chalk.gray('A .env file with random secrets was generated (it is git-ignored).'));
+  if (envExisted) {
+    console.log(chalk.yellow('Your existing .env was kept: compare it with .env.example.'));
+  } else if (envGenerated) {
+    console.log(chalk.gray('A .env file with random secrets was generated (it is git-ignored).'));
+  }
   console.log(chalk.yellow('\nNext steps:'));
   if (!project.inCurrentDir) console.log(chalk.white(`  cd ${name}`));
   console.log(chalk.white('  npm install'));

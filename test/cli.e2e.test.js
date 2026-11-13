@@ -64,8 +64,12 @@ describe('qn create', () => {
     });
     assert.equal(await read('demo-app', 'README.md'), 'mine');
 
-    await qn('create', 'demo-app', '-ts', '--force');
+    await fs.writeFile(path.join(cwd, 'demo-app', '.env'), 'MINE=1');
+    const { stdout } = await qn('create', 'demo-app', '-ts', '--force');
     assert.notEqual(await read('demo-app', 'README.md'), 'mine');
+    assert.equal(await read('demo-app', '.env'), 'MINE=1');
+    assert.match(stdout, /existing \.env was kept/);
+    assert.doesNotMatch(stdout, /random secrets was generated/);
   });
 
   it('refuses "." in a non-empty directory', async () => {

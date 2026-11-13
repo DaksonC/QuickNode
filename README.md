@@ -58,7 +58,23 @@ qn create my-app --typescript
 
 # Use JavaScript template
 qn create my-app --javascript
+
+# Write into a non-empty directory, overwriting conflicting files
+qn create . --force
 ```
+
+### Safety
+
+- **Never overwrites silently.** If the target directory is not empty (a `.git` folder is
+  ignored), `qn create` stops and lists the files that would be overwritten. Use `--force`
+  to write anyway; files that are not part of the template are kept, and an existing `.env`
+  is never replaced.
+- **Validated names.** The project name must be a valid npm package name (lowercase, no
+  path separators or `..`), so the project is always created inside the current directory.
+- **No half-written projects.** The project is generated in a temporary folder and moved into
+  place only when everything succeeded.
+- **No default secrets.** A git-ignored `.env` is generated with a random `DB_PASSWORD` and
+  `JWT_SECRET`; `docker-compose.yml` reads them from there and only listens on `127.0.0.1`.
 
 ## 🏗️ What's Included
 
@@ -137,17 +153,12 @@ After creating your project:
    npm install
    ```
 
-3. **Copy environment variables**:
-   ```bash
-   cp .env.example .env
-   ```
+3. **Review `.env`**: it was generated with random secrets and is git-ignored. Adjust
+   `DB_TYPE`, `PORT` and other settings if needed (see `.env.example`).
 
-4. **Update environment variables** in `.env`:
-   ```env
-   DATABASE_URL=postgresql://username:password@localhost:5432/your_db
-   MONGO_URL=mongodb://localhost:27017/your_db
-   PORT=3000
-   JWT_SECRET=your-secret-key
+4. **Start the database** (PostgreSQL via Docker):
+   ```bash
+   npm run docker:up
    ```
 
 5. **Start development server**:

@@ -2,12 +2,16 @@ name: 🧪 CI Tests
 
 on:
   push:
-    branches: [develop, feature/*]
+    branches: [main, develop, feature/*]
   pull_request:
     branches: [main, develop]
 
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -18,10 +22,12 @@ jobs:
 
     steps:
       - name: 📦 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: 🔧 Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -29,14 +35,23 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci
 
+      - name: 🔏 Verify registry signatures and provenance of dependencies
+        run: npm audit signatures
+
       - name: 🔍 Run linting
         run: npm run lint
 
       - name: 🧪 Build and run tests (coverage >= 80%)
         run: npm run test:coverage
 
-      - name: 📦 Zero runtime dependencies
-        run: node -e 'const d=require("./package.json").dependencies; if (d && Object.keys(d).length) { console.error("Runtime dependencies are not allowed (ADR-001):", d); process.exit(1) }'
+      - name: 📦 Zero runtime dependencies and no install scripts
+        run: |
+          node -e '
+            const { dependencies = {}, scripts = {} } = require("./package.json");
+            if (Object.keys(dependencies).length) { console.error("Runtime dependencies are not allowed (ADR-001):", dependencies); process.exit(1) }
+            const hooks = ["preinstall", "install", "postinstall", "prepare"].filter((name) => name in scripts);
+            if (hooks.length) { console.error("Lifecycle scripts run on the user machine and are not allowed (ADR-001):", hooks); process.exit(1) }
+          '
 
       - name: 🛡️ Audit CLI dependencies
         run: npm audit --omit=dev --audit-level=high
@@ -56,33 +71,20 @@ jobs:
 
     steps:
       - name: 📦 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22.x
           cache: 'npm'
 
-      - name: 🏗️ Build CLI
-        run: |
-          npm ci
-          npm run build
+      - name: 📥 Install dependencies
+        run: npm ci
 
-      - name: 🧾 Generate ${{ matrix.template }} project
-        run: |
-          mkdir -p "$RUNNER_TEMP/gen"
-          cd "$RUNNER_TEMP/gen"
-          node "$GITHUB_WORKSPACE/dist/cli.js" create test-project --${{ matrix.template }}
-          test -f test-project/.gitignore
-          test -f test-project/.env
-          test ! -e test-project/package-lock.json
-
-      - name: 📊 Install, lint, test and build generated project
-        working-directory: ${{ runner.temp }}/gen/test-project
-        run: |
-          npm install --no-fund
-          npm audit --audit-level=high
-          npm run lint
-          npm test
-          if [ "${{ matrix.template }}" = "typescript" ]; then npm run build; fi
+      - name: 🧾 Generate the ${{ matrix.template }} project, install, audit, lint, test and build it
+        run: npm run test:templates
+        env:
+          QN_E2E_TEMPLATES: ${{ matrix.template }}

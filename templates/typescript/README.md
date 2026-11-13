@@ -13,7 +13,7 @@ A complete Node.js TypeScript API template with clean architecture, pre-configur
 - **Security**: Helmet for security headers
 - **Logging**: Structured logging with Pino
 - **Testing**: Jest with TypeScript support and jest-extended
-- **Code Quality**: ESLint, Prettier, and optional pre-commit hooks with Husky
+- **Code Quality**: ESLint 10 (flat config), Prettier and Husky git hooks
 - **Git Hooks**: Conventional commits with commitlint
 - **Development**: Hot reload with tsx
 
@@ -37,6 +37,11 @@ src/
 └── server.ts             # Application entry point
 ```
 
+## 📋 Requirements
+
+- Node.js 22.13 or newer (`.env` is loaded with the native `process.loadEnvFile()`, no dotenv)
+- Docker, for the PostgreSQL container
+
 ## 🛠️ Installation
 
 1. Install dependencies:
@@ -55,14 +60,13 @@ cp .env.example .env
 
 3. Adjust the remaining settings as needed (`DB_TYPE`, `PORT`, `LOG_LEVEL`...).
 
-4. Set up Git hooks (optional, but recommended for contributors):
+4. Git hooks (Husky 9) are installed by `npm install` once the folder is a git
+repository (`qn create --git` already did `git init` for you). Otherwise:
 ```bash
-# First, initialize your git repository
 git init
-
-# Then, install Husky hooks
-npx husky install
+npm run prepare
 ```
+They lint the code before each commit and check commit messages (conventional commits).
 
 ## 🏃‍♂️ Usage
 

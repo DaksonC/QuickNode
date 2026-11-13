@@ -4,7 +4,7 @@
   "description": "QuickNode application with clean architecture",
   "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
+    "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -18,10 +18,10 @@
     "docker:reset": "docker-compose down -v && docker-compose up -d",
     "db:seed": "node src/infrastructure/database/seeder.js",
     "db:setup": "npm run docker:up && sleep 5 && npm run db:seed",
-    "dev:docker": "npm run db:setup && npm run dev"
+    "dev:docker": "npm run db:setup && npm run dev",
+    "prepare": "husky"
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
@@ -34,18 +34,19 @@
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.4.3",
-    "@commitlint/config-conventional": "^18.4.3",
-    "eslint": "^8.54.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "husky": "^8.0.3",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.7",
+    "globals": "^17.14.0",
+    "husky": "^9.1.7",
     "jest": "^30.2.0",
     "jest-extended": "^4.0.2",
-    "nodemon": "^3.0.1",
     "prettier": "^3.1.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.13.0"
   }
 }

@@ -40,7 +40,7 @@ class SequelizeUserRepository {
       return this.toDomainEntity(userModel);
     } catch (error) {
       if (error.name === 'SequelizeUniqueConstraintError') {
-        throw new Error('Email already exists');
+        throw new Error('Email already exists', { cause: error });
       }
       throw error;
     }
@@ -90,7 +90,7 @@ class SequelizeUserRepository {
       return this.toDomainEntity(updatedUser);
     } catch (error) {
       if (error.name === 'SequelizeUniqueConstraintError') {
-        throw new Error('Email already exists');
+        throw new Error('Email already exists', { cause: error });
       }
       throw error;
     }

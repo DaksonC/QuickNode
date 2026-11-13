@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('../config/load-env');
 const { randomUUID } = require('node:crypto');
 const sequelizeConnection = require('./connection');
 const modelsRegistry = require('./models');

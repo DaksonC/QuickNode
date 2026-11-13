@@ -1,7 +1,7 @@
+import './infrastructure/config/load-env';
 import 'reflect-metadata';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import { logger } from './infrastructure/logging/logger';
 import { setupSwagger } from './infrastructure/docs/swagger';
 import { errorHandler } from './infrastructure/middleware/error-handler';
@@ -16,9 +16,6 @@ import {
   UpdateUserUseCase,
 } from './domain/use-cases/user-use-cases';
 import { UserController } from './infrastructure/controllers/user-controller';
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

@@ -1,7 +1,12 @@
 # QuickNode CLI
 
-[![NPM version](https://img.shields.io/npm/v/@10565/quicknode-cli.svg)]()
-[![npm](https://img.shields.io/npm/dt/@10565/quicknode-cli.svg)]()
+[![NPM version](https://img.shields.io/npm/v/@10565/quicknode-cli.svg)](https://www.npmjs.com/package/@10565/quicknode-cli)
+[![npm downloads](https://img.shields.io/npm/dt/@10565/quicknode-cli.svg)](https://www.npmjs.com/package/@10565/quicknode-cli)
+[![CI](https://github.com/DaksonC/QuickNode/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DaksonC/QuickNode/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/DaksonC/QuickNode/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/DaksonC/QuickNode/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/DaksonC/QuickNode/badge)](https://scorecard.dev/viewer/?uri=github.com/DaksonC/QuickNode)
+[![npm provenance](https://img.shields.io/badge/npm-provenance-blue?logo=npm)](https://www.npmjs.com/package/@10565/quicknode-cli#provenance)
+[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/@10565/quicknode-cli?activeTab=dependencies)
 [![GitHub stars](https://img.shields.io/github/stars/DaksonC/QuickNode.svg?style=social&label=Star)](https://github.com/DaksonC/QuickNode)
 
 🚀 A powerful CLI tool to quickly bootstrap Node.js projects with clean architecture and pre-configured dependencies.
@@ -107,6 +112,20 @@ qn create api --yes --json | jq .targetDir
   place only when everything succeeded.
 - **No default secrets.** A git-ignored `.env` is generated with a random `DB_PASSWORD` and
   `JWT_SECRET`; `docker-compose.yml` reads them from there and only listens on `127.0.0.1`.
+
+### Verifying releases
+
+Every version is published by GitHub Actions from a tag on `main` using npm Trusted
+Publishing, with a signed [provenance](https://docs.npmjs.com/generating-provenance-statements)
+attestation linking the tarball to its commit and build. Each GitHub Release also ships a
+CycloneDX SBOM.
+
+```bash
+npm audit signatures   # in a project that installed the CLI
+npm view @10565/quicknode-cli@latest dist.attestations --json
+```
+
+Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY.md).
 
 ## 🏗️ What's Included
 
@@ -280,9 +299,12 @@ All endpoints include:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m '''feat: add amazing feature'''`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+3. Run the checks: `npm run lint`, `npm run test:coverage` and, when you touch a template,
+   `QN_E2E_TEMPLATES=all npm run test:templates` (generates both templates and runs install,
+   audit, lint, test and build — needs network)
+4. Commit changes: `git commit -m 'feat: add amazing feature'`
+5. Push to branch: `git push origin feature/amazing-feature`
+6. Open a Pull Request
 
 ## 📄 License
 

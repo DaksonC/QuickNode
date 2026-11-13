@@ -1,0 +1,44 @@
+# Keeps the CLI tooling, the generated-project templates and the pinned actions current
+# (ADR-001, D3/D5). The templates have no lockfile, so Dependabot raises the ranges in
+# their package.json; CI then generates each template and runs install, audit, lint,
+# test and build on the PR.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+    groups:
+      dev-tooling:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directories:
+      - /templates/typescript
+      - /templates/javascript
+    schedule:
+      interval: weekly
+      day: monday
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: 'chore(templates)'
+    groups:
+      templates-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: 'ci'
+    groups:
+      actions:
+        patterns: ['*']

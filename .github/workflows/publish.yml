@@ -1,127 +1,135 @@
 name: 🚀 Publish to NPM
 
+# The only path to the registry (ADR-001, D5): pushing a v* tag that points to a
+# commit on main. npm authenticates this workflow through Trusted Publishing (OIDC),
+# so there is no long-lived token, and every version carries a provenance attestation
+# that links the tarball to this repository, commit and run.
+
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
-  release:
-    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
 
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22.x, 24.x]
-    
     steps:
-      - name: 📦 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: 📦 Checkout tag (with history, to check it is on main)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.x
+          package-manager-cache: false
+
+      - name: 🏷️ Tag matches package.json and points to main
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $VERSION"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points to a commit that is not on main"
+            exit 1
+          fi
 
       - name: 📥 Install dependencies
         run: npm ci
 
-      - name: 🧪 Run tests
-        run: npm test
+      - name: 🔏 Verify registry signatures and provenance of dependencies
+        run: npm audit signatures
 
       - name: 🔍 Run linting
         run: npm run lint
 
-      - name: 🏗️ Build project
-        run: npm run build
+      - name: 🧪 Build and run tests (coverage >= 80%)
+        run: npm run test:coverage
+
+      - name: 🛡️ Audit CLI dependencies
+        run: npm audit --omit=dev --audit-level=high
 
   publish:
-    needs: test
+    needs: verify
     runs-on: ubuntu-latest
+    # Must match the environment configured as Trusted Publisher on npmjs.com.
+    environment: npm
     permissions:
-      contents: write
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
-    
+      contents: read
+      id-token: write # OIDC token exchanged with npm; enables Trusted Publishing and provenance
     steps:
-      - name: 📦 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+      - name: 📦 Checkout tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: '22.x'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
+          persist-credentials: false
+
+      # Node 24 ships npm 11; Trusted Publishing needs npm >= 11.5.1.
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.x
+          package-manager-cache: false
+
+      - name: 🔎 npm supports Trusted Publishing
+        run: |
+          npm --version
+          node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); if (a<11||(a===11&&(b<5||(b===5&&c<1)))) { console.error("npm >= 11.5.1 is required for Trusted Publishing"); process.exit(1) }' "$(npm --version)"
 
       - name: 📥 Install dependencies
         run: npm ci
 
-      - name: 🏗️ Build project
-        run: npm run build
-
-      - name: 🔍 Check if version changed
-        id: version-check
+      # prepublishOnly builds dist/. Prereleases (1.2.3-beta.0) go to the "next" dist-tag.
+      - name: 🚀 Publish with provenance
         run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          PUBLISHED_VERSION=$(npm view @10565/quicknode-cli version 2>/dev/null || echo "0.0.0")
-          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "published=$PUBLISHED_VERSION" >> $GITHUB_OUTPUT
-          if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
-            echo "should_publish=true" >> $GITHUB_OUTPUT
-            echo "Version changed: $PUBLISHED_VERSION -> $CURRENT_VERSION"
-          else
-            echo "should_publish=false" >> $GITHUB_OUTPUT
-            echo "Version unchanged: $CURRENT_VERSION"
-          fi
+          VERSION=$(node -p "require('./package.json').version")
+          case "$VERSION" in
+            *-*) DIST_TAG=next ;;
+            *) DIST_TAG=latest ;;
+          esac
+          npm publish --provenance --access public --tag "$DIST_TAG"
 
-      - name: 🚀 Publish to NPM
-        if: steps.version-check.outputs.should_publish == 'true'
-        run: npm publish --access=public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: 🏷️ Create Git Tag
-        if: steps.version-check.outputs.should_publish == 'true' && github.ref == 'refs/heads/main'
-        run: |
-          VERSION=v${{ steps.version-check.outputs.current }}
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git tag $VERSION
-          git push origin $VERSION
-
-      - name: 📝 Create GitHub Release
-        if: steps.version-check.outputs.should_publish == 'true' && github.ref == 'refs/heads/main'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release
+    steps:
+      - name: 📦 Checkout tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          tag_name: v${{ steps.version-check.outputs.current }}
-          release_name: Release v${{ steps.version-check.outputs.current }}
-          body: |
-            ## 🚀 What's New
-            
-            Version ${{ steps.version-check.outputs.current }} of @10565/quicknode-cli is now available!
-            
-            ### 📦 Installation
-            ```bash
-            npm install -g @10565/quicknode-cli@${{ steps.version-check.outputs.current }}
-            ```
-            
-            ### 📋 Changes
-            - Auto-generated release from CI/CD
-            - See commit history for detailed changes
-            
-            ### 🐛 Bug Reports
-            Found an issue? [Report it here](https://github.com/DaksonC/QuickNode/issues)
-          draft: false
-          prerelease: false
+          persist-credentials: false
 
-      - name: 📢 Notify Success
-        if: steps.version-check.outputs.should_publish == 'true'
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.x
+          package-manager-cache: false
+
+      - name: 🧾 Generate SBOM (CycloneDX)
         run: |
-          echo "✅ Successfully published @10565/quicknode-cli@${{ steps.version-check.outputs.current }} to NPM!"
-          echo "🔗 NPM: https://www.npmjs.com/package/@10565/quicknode-cli"
-          echo "🏷️ GitHub Release: https://github.com/DaksonC/QuickNode/releases/tag/v${{ steps.version-check.outputs.current }}"
+          npm ci --ignore-scripts
+          npm sbom --sbom-format cyclonedx --omit dev > "quicknode-cli-${GITHUB_REF_NAME}.cdx.json"
+
+      - name: 📝 Create GitHub Release with the SBOM
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PRERELEASE=""
+          case "$GITHUB_REF_NAME" in *-*) PRERELEASE="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" "quicknode-cli-${GITHUB_REF_NAME}.cdx.json" \
+            --verify-tag --generate-notes --title "$GITHUB_REF_NAME" $PRERELEASE
+          {
+            echo "✅ Published @10565/quicknode-cli@${GITHUB_REF_NAME#v} with provenance"
+            echo "🔗 https://www.npmjs.com/package/@10565/quicknode-cli/v/${GITHUB_REF_NAME#v}"
+          } >> "$GITHUB_STEP_SUMMARY"

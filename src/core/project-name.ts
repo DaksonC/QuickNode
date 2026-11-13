@@ -2,6 +2,7 @@ import { builtinModules } from 'node:module';
 import path from 'node:path';
 
 const MAX_LENGTH = 214;
+export const DEFAULT_PACKAGE_NAME = 'quicknode-app';
 const RESERVED = new Set(['node_modules', 'favicon.ico']);
 // Unscoped npm package name: lowercase, URL-safe, cannot start with "." or "_".
 // npm also rejects ~'!()* in new package names.
@@ -17,10 +18,10 @@ export interface ResolvedProject {
 }
 
 /**
- * Returns the reason a name is not a valid npm package / directory name, or
+ * Returns why `name` is not a valid npm package / directory name, or
  * undefined when it is valid.
  */
-export function validateProjectName(name: string): string | undefined {
+export function projectNameError(name: string): string | undefined {
   if (name.length === 0) return 'name cannot be empty';
   if (name.length > MAX_LENGTH) return `name cannot be longer than ${MAX_LENGTH} characters`;
   if (name.trim() !== name) return 'name cannot have leading or trailing spaces';
@@ -43,17 +44,18 @@ export function resolveProject(name: string, cwd: string = process.cwd()): Resol
     const dirName = path.basename(cwd);
     return {
       // Reuse the folder name when it is a valid package name.
-      packageName: validateProjectName(dirName) ? 'quicknode-app' : dirName,
+      packageName: projectNameError(dirName) === undefined ? dirName : DEFAULT_PACKAGE_NAME,
       targetDir: cwd,
       inCurrentDir: true
     };
   }
 
-  const reason = validateProjectName(name);
+  const reason = projectNameError(name);
   if (reason) {
     throw new Error(`Invalid project name "${name}": ${reason}.`);
   }
 
+  // Unreachable after projectNameError; kept as defense in depth.
   const targetDir = path.resolve(cwd, name);
   const relative = path.relative(cwd, targetDir);
   if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) {

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import { createEnvFile, fillSecrets } from '../dist/core/env.js';
+import { makeTmp, read } from './helpers.js';
 
 const example = ['PORT=3000', 'DB_PASSWORD=change-me', '# JWT_SECRET=commented', 'JWT_SECRET=change-me', ''].join('\n');
 
@@ -23,27 +23,17 @@ describe('fillSecrets', () => {
 });
 
 describe('createEnvFile', () => {
-  it('writes .env from .env.example with owner-only permissions', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qn-env-'));
-    try {
-      await fs.writeFile(path.join(dir, '.env.example'), example);
-      assert.equal(await createEnvFile(dir), true);
-      const env = await fs.readFile(path.join(dir, '.env'), 'utf8');
-      assert.doesNotMatch(env, /change-me/);
-      if (process.platform !== 'win32') {
-        assert.equal((await fs.stat(path.join(dir, '.env'))).mode & 0o777, 0o600);
-      }
-    } finally {
-      await fs.rm(dir, { recursive: true, force: true });
+  it('writes .env from .env.example with owner-only permissions', async (t) => {
+    const dir = await makeTmp(t, 'qn-env-');
+    await fs.writeFile(path.join(dir, '.env.example'), example);
+    assert.equal(await createEnvFile(dir), true);
+    assert.doesNotMatch(await read(dir, '.env'), /change-me/);
+    if (process.platform !== 'win32') {
+      assert.equal((await fs.stat(path.join(dir, '.env'))).mode & 0o777, 0o600);
     }
   });
 
-  it('returns false when there is no .env.example', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qn-env-'));
-    try {
-      assert.equal(await createEnvFile(dir), false);
-    } finally {
-      await fs.rm(dir, { recursive: true, force: true });
-    }
+  it('returns false when there is no .env.example', async (t) => {
+    assert.equal(await createEnvFile(await makeTmp(t, 'qn-env-')), false);
   });
 });

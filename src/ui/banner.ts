@@ -15,7 +15,7 @@ export function renderBanner(version: string, style: Style): string {
   return [
     style.success(LOGO),
     '',
-    `${style.muted('Bootstrap Node.js projects with clean architecture')}  ${style.accent(`v${version}`)}`,
+    `${style.muted('Zero-dependency CLI to create Node.js APIs with clean architecture')}  ${style.accent(`v${version}`)}`,
     `${style.muted('Support this project:')} ${style.accent(DONATION_URL)}`,
     ''
   ].join('\n');

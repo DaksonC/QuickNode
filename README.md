@@ -9,7 +9,15 @@
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/@10565/quicknode-cli?activeTab=dependencies)
 [![GitHub stars](https://img.shields.io/github/stars/DaksonC/QuickNode.svg?style=social&label=Star)](https://github.com/DaksonC/QuickNode)
 
-🚀 A powerful CLI tool to quickly bootstrap Node.js projects with clean architecture and pre-configured dependencies.
+**Zero-dependency CLI to create Node.js APIs with clean architecture.**
+
+```bash
+npx @10565/quicknode-cli create my-api
+```
+
+📚 **Documentation:** [daksonc.github.io/QuickNode](https://daksonc.github.io/QuickNode/) ([português](https://daksonc.github.io/QuickNode/pt/)) — getting started, command reference, project structure, a tutorial and an honest comparison with Nest CLI.
+
+> Not to be confused with QuickNode, the blockchain infrastructure provider: this is an open source scaffolding tool, always installed by its scoped name `@10565/quicknode-cli`.
 
 ## ✨ Features
 
@@ -86,9 +94,23 @@ qn create my-app --dry-run
 | `--dry-run` | Show what would be created without writing anything |
 | `--install` | Run `npm install` after creating the project |
 | `--git` | Initialize a git repository (enables the Husky hooks on install) |
+| `--no-credits` | Leave the "Generated with QuickNode" line out of the generated README |
 | `--json` | Print a JSON result (or error) to stdout; no prompts or colors |
 
 Run `qn help create` (or `qn create --help`) for the full reference.
+
+### Open the documentation
+
+```bash
+qn ui                    # documentation home
+qn docs create           # alias; opens the reference of qn create
+qn ui structure --lang pt
+qn ui faq --print        # only print the link
+```
+
+Topics: `start`, `commands`, `create`, `ui`, `structure`, `tutorial`, `add`, `faq`, `compare`,
+`changelog`, `adr`. The link is always printed; a browser is opened only in an interactive
+desktop session (never in CI, over SSH or in a container), with the system opener and no shell.
 
 ### Scripts and CI
 
@@ -133,7 +155,6 @@ Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY
 
 - **Express.js**: Web framework
 - **Helmet**: Security middleware
-- **Dotenv**: Environment variable management
 - **Express-validator**: Request validation
 - **Pino**: Structured logging
 - **Swagger**: API documentation
@@ -231,7 +252,9 @@ After creating your project:
 
 ### MySQL / SQLite
 
-Set `DB_TYPE=mysql` or `DB_TYPE=sqlite` in `.env` and adjust the `DB_*` variables.
+Set `DB_TYPE=mysql` or `DB_TYPE=sqlite` in `.env` and adjust the `DB_*` variables. The JavaScript
+template needs only the driver (`npm install mysql2` or `sqlite3`); in the TypeScript template
+these repositories are not implemented yet.
 
 ## 🧪 Testing
 
@@ -301,7 +324,8 @@ All endpoints include:
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Run the checks: `npm run verify` (lint, tests with coverage, audits) and, when you touch a template,
    `QN_E2E_TEMPLATES=all npm run test:templates` (generates both templates and runs install,
-   audit, lint, test and build — needs network)
+   audit, lint, test and build — needs network). Documentation changes: edit `docs-src/`, run
+   `npm run docs:build` and commit `docs/` (see [docs-src/README.md](docs-src/README.md))
 4. Commit changes: `git commit -m 'feat: add amazing feature'`
 5. Push to branch: `git push origin feature/amazing-feature`
 6. Open a Pull Request

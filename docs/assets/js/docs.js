@@ -76,7 +76,7 @@
 
   /* ---------- [FX: ON/OFF] (same storage key as the personal site, same origin) ---------- */
 
-  let fx = store.get('fx') === 'on' ? 'on' : 'off'; // effects are opt-in: glow blurs the text
+  let fx = store.get('fx') === 'off' ? 'off' : 'on';
   const motionAllowed = () => fx === 'on' && !reducedMotion.matches;
 
   function setFx(value, remember) {

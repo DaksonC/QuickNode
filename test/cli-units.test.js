@@ -59,7 +59,8 @@ describe('createInputFromFlags', () => {
       yes: false,
       dryRun: true,
       install: false,
-      git: true
+      git: true,
+      noCredits: false
     });
   });
 

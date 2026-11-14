@@ -2,14 +2,24 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { PassThrough } from 'node:stream';
 import { createInputFromFlags, createProject, type CreateResult } from './commands/create.js';
+import { DOCS_URL, openDocs, uiInputFromFlags, type UiContext } from './commands/ui.js';
 import { packageRoot } from './core/paths.js';
 import { PathBlockedError, TargetNotEmptyError } from './core/scaffold.js';
-import { COMMANDS, GLOBAL_OPTIONS, parseCommandLine, UsageError, wantsJson, type OptionSpec } from './spec.js';
+import {
+  COMMANDS,
+  GLOBAL_OPTIONS,
+  parseCommandLine,
+  resolveCommand,
+  UsageError,
+  wantsJson,
+  type CommandSpec,
+  type OptionSpec
+} from './spec.js';
 import { renderBanner } from './ui/banner.js';
 import { createPrompter, PromptAbortedError } from './ui/prompt.js';
 import { createStyle, type Style } from './ui/style.js';
 
-export const DOCS_URL = 'https://daksonc.github.io/QuickNode/';
+export { DOCS_URL };
 const MAX_LISTED_FILES = 10;
 
 export const EXIT_OK = 0;
@@ -23,6 +33,12 @@ export interface IO {
   stdout: TTYStream;
   stderr: TTYStream;
   cwd: string;
+  /** Defaults to process.env / process.platform; injectable for tests. */
+  env?: NodeJS.ProcessEnv;
+  platform?: NodeJS.Platform;
+  /** How `qn ui` launches the system link opener (tests replace it). */
+  open?: UiContext['open'];
+  fileExists?: UiContext['fileExists'];
 }
 
 const defaultIO = (): IO => ({ stdin: process.stdin, stdout: process.stdout, stderr: process.stderr, cwd: process.cwd() });
@@ -53,7 +69,20 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
       return EXIT_OK;
     }
 
-    // Only "create" exists for now; new commands are dispatched here.
+    if (parsed.command === 'ui') {
+      const result = openDocs(uiInputFromFlags(parsed.positionals, parsed.values), {
+        env: io.env ?? process.env,
+        platform: io.platform ?? process.platform,
+        interactive: !json && Boolean(io.stdout.isTTY),
+        open: io.open,
+        fileExists: io.fileExists
+      });
+      if (json) writeJson({ ok: true, ...result });
+      else io.stdout.write(`${result.url}\n`);
+      if (result.opened && !json) io.stderr.write(`${err.muted('› Opening the documentation in your browser')}\n`);
+      return EXIT_OK;
+    }
+
     const input = createInputFromFlags(parsed.positionals, parsed.values);
     const interactive = !json && !input.yes && Boolean(io.stdin.isTTY && io.stderr.isTTY);
     const prompter = interactive ? createPrompter(io.stdin, io.stderr) : undefined;
@@ -158,23 +187,31 @@ function renderCreate(result: CreateResult, style: Style): string {
 
 function formatOptions(options: Record<string, OptionSpec>): string[] {
   const rows = Object.entries(options).map(([name, spec]) => [
-    `${spec.short ? `-${spec.short}, ` : '    '}--${name}`,
+    `${spec.short ? `-${spec.short}, ` : '    '}--${name}${spec.type === 'string' ? ` <${spec.choices?.join('|') ?? 'value'}>` : ''}`,
     spec.description
   ]);
   const width = Math.max(...rows.map(([flag]) => flag.length));
   return rows.map(([flag, description]) => `  ${flag.padEnd(width)}  ${description}`);
 }
 
+function formatArgument(spec: CommandSpec, style: Style): string[] {
+  const { argument } = spec;
+  if (!argument) return [];
+  const choices = argument.choices ? ` (${argument.choices.join(', ')})` : '';
+  return [style.accent('Arguments:'), `  ${argument.name}  ${argument.description}${choices}`, ''];
+}
+
 export function renderHelp(command: string | undefined, style: Style, showBanner: boolean): string {
-  const spec = command ? COMMANDS[command] : undefined;
+  const spec = command ? resolveCommand(command) : undefined;
   if (command && !spec) throw new UsageError(`Unknown command "${command}".`);
 
   if (spec) {
     return [
       style.bold(spec.usage),
       '',
-      spec.summary,
+      spec.summary + (spec.aliases ? ` (alias: ${spec.aliases.map((alias) => `qn ${alias}`).join(', ')})` : ''),
       '',
+      ...formatArgument(spec, style),
       style.accent('Options:'),
       ...formatOptions({ ...spec.options, ...GLOBAL_OPTIONS }),
       '',
@@ -186,13 +223,14 @@ export function renderHelp(command: string | undefined, style: Style, showBanner
     ].join('\n');
   }
 
-  const width = Math.max(...Object.keys(COMMANDS).map((name) => name.length));
+  const names = Object.values(COMMANDS).map((cmd) => [cmd.name, ...(cmd.aliases ?? [])].join(', '));
+  const width = Math.max(...names.map((name) => name.length));
   return [
     ...(showBanner ? [renderBanner(getVersion(), style)] : []),
     style.bold('Usage: qn <command> [options]'),
     '',
     style.accent('Commands:'),
-    ...Object.values(COMMANDS).map((cmd) => `  ${cmd.name.padEnd(width)}  ${cmd.summary}`),
+    ...Object.values(COMMANDS).map((cmd, index) => `  ${names[index].padEnd(width)}  ${cmd.summary}`),
     `  ${'help'.padEnd(width)}  Show help for a command`,
     '',
     style.accent('Options:'),

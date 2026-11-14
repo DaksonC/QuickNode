@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import { PassThrough } from 'node:stream';
@@ -33,13 +34,16 @@ describe('docs links', () => {
     assert.throws(() => docsUrl('constructor'), UsageError);
   });
 
-  it('picks Portuguese from the locale, in POSIX precedence', () => {
-    assert.equal(languageFromEnv({ LANG: 'pt_BR.UTF-8' }), 'pt');
-    assert.equal(languageFromEnv({ LANG: 'pt' }), 'pt');
+  it('picks Portuguese from the locale, in POSIX precedence, then from the system locale', () => {
+    const english = () => 'en-US';
+    assert.equal(languageFromEnv({ LANG: 'pt_BR.UTF-8' }, english), 'pt');
+    assert.equal(languageFromEnv({ LANG: 'pt' }, english), 'pt');
     assert.equal(languageFromEnv({ LC_ALL: 'en_US.UTF-8', LANG: 'pt_BR.UTF-8' }), 'en');
-    assert.equal(languageFromEnv({ LC_MESSAGES: 'pt_PT' }), 'pt');
-    assert.equal(languageFromEnv({ LANG: 'ptx' }), 'en');
-    assert.equal(languageFromEnv({}), 'en');
+    assert.equal(languageFromEnv({ LC_MESSAGES: 'pt_PT' }, english), 'pt');
+    assert.equal(languageFromEnv({ LANG: 'ptx' }, () => 'pt-BR'), 'en');
+    assert.equal(languageFromEnv({}, english), 'en');
+    assert.equal(languageFromEnv({}, () => 'pt-BR'), 'pt'); // Windows: no LANG
+    assert.match(languageFromEnv({}), /^(en|pt)$/);
   });
 });
 
@@ -59,6 +63,8 @@ describe('when to open a browser', () => {
     assert.equal(canOpenBrowser(DESKTOP, 'linux', true, (file) => file === '/.dockerenv'), false);
     assert.equal(canOpenBrowser({}, 'linux', true, noFiles), false);
     assert.equal(canOpenBrowser({ WAYLAND_DISPLAY: 'wayland-0' }, 'linux', true, noFiles), true);
+    assert.equal(canOpenBrowser({}, 'freebsd', true, noFiles), false);
+    assert.equal(canOpenBrowser(DESKTOP, 'freebsd', true, noFiles), true);
   });
 
   it('uses the native opener of each platform, never a shell', () => {
@@ -68,19 +74,22 @@ describe('when to open a browser', () => {
     assert.equal(openerCommand('aix'), undefined);
   });
 
-  it('opens the link as a single argument, or only prints it with --print', () => {
+  it('opens the link as a single argument, or only prints it with --print', async () => {
     const calls = [];
-    const ctx = { env: DESKTOP, platform: 'linux', interactive: true, fileExists: noFiles, open: (...call) => calls.push(call) };
-    assert.deepEqual(openDocs({ topic: 'faq', lang: 'en' }, ctx), { url: `${DOCS_URL}faq/`, opened: true });
+    const open = async (...call) => calls.push(call) > 0;
+    const ctx = { env: DESKTOP, platform: 'linux', interactive: true, fileExists: noFiles, open };
+    assert.deepEqual(await openDocs({ topic: 'faq', lang: 'en' }, ctx), { url: `${DOCS_URL}faq/`, opened: true });
     assert.deepEqual(calls, [['xdg-open', [`${DOCS_URL}faq/`]]]);
-    assert.deepEqual(openDocs({ topic: 'faq', lang: 'en', print: true }, ctx), { url: `${DOCS_URL}faq/`, opened: false });
-    assert.deepEqual(openDocs({}, { ...ctx, platform: 'aix' }).opened, false);
+    assert.deepEqual(await openDocs({ topic: 'faq', lang: 'en', print: true }, ctx), { url: `${DOCS_URL}faq/`, opened: false });
+    assert.equal((await openDocs({}, { ...ctx, platform: 'aix' })).opened, false);
     assert.equal(calls.length, 1);
   });
 
-  it('ignores a missing opener program', async () => {
-    launchDetached(path.join('/nonexistent', 'qn-opener'), ['https://example.invalid']);
-    await new Promise((resolve) => setTimeout(resolve, 50)); // the async spawn error must not crash
+  it('reports whether the opener actually started', async () => {
+    const ctx = { env: DESKTOP, platform: 'linux', interactive: true, fileExists: noFiles, open: async () => false };
+    assert.equal((await openDocs({ lang: 'en' }, ctx)).opened, false);
+    assert.equal(await launchDetached(path.join('/nonexistent', 'qn-opener'), ['https://example.invalid']), false);
+    assert.equal(await launchDetached(process.execPath, ['-e', '']), true);
   });
 });
 
@@ -98,13 +107,23 @@ describe('qn ui', () => {
       stdout,
       stderr,
       cwd: '/',
-      env: extra.env ?? {},
+      env: extra.env ?? { LANG: 'en_US.UTF-8' },
       platform: 'darwin',
       fileExists: noFiles,
-      open: (...call) => opened.push(call)
+      open: async (...call) => opened.push(call) > 0
     });
     return { code, out, err, opened };
   }
+
+  it('does not claim to open the browser when the opener fails', async () => {
+    const stdout = Object.assign(new PassThrough(), { isTTY: true });
+    const stderr = new PassThrough();
+    let err = '';
+    stderr.on('data', (chunk) => (err += chunk));
+    const code = await main(['ui'], { stdin: new PassThrough(), stdout, stderr, cwd: '/', env: {}, platform: 'darwin', open: async () => false });
+    assert.equal(code, EXIT_OK);
+    assert.equal(err, '');
+  });
 
   it('prints the link and does not open anything without a terminal', async () => {
     const { code, out, opened } = await qn(['ui', 'create']);
@@ -173,10 +192,12 @@ describe('credits in the generated README', () => {
     assert.ok(readme.endsWith('ui structure`.\n'));
   });
 
-  it('does nothing when the project has no README', async (t) => {
+  it('does nothing when the project has no README, and reports other read errors', async (t) => {
     const { removeCredits } = await import('../dist/commands/create.js');
     const dir = await makeTmp(t);
     await removeCredits(dir);
     assert.equal(await exists(dir, 'README.md'), false);
+    await fs.mkdir(path.join(dir, 'README.md'));
+    await assert.rejects(removeCredits(dir), { code: 'EISDIR' });
   });
 });

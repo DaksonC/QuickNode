@@ -120,55 +120,72 @@
     return undefined;
   }
 
-  const CREATE_FLAGS = {
-    '-t': 'typescript', '-ts': 'typescript', '--typescript': 'typescript',
-    '-j': 'javascript', '-js': 'javascript', '--javascript': 'javascript',
-    '-y': 'yes', '--yes': 'yes', '-f': 'force', '--force': 'force', '--dry-run': 'dry-run',
-    '--install': 'install', '--git': 'git', '--no-credits': 'no-credits'
-  };
-
   const commandName = (name) =>
     Object.keys(DATA.commands).find((cmd) => cmd === name || DATA.commands[cmd].aliases.includes(name));
 
+  const usageError = (cmd, message) => `✖ ${message}\nRun "qn ${cmd} --help" for usage.`;
+
+  /**
+   * Parses arguments like util.parseArgs with the flags generated from the CLI
+   * (qn-data.js): long and short names, --name=value, legacy -ts/-js.
+   * Returns { values, positionals } or { error }.
+   */
+  function parse(cmd, args) {
+    const options = { ...DATA.commands[cmd].options, ...DATA.globalOptions };
+    const byShort = Object.fromEntries(Object.entries(options).filter(([, o]) => o.short).map(([name, o]) => [o.short, name]));
+    const values = {};
+    const positionals = [];
+    for (let i = 0; i < args.length; i++) {
+      const arg = DATA.legacyFlags[args[i]] ?? args[i];
+      if (!arg.startsWith('-') || arg === '-') { positionals.push(arg); continue; }
+      const [flag, inline] = arg.split(/=(.*)/s);
+      const name = flag.startsWith('--') ? flag.slice(2) : byShort[flag.slice(1)];
+      const option = options[name];
+      if (!option) return { error: usageError(cmd, `Unknown option '${flag}'.`) };
+      if (option.type === 'string') {
+        const value = inline ?? args[++i];
+        if (value === undefined) return { error: usageError(cmd, `Option '${flag}' needs a value.`) };
+        values[name] = value;
+      } else values[name] = true;
+    }
+    return { values, positionals };
+  }
+
   function simulateCreate(args) {
-    const flags = new Set();
-    const names = [];
-    for (const arg of args) {
-      if (arg === '-h' || arg === '--help') return DATA.commands.create.help;
-      if (arg.startsWith('-')) {
-        if (!CREATE_FLAGS[arg]) return `✖ Unknown option '${arg}'.\nRun "qn create --help" for usage.`;
-        flags.add(CREATE_FLAGS[arg]);
-      } else names.push(arg);
+    const { values, positionals, error } = parse('create', args);
+    if (error) return error;
+    if (values.help) return DATA.commands.create.help;
+    if (values.version) return DATA.version;
+    if (positionals.length > 1) return usageError('create', 'Only one project name can be given.');
+    if (values.typescript && values.javascript) {
+      return usageError('create', 'Choose only one template: --typescript or --javascript.');
     }
-    if (names.length > 1) return '✖ Only one project name can be given.\nRun "qn create --help" for usage.';
-    if (flags.has('typescript') && flags.has('javascript')) {
-      return '✖ Choose only one template: --typescript or --javascript.\nRun "qn create --help" for usage.';
-    }
-    const name = names[0] ?? (flags.has('yes') ? 'my-quicknode-app' : undefined);
-    if (!name) return '✖ A project name is required (or pass --yes to use the default).\nRun "qn create --help" for usage.';
+    const name = positionals[0] ?? (values.yes ? 'my-quicknode-app' : undefined);
+    if (!name) return usageError('create', 'A project name is required (or pass --yes to use the default).');
     if (name === '.') return '✖ "." creates the project in the current folder: try it in your terminal.';
     const reason = nameError(name);
     if (reason) return `✖ Invalid project name "${name}": ${reason}.`;
-    const template = flags.has('javascript') ? 'javascript' : flags.has('typescript') || flags.has('yes') ? 'typescript' : undefined;
-    if (!template) return '✖ Choose a template with --typescript or --javascript (or pass --yes).\nRun "qn create --help" for usage.';
+    const template = values.javascript ? 'javascript' : values.typescript || values.yes ? 'typescript' : undefined;
+    if (!template) return usageError('create', 'Choose a template with --typescript or --javascript (or pass --yes).');
     return `${DATA.dryRun[template].split('NAME').join(name)}\n${STRINGS.simulated}`;
   }
 
   function simulateUi(args) {
-    let topic;
-    let target = lang;
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
-      if (arg === '-h' || arg === '--help') return { text: DATA.commands.ui.help };
-      if (arg === '-p' || arg === '--print') continue;
-      if (arg === '--lang') {
-        target = args[++i];
-        if (target !== 'en' && target !== 'pt') return { text: `✖ Invalid value "${target ?? ''}" for --lang. Choose one of: en, pt.` };
-      } else if (Object.hasOwn(DATA.topics, arg) && topic === undefined) topic = arg;
-      else return { text: `✖ Unknown topic "${arg}". Choose one of: ${Object.keys(DATA.topics).join(', ')}.` };
+    const { values, positionals, error } = parse('ui', args);
+    if (error) return { text: error };
+    if (values.help) return { text: DATA.commands.ui.help };
+    if (values.version) return { text: DATA.version };
+    if (positionals.length > 1) return { text: usageError('ui', 'Only one topic can be given.') };
+    const topic = positionals[0];
+    if (topic !== undefined && !Object.hasOwn(DATA.topics, topic)) {
+      return { text: usageError('ui', `Unknown topic "${topic}". Choose one of: ${Object.keys(DATA.topics).join(', ')}.`) };
     }
+    const target = values.lang ?? lang;
+    if (target !== 'en' && target !== 'pt') return { text: usageError('ui', `Invalid value "${target}" for --lang. Choose one of: en, pt.`) };
     const url = `${siteRoot()}${target === 'pt' ? 'pt/' : ''}${topic ? DATA.topics[topic] : ''}`;
-    return { text: STRINGS.opening(url), url };
+    if (values.json) return { text: JSON.stringify({ ok: true, url, opened: false }, null, 2) };
+    // Like the CLI: the link is always printed; --print stops there.
+    return values.print ? { text: url } : { text: STRINGS.opening(url), url };
   }
 
   /** Runs one simulated `qn` invocation; returns the text to print and, for qn ui, where to go. */

@@ -17,7 +17,7 @@ import path from 'node:path';
 import { PassThrough } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { EXIT_ERROR, EXIT_OK, EXIT_USAGE, main, renderHelp } from '../dist/main.js';
-import { COMMANDS, DOCS_TOPICS, GLOBAL_OPTIONS } from '../dist/spec.js';
+import { COMMANDS, DOCS_TOPICS, GLOBAL_OPTIONS, LEGACY_FLAGS } from '../dist/spec.js';
 import { createStyle } from '../dist/ui/style.js';
 import { COMMANDS_PT, LANGS, PAGES, REFERENCE_TEXT, SITE, UI } from '../docs-src/site.mjs';
 
@@ -33,8 +33,12 @@ export const esc = (text) =>
 /** Absolute URL of a page in a language. */
 export const pageUrl = (slug, lang) => `${SITE.baseUrl}${lang === 'pt' ? 'pt/' : ''}${slug}`;
 
-/** Output file of a page, relative to docs/. */
-const pageFile = (slug, lang) => path.join(lang === 'pt' ? 'pt' : '', slug, 'index.html');
+/**
+ * Output file of a page, relative to docs/. Generated files are keyed by POSIX
+ * paths so the build is identical on every OS; toDisk() converts them.
+ */
+const pageFile = (slug, lang) => `${lang === 'pt' ? 'pt/' : ''}${slug}index.html`;
+const toDisk = (file, outDir = OUT_DIR) => path.join(outDir, ...file.split('/'));
 
 /** "../" repeated up to the site root, from a page in a language. */
 function rootPrefix(slug, lang) {
@@ -433,17 +437,32 @@ async function dryRunOutput(flag) {
     stdout.on('data', (chunk) => (text += chunk));
     const code = await main(['create', NAME_PLACEHOLDER, flag, '--dry-run'], { stdin: new PassThrough(), stdout, stderr: new PassThrough(), cwd });
     if (code !== EXIT_OK) throw new Error(`qn create --dry-run failed while building the docs (exit ${code})`);
-    return text.split(path.join(cwd, NAME_PLACEHOLDER)).join(`./${NAME_PLACEHOLDER}`).split(NAME_PLACEHOLDER).join('NAME').trimEnd();
+    return text
+      .split(path.join(cwd, NAME_PLACEHOLDER))
+      .join(`./${NAME_PLACEHOLDER}`)
+      .split(NAME_PLACEHOLDER)
+      .join('NAME')
+      .replace(/\\/g, '/') // Windows separators in the file list
+      .trimEnd();
   } finally {
     fs.rmSync(cwd, { recursive: true, force: true });
   }
 }
 
+/** Flags of a command as the simulator needs them: name -> { type, short }. */
+const flagData = (options) =>
+  Object.fromEntries(Object.entries(options).map(([name, { type, short }]) => [name, short ? { type, short } : { type }]));
+
 async function renderSimulatorData() {
   const data = {
     version: SITE.version,
+    globalOptions: flagData(GLOBAL_OPTIONS),
+    legacyFlags: LEGACY_FLAGS,
     commands: Object.fromEntries(
-      Object.values(COMMANDS).map((spec) => [spec.name, { aliases: spec.aliases ?? [], help: plainHelp(spec.name) }])
+      Object.values(COMMANDS).map((spec) => [
+        spec.name,
+        { aliases: spec.aliases ?? [], options: flagData(spec.options), help: plainHelp(spec.name) }
+      ])
     ),
     help: plainHelp(undefined),
     topics: DOCS_TOPICS,
@@ -464,7 +483,7 @@ export async function buildSite() {
   }
   files.set('404.html', renderNotFound());
   files.set('sitemap.xml', renderSitemap());
-  files.set(path.join('assets', 'js', 'qn-data.js'), await renderSimulatorData());
+  files.set('assets/js/qn-data.js', await renderSimulatorData());
   return files;
 }
 
@@ -472,13 +491,14 @@ export async function buildSite() {
 export function outdatedFiles(files, outDir = OUT_DIR) {
   const stale = [...files].filter(([file, content]) => {
     try {
-      return fs.readFileSync(path.join(outDir, file), 'utf8') !== content;
+      return fs.readFileSync(toDisk(file, outDir), 'utf8') !== content;
     } catch {
       return true;
     }
   });
   const html = fs
     .readdirSync(outDir, { recursive: true })
+    .map((file) => file.split(path.sep).join('/'))
     .filter((file) => file.endsWith('.html') && !files.has(file));
   return [...stale.map(([file]) => file), ...html];
 }
@@ -495,8 +515,8 @@ async function run(argv) {
     return 0;
   }
   for (const [file, content] of files) {
-    fs.mkdirSync(path.dirname(path.join(OUT_DIR, file)), { recursive: true });
-    fs.writeFileSync(path.join(OUT_DIR, file), content);
+    fs.mkdirSync(path.dirname(toDisk(file)), { recursive: true });
+    fs.writeFileSync(toDisk(file), content);
   }
   console.log(`Wrote ${files.size} files to docs/.`);
   return 0;

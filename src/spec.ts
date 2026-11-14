@@ -103,7 +103,7 @@ export function resolveCommand(name: string): CommandSpec | undefined {
 }
 
 /** Legacy two-letter flags from v1, which util.parseArgs cannot express. */
-const LEGACY_FLAGS: Record<string, string> = { '-ts': '--typescript', '-js': '--javascript' };
+export const LEGACY_FLAGS: Record<string, string> = { '-ts': '--typescript', '-js': '--javascript' };
 
 /**
  * Best-effort --json detection for errors thrown before parsing succeeded

@@ -65,11 +65,23 @@ function resolveFile(urlPath) {
 }
 
 function send(res, status, file) {
-  res.writeHead(status, { 'content-type': TYPES[path.extname(file)] ?? 'application/octet-stream' });
-  fs.createReadStream(file).pipe(res);
+  const stream = fs.createReadStream(file);
+  stream.once('open', () => {
+    res.writeHead(status, { 'content-type': TYPES[path.extname(file)] ?? 'application/octet-stream' });
+    stream.pipe(res);
+  });
+  stream.once('error', () => {
+    // e.g. no 404.html before the first "npm run docs:build"
+    if (!res.headersSent) res.writeHead(status, { 'content-type': TYPES['.txt'] });
+    res.end(status === 404 ? 'Not found. Run "npm run docs:build" first?\n' : '');
+  });
 }
 
 const port = Number(process.argv[2] ?? 4000);
+if (!Number.isInteger(port) || port < 1 || port > 65535) {
+  console.error(`Invalid port "${process.argv[2]}". Usage: node scripts/serve-docs.mjs [port]`);
+  process.exit(2);
+}
 http
   .createServer((req, res) => {
     const urlPath = new URL(req.url ?? '/', 'http://localhost').pathname;

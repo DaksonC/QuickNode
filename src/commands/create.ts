@@ -113,8 +113,9 @@ export async function removeCredits(projectDir: string): Promise<void> {
   let readme: string;
   try {
     readme = await fs.readFile(readmePath, 'utf8');
-  } catch {
-    return;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    throw error;
   }
   const stripped = readme.replace(CREDITS_BLOCK, '\n');
   if (stripped !== readme) await fs.writeFile(readmePath, stripped);

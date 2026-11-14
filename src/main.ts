@@ -70,7 +70,7 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
     }
 
     if (parsed.command === 'ui') {
-      const result = openDocs(uiInputFromFlags(parsed.positionals, parsed.values), {
+      const result = await openDocs(uiInputFromFlags(parsed.positionals, parsed.values), {
         env: io.env ?? process.env,
         platform: io.platform ?? process.platform,
         interactive: !json && Boolean(io.stdout.isTTY),

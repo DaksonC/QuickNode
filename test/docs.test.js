@@ -10,7 +10,7 @@ import { getVersion } from '../dist/main.js';
 
 const files = await buildSite();
 const pages = [...files].filter(([file]) => file.endsWith('index.html'));
-const read = (file) => fs.readFileSync(path.join(OUT_DIR, file));
+const read = (file) => fs.readFileSync(path.join(OUT_DIR, ...file.split('/')));
 /** Page weight budget (ADR-001, D7): HTML + CSS + JS, font not included. */
 const BUDGET = 100 * 1024;
 
@@ -33,7 +33,7 @@ describe('documentation site', () => {
     for (const target of Object.values(DOCS_TOPICS)) {
       const [slug, anchor] = target.split('#');
       for (const lang of LANGS) {
-        const html = files.get(path.join(lang === 'pt' ? 'pt' : '', slug, 'index.html'));
+        const html = files.get(`${lang === 'pt' ? 'pt/' : ''}${slug}index.html`);
         assert.ok(html, `missing page for ${lang}/${slug}`);
         if (anchor) assert.match(html, new RegExp(`id="${anchor}"`), `missing #${anchor} in ${lang}/${slug}`);
       }
@@ -42,7 +42,7 @@ describe('documentation site', () => {
 
   it('documents every command and flag in both languages', () => {
     for (const lang of LANGS) {
-      const html = files.get(path.join(lang === 'pt' ? 'pt' : '', 'commands', 'index.html'));
+      const html = files.get(`${lang === 'pt' ? 'pt/' : ''}commands/index.html`);
       for (const spec of Object.values(COMMANDS)) {
         assert.match(html, new RegExp(`<h2 id="${spec.name}"`));
         for (const name of Object.keys(spec.options)) assert.match(html, new RegExp(`id="${spec.name}-${name}"`));
@@ -85,7 +85,7 @@ describe('documentation site', () => {
       const app = nodes.find((node) => node['@type'] === 'SoftwareApplication');
       assert.equal(app.softwareVersion, SITE.version, file);
       assert.ok(nodes.some((node) => /^\d{4}-\d{2}-\d{2}$/.test(node.dateModified ?? '')), file);
-      if (file === 'index.html' || file === path.join('pt', 'index.html')) continue;
+      if (file === 'index.html' || file === 'pt/index.html') continue;
       const crumbs = nodes.find((node) => node['@type'] === 'BreadcrumbList');
       assert.ok(crumbs.itemListElement.length >= 2, file);
       assert.equal(crumbs.itemListElement.at(-1).item, `${SITE.baseUrl}${file.replace(/index\.html$/, '')}`);
@@ -100,9 +100,15 @@ describe('documentation site', () => {
     }
   });
 
-  it('documents a version that is not older than the package', () => {
-    const [major] = getVersion().split('.').map(Number);
-    assert.ok(Number(SITE.version.split('.')[0]) >= major);
+  it('documents a version that is not older than the package (update SITE.version after a release)', () => {
+    const [docs, installed] = [SITE.version, getVersion()].map((version) => version.split(/[.-]/).slice(0, 3).map(Number));
+    const cmp = docs.map((part, index) => part - installed[index]).find((diff) => diff !== 0) ?? 0;
+    assert.ok(cmp >= 0, `docs describe ${SITE.version} but package.json is ${getVersion()}`);
+  });
+
+  it('takes the Node.js requirement from package.json engines', () => {
+    assert.match(SITE.node, /^\d+\.\d+(\.\d+)?$/);
+    assert.ok(JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url))).engines.node.includes(SITE.node));
   });
 
   it('lists every page in the sitemap', () => {
@@ -136,12 +142,12 @@ describe('documentation site', () => {
 
   it('has no broken internal links or anchors', () => {
     for (const [file, html] of pages) {
-      const dir = path.dirname(file);
+      const dir = path.posix.dirname(file);
       for (const href of attr(html, /<a [^>]*href="([^"]+)"/g)) {
         if (/^(https?:|mailto:)/.test(href)) continue;
         const [target, anchor] = href.split('#');
-        const resolved = target === '' ? file : path.normalize(path.join(dir, target));
-        const targetFile = resolved.endsWith('.txt') ? resolved : path.join(resolved.replace(/index\.html$/, ''), 'index.html');
+        const resolved = target === '' ? file : path.posix.join(dir, target);
+        const targetFile = resolved.endsWith('.txt') ? resolved : path.posix.join(resolved.replace(/index\.html$/, ''), 'index.html');
         const content = files.get(targetFile) ?? read(targetFile).toString();
         if (anchor) assert.match(content, new RegExp(`id="${anchor.replace(/\./g, '\\.')}"`), `${file} -> ${href}`);
       }
@@ -149,9 +155,9 @@ describe('documentation site', () => {
   });
 
   it('ships the self-hosted font with its license and the preview image', () => {
-    assert.ok(read(path.join('assets', 'fonts', 'VT323-Regular.woff2')).length > 0);
-    assert.match(read(path.join('assets', 'fonts', 'OFL.txt')).toString(), /SIL OPEN FONT LICENSE/i);
-    const png = read(path.join('assets', 'img', 'og.png'));
+    assert.ok(read('assets/fonts/VT323-Regular.woff2').length > 0);
+    assert.match(read('assets/fonts/OFL.txt').toString(), /SIL OPEN FONT LICENSE/i);
+    const png = read('assets/img/og.png');
     assert.equal(png.readUInt32BE(16), 1200);
     assert.equal(png.readUInt32BE(20), 630);
     assert.ok(fs.existsSync(path.join(OUT_DIR, '.nojekyll')));

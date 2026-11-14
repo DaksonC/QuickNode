@@ -5,14 +5,23 @@
  * and docs-src/content/ into the committed HTML in docs/.
  */
 
+import { readFileSync } from 'node:fs';
+
+const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+
 /** Same facts on npm, GitHub, README and docs (D8: consistent facts). */
 export const SITE = {
   name: 'QuickNode CLI',
   packageName: '@10565/quicknode-cli',
-  /** Version the documentation describes; the first release after ADR-001 is a major. */
+  /**
+   * Version the documentation describes. Set by hand because the docs ship
+   * before the release: the first release after ADR-001 is 2.0.0, while
+   * package.json still says 1.x. A test fails if the package gets ahead of it.
+   */
   version: '2.0.0',
   appliesTo: 'v2.x',
-  node: '22.13',
+  /** Minimum Node.js version, from package.json engines (">=22.13.0" -> "22.13"). */
+  node: pkg.engines.node.replace(/^>=\s*/, '').replace(/\.0$/, ''),
   baseUrl: 'https://daksonc.github.io/QuickNode/',
   basePath: '/QuickNode/',
   repo: 'https://github.com/DaksonC/QuickNode',

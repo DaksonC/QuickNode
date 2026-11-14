@@ -25,8 +25,8 @@ export interface UiContext {
   platform: NodeJS.Platform;
   /** stdout is a terminal (someone is looking at it). */
   interactive: boolean;
-  /** Starts the system program that opens links; must never throw. */
-  open?: (command: string, args: string[]) => void;
+  /** Starts the system program that opens links; resolves to whether it started. Must never reject. */
+  open?: (command: string, args: string[]) => Promise<boolean>;
   /** Used to detect containers; injectable for tests. */
   fileExists?: (file: string) => boolean;
 }
@@ -41,9 +41,16 @@ export function uiInputFromFlags(positionals: string[], values: Record<string, b
   };
 }
 
-/** Portuguese when the locale says so (LC_ALL > LC_MESSAGES > LANG, as in POSIX), English otherwise. */
-export function languageFromEnv(env: NodeJS.ProcessEnv): DocsLanguage {
-  const locale = env.LC_ALL || env.LC_MESSAGES || env.LANG || '';
+/**
+ * Portuguese when the locale says so, English otherwise. POSIX variables win
+ * (LC_ALL > LC_MESSAGES > LANG); without them (as on Windows) the system
+ * locale reported by Intl is used.
+ */
+export function languageFromEnv(
+  env: NodeJS.ProcessEnv,
+  systemLocale: () => string = () => Intl.DateTimeFormat().resolvedOptions().locale
+): DocsLanguage {
+  const locale = env.LC_ALL || env.LC_MESSAGES || env.LANG || systemLocale();
   return /^pt([_.@-]|$)/i.test(locale) ? 'pt' : 'en';
 }
 
@@ -66,12 +73,10 @@ export function canOpenBrowser(
   if (!interactive) return false;
   if (env.CI && env.CI !== 'false' && env.CI !== '0') return false;
   if (env.SSH_CONNECTION || env.SSH_CLIENT || env.SSH_TTY) return false;
-  if (platform === 'linux') {
-    if (fileExists('/.dockerenv') || fileExists('/run/.containerenv')) return false;
-    // No graphical session: xdg-open would only fall back to a text browser.
-    if (!env.DISPLAY && !env.WAYLAND_DISPLAY) return false;
-  }
-  return true;
+  if (platform === 'darwin' || platform === 'win32') return true;
+  if (fileExists('/.dockerenv') || fileExists('/run/.containerenv')) return false;
+  // Other systems use xdg-open: without a graphical session it would only start a text browser.
+  return Boolean(env.DISPLAY || env.WAYLAND_DISPLAY);
 }
 
 /**
@@ -86,26 +91,32 @@ export function openerCommand(platform: NodeJS.Platform): string | undefined {
   return undefined;
 }
 
-/** Launches `command` detached and forgets about it; a missing program is silently ignored. */
-export function launchDetached(command: string, args: string[]): void {
-  try {
-    const child = spawn(command, args, { detached: true, stdio: 'ignore', shell: false, windowsHide: true });
-    child.on('error', () => {
+/**
+ * Launches `command` detached, without a shell, and resolves once it either
+ * started (true) or could not start (false, e.g. the program is missing).
+ * The process is unref'd so the CLI exits right away. Never rejects.
+ */
+export function launchDetached(command: string, args: string[]): Promise<boolean> {
+  return new Promise((resolve) => {
+    try {
+      const child = spawn(command, args, { detached: true, stdio: 'ignore', shell: false, windowsHide: true });
+      child.once('spawn', () => resolve(true));
       // Nothing to open links with: the link printed by the caller is enough.
-    });
-    child.unref();
-  } catch {
-    // Same as above: never fail because a browser could not be launched.
-  }
+      child.once('error', () => resolve(false));
+      child.unref();
+    } catch {
+      resolve(false);
+    }
+  });
 }
 
 /** Resolves the documentation link and, when it makes sense, opens it. */
-export function openDocs(input: UiInput, ctx: UiContext): UiResult {
+export async function openDocs(input: UiInput, ctx: UiContext): Promise<UiResult> {
   const url = docsUrl(input.topic, input.lang ?? languageFromEnv(ctx.env));
   const command = openerCommand(ctx.platform);
   if (input.print || !command || !canOpenBrowser(ctx.env, ctx.platform, ctx.interactive, ctx.fileExists)) {
     return { url, opened: false };
   }
-  (ctx.open ?? launchDetached)(command, [url]);
-  return { url, opened: true };
+  const opened = await (ctx.open ?? launchDetached)(command, [url]);
+  return { url, opened };
 }

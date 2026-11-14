@@ -298,7 +298,7 @@ function header({ page, lang, ui, home, other }) {
 ${langLink('en')}
 ${langLink('pt')}
         </ul>
-        <button type="button" id="fx-toggle" hidden>[FX: <span id="fx-state">ON</span>]<span class="sr-only"> ${ui.fxHint}</span></button>
+        <button type="button" id="fx-toggle" hidden>[FX: <span id="fx-state">OFF</span>]<span class="sr-only"> ${ui.fxHint}</span></button>
         <button type="button" id="theme-toggle" hidden>[<span id="theme-state">LIGHT</span>]<span class="sr-only" id="theme-hint"> ${ui.themeHint}</span></button>
       </div>
 

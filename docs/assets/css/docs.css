@@ -1,7 +1,7 @@
 /*
  * QuickNode documentation: rules on top of site.css (the personal site's
- * tokens). Only var(--bg), var(--fg), var(--dim) and var(--accent) are used,
- * so both themes keep the contrast documented in site.css.
+ * tokens). Only the colour tokens defined there are used, so both themes keep
+ * the contrast documented in site.css.
  */
 
 .site-header .title a.home {
@@ -36,15 +36,14 @@ main .meta {
   font-size: clamp(1.375rem, 1.25rem + 0.5vw, 1.5rem);
 }
 
-code {
-  font-family: var(--font);
-  color: var(--accent);
+a code {
+  color: inherit;
 }
 
-a code,
-.term code,
-dt code {
+.term code {
+  padding: 0;
   color: inherit;
+  background: none;
 }
 
 /* Code blocks rendered as terminal output; wrap instead of scrolling at 320px. */
@@ -53,6 +52,7 @@ dt code {
   padding: 0.5rem 0.75rem;
   border: 1px dashed var(--dim);
   font-family: var(--font);
+  color: var(--code-fg);
   line-height: 1.3;
   white-space: pre-wrap;
 }
@@ -98,7 +98,6 @@ ol > li::marker {
 
 .opts dd {
   margin: 0 0 0.75rem 2ch;
-  color: var(--fg);
 }
 
 details {

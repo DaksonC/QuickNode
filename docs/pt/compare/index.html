@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <title>QuickNode × Nest CLI × template manual: qual usar</title>
+  <meta name="description" content="Comparação honesta entre QuickNode CLI, Nest CLI e copiar um template à mão, com critérios objetivos: dependências, arquitetura, acoplamento ao framework e manutenção.">
+  <link rel="canonical" href="https://daksonc.github.io/QuickNode/pt/compare/">
+  <link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/compare/">
+  <link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/compare/">
+  <link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/compare/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="QuickNode CLI">
+  <meta property="og:title" content="QuickNode × Nest CLI × template manual: qual usar">
+  <meta property="og:description" content="Comparação honesta entre QuickNode CLI, Nest CLI e copiar um template à mão, com critérios objetivos: dependências, arquitetura, acoplamento ao framework e manutenção.">
+  <meta property="og:url" content="https://daksonc.github.io/QuickNode/pt/compare/">
+  <meta property="og:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QuickNode × Nest CLI × template manual: qual usar">
+  <meta name="twitter:description" content="Comparação honesta entre QuickNode CLI, Nest CLI e copiar um template à mão, com critérios objetivos: dependências, arquitetura, acoplamento ao framework e manutenção.">
+  <meta name="twitter:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta name="twitter:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
+
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../../assets/fonts/VT323-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <link rel="stylesheet" href="../../assets/css/docs.css">
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/qn-data.js" defer></script>
+  <script src="../../assets/js/docs.js" defer></script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "Comparação",
+      "name": "QuickNode × Nest CLI × template manual: qual usar",
+      "description": "Comparação honesta entre QuickNode CLI, Nest CLI e copiar um template à mão, com critérios objetivos: dependências, arquitetura, acoplamento ao framework e manutenção.",
+      "url": "https://daksonc.github.io/QuickNode/pt/compare/",
+      "inLanguage": "pt-BR",
+      "dateModified": "2026-11-14",
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      },
+      "about": {
+        "@id": "https://daksonc.github.io/QuickNode/#software"
+      },
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://daksonc.github.io/QuickNode/#software",
+      "name": "QuickNode CLI",
+      "alternateName": "@10565/quicknode-cli",
+      "description": "CLI sem dependências para criar APIs Node.js com arquitetura limpa",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Windows, macOS, Linux",
+      "softwareRequirements": "Node.js 22.13+",
+      "softwareVersion": "2.0.0",
+      "license": "https://opensource.org/licenses/MIT",
+      "url": "https://daksonc.github.io/QuickNode/",
+      "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "installUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "sameAs": [
+        "https://www.npmjs.com/package/@10565/quicknode-cli",
+        "https://github.com/DaksonC/QuickNode"
+      ],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Início",
+          "item": "https://daksonc.github.io/QuickNode/pt/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Comparação",
+          "item": "https://daksonc.github.io/QuickNode/pt/compare/"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+</head>
+<body id="top">
+  <a class="skip" href="#main">Pular para o conteúdo</a>
+
+  <header class="wrap site-header">
+    <p class="title"><a href="../" class="home"><span aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Documentação do QuickNode CLI, início</span></a></p>
+    <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="header-panel">[MENU]</button>
+
+    <div class="panel" id="header-panel">
+      <div class="controls">
+        <ul class="lang" role="list" aria-label="Idioma">
+          <li><a href="../../compare/" hreflang="en" lang="en">[EN]<span class="sr-only"> English</span></a></li>
+          <li><a href="./" hreflang="pt-BR" lang="pt-BR" aria-current="page">[PT]<span class="sr-only"> Português</span></a></li>
+        </ul>
+        <button type="button" id="fx-toggle" hidden>[FX: <span id="fx-state">ON</span>]<span class="sr-only"> efeitos visuais e animação</span></button>
+        <button type="button" id="theme-toggle" hidden>[<span id="theme-state">LIGHT</span>]<span class="sr-only" id="theme-hint"> mudar para o tema claro</span></button>
+      </div>
+
+      <nav class="menu" aria-label="Documentação">
+        <ul>
+          <li><a href="../start/">[start]</a></li>
+          <li><a href="../commands/">[commands]</a></li>
+          <li><a href="../structure/">[structure]</a></li>
+          <li><a href="../tutorial/">[tutorial]</a></li>
+          <li><a href="../add/">[add]</a></li>
+          <li><a href="../faq/">[faq]</a></li>
+          <li><a href="../compare/" aria-current="page">[compare]</a></li>
+          <li><a href="../changelog/">[changelog]</a></li>
+          <li><a href="../adr/">[adr]</a></li>
+        </ul>
+      </nav>
+
+      <section class="cli-wrap" id="cli-wrap" aria-label="Linha de comando opcional. Digite help para listar os comandos." hidden>
+        <form class="cli" id="cli">
+          <label for="cli-input"><span class="prompt" aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Linha de comando opcional. Digite help para listar os comandos.</span></label>
+          <input id="cli-input" name="command" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="digite help">
+        </form>
+        <div class="cli-output" id="cli-output" role="log" aria-live="polite" aria-label="Saída dos comandos"></div>
+      </section>
+    </div>
+
+    <span class="sr-only" role="status" id="status"></span>
+  </header>
+
+  <main id="main" class="wrap" tabindex="-1">
+    <nav aria-label="Trilha de navegação"><ol class="crumbs" role="list"><li><a href="../">Início</a></li><li aria-current="page">Comparação</li></ol></nav>
+    <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui compare</p>
+    <p class="meta">Atualizado em <time datetime="2026-11-14">2026-11-14</time> · válido para a v2.x</p>
+<h1 tabindex="-1">QuickNode, Nest CLI ou template manual?</h1>
+<p class="answer">Use o QuickNode para uma API Express simples, com arquitetura limpa e sem ficar preso a um framework; use o Nest CLI quando quiser o framework NestJS, com módulos, injeção de dependência e um ecossistema grande; copie um template à mão quando precisar de controle total e for manter a configuração sozinho.</p>
+
+<h2 id="table" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como eles se comparam?</h2>
+<div class="scroll" role="region" aria-label="Tabela de comparação" tabindex="0">
+<table>
+  <caption>Critérios objetivos, considerando a v2.x do QuickNode.</caption>
+  <thead>
+    <tr><th scope="col">Critério</th><th scope="col">QuickNode CLI</th><th scope="col">Nest CLI</th><th scope="col">Template manual</th></tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">O que você recebe</th><td>API Express, TypeScript ou JavaScript</td><td>Aplicação NestJS</td><td>O que o template tiver</td></tr>
+    <tr><th scope="row">Arquitetura</th><td>Arquitetura limpa: camadas de domínio e infraestrutura</td><td>Módulos, controllers e providers do NestJS</td><td>Você decide</td></tr>
+    <tr><th scope="row">Acoplamento ao framework</th><td>Baixo: o domínio é TypeScript/JavaScript puro</td><td>Alto: decorators e o contêiner de DI do Nest em todo lugar</td><td>Depende do template</td></tr>
+    <tr><th scope="row">Dependências da CLI</th><td>Zero dependências de runtime</td><td>Muitas (inclui ferramentas de build)</td><td>Nenhuma (git ou um download)</td></tr>
+    <tr><th scope="row">Geradores de código depois de criar</th><td>Ainda não (<code>qn generate</code> planejado)</td><td>Sim: <code>nest generate</code> para resources, módulos, services</td><td>Não</td></tr>
+    <tr><th scope="row">Banco de dados pronto</th><td>PostgreSQL com Docker Compose, TypeORM ou Sequelize</td><td>Não: adicionado por módulos do Nest</td><td>Depende do template</td></tr>
+    <tr><th scope="row">Testes, lint, hooks do Git</th><td>Jest, ESLint, Prettier, Husky, commitlint</td><td>Jest, ESLint, Prettier</td><td>Depende do template</td></tr>
+    <tr><th scope="row">Maturidade e comunidade</th><td>Projeto pequeno e novo, um mantenedor</td><td>Maduro, comunidade e documentação grandes</td><td>n/a</td></tr>
+    <tr><th scope="row">Atualizar depois</th><td>Manual hoje (<code>qn upgrade</code> planejado)</td><td>Atualizações do framework pelo npm, com guias de migração</td><td>Manual</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="quicknode" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quando o QuickNode é a escolha certa?</h2>
+<ul class="list" role="list">
+  <li>Você quer uma API Express cujas regras de negócio não dependam do framework nem do ORM.</li>
+  <li>Você se importa com uma cadeia de suprimentos pequena: um pacote, sem scripts de instalação, provenance em cada versão.</li>
+  <li>Você está aprendendo ou ensinando arquitetura limpa e quer um exemplo funcionando e testado para começar.</li>
+</ul>
+
+<h2 id="nest" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quando o Nest CLI é melhor?</h2>
+<ul class="list" role="list">
+  <li>Seu time já usa NestJS ou módulos e decorators no estilo Angular.</li>
+  <li>Você precisa de integrações oficiais (GraphQL, microsserviços, filas) e de geradores para cada recurso novo.</li>
+  <li>Você prefere uma comunidade grande e suporte de longo prazo a uma árvore de dependências mínima.</li>
+</ul>
+
+<h2 id="manual" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quando um template manual basta?</h2>
+<ul class="list" role="list">
+  <li>Sua empresa já tem um template interno com as convenções dela.</li>
+  <li>Você precisa de uma stack que o QuickNode não oferece (Fastify, Prisma, monorepo) e não quer um framework.</li>
+  <li>Você não se importa em atualizar dependências e ferramentas à mão.</li>
+</ul>
+<p class="dim">Algo errado ou desatualizado aqui? <a href="https://github.com/DaksonC/QuickNode/issues" rel="noopener noreferrer">Abra uma issue</a>.</p>
+    <nav class="pager" aria-label="Mais páginas"><ul class="list" role="list"><li><a href="../faq/" rel="prev"><span class="dim">Anterior:</span> Perguntas frequentes</a></li><li><a href="../changelog/" rel="next"><span class="dim">Próxima:</span> Changelog</a></li></ul></nav>
+  </main>
+
+  <footer class="wrap">
+    <p>© 2026 <a href="https://daksonc.github.io/">Dakson Chaves Cruz</a>. MIT License. HTML, CSS e JavaScript puros: sem frameworks, sem rastreadores, sem recursos de terceiros.</p>
+    <ul class="list" role="list">
+      <li><a href="https://github.com/DaksonC/QuickNode" rel="noopener noreferrer">Código-fonte no GitHub</a></li>
+      <li><a href="https://www.npmjs.com/package/@10565/quicknode-cli" rel="noopener noreferrer">Pacote no npm: <code>@10565/quicknode-cli</code></a></li>
+    </ul>
+    <p class="dim"><a href="../../assets/fonts/OFL.txt">VT323</a>: SIL Open Font License.</p>
+  </footer>
+
+  <a class="to-top" id="to-top" href="#top"><span aria-hidden="true">[^]</span> topo</a>
+</body>
+</html>

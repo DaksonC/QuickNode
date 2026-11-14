@@ -1,0 +1,29 @@
+<h1 tabindex="-1">QuickNode CLI</h1>
+<p class="answer">To create a Node.js API with clean architecture, run <code>npx {{package}} create my-api</code>: you get Express, TypeScript or JavaScript, PostgreSQL, tests, linting and Git hooks, already wired in domain and infrastructure layers.<span class="cursor" aria-hidden="true">_</span></p>
+<p>{{package}} is a zero-dependency CLI to create Node.js APIs with clean architecture. The CLI itself is a single npm package built only on Node.js APIs: nothing else is downloaded when you run it.</p>
+<pre class="term"><code>$ npx {{package}} create my-api --typescript
+$ cd my-api
+$ npm install
+$ npm run docker:up
+$ npm run dev</code></pre>
+
+<h2 id="what" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>What do you get?</h2>
+<ul class="list" role="list">
+  <li><span class="key">Clean architecture:</span> entities, repository interfaces and use cases in <code>src/domain</code>; Express, the database and logging in <code>src/infrastructure</code>. <a href="{{home}}structure/">See the structure</a>.</li>
+  <li><span class="key">Two templates:</span> TypeScript (Express, TypeORM, class-validator, tsx) or JavaScript (Express, Sequelize, <code>node --watch</code>).</li>
+  <li><span class="key">Ready to run:</span> PostgreSQL on 127.0.0.1 through Docker Compose, Swagger at <code>/api-docs</code>, a health route, structured logs with pino and helmet headers.</li>
+  <li><span class="key">Quality tools:</span> Jest, ESLint 10, Prettier, Husky 9 and commitlint, with an example CRUD and its tests.</li>
+  <li><span class="key">Safe by default:</span> never writes into a non-empty folder without <code>--force</code>, rejects unsafe names, generates random secrets in a git-ignored <code>.env</code> and shows the plan with <code>--dry-run</code>.</li>
+</ul>
+
+<h2 id="why" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Why zero dependencies?</h2>
+<p>Every dependency of a CLI is code that runs on your machine. QuickNode uses only Node.js {{node}}+ APIs (<code>util.parseArgs</code>, <code>util.styleText</code>, <code>readline</code>, <code>fs</code>), so <code>npx</code> installs one small package, with no install scripts. Releases are published from GitHub Actions with npm provenance, so each version can be traced to a commit. The reasoning is in <a href="{{home}}adr/001/">ADR-001</a>.</p>
+
+<h2 id="next" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Where to go next?</h2>
+<ul class="list" role="list">
+  <li><a href="{{home}}start/">Getting started</a>: requirements and the first API in five steps.</li>
+  <li><a href="{{home}}commands/">Command reference</a>: every command and flag.</li>
+  <li><a href="{{home}}tutorial/">Add an entity and a use case</a> in the right layers.</li>
+  <li><a href="{{home}}compare/">QuickNode, Nest CLI or a manual template?</a></li>
+</ul>
+<p>From a terminal, <code>qn ui</code> opens these pages and <code>qn help create</code> shows the same help offline.</p>

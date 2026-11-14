@@ -1,0 +1,196 @@
+<h1 tabindex="-1">How to create an entity and a use case</h1>
+<p class="answer">To add a feature to a QuickNode API, write the entity, the repository interface and the use case in <code>src/domain</code>, test the use case with a fake repository, then implement the repository, controller and route in <code>src/infrastructure</code> and wire them in <code>server.ts</code>.</p>
+<p>This guide adds a <code>Product</code> to the TypeScript template. The JavaScript template follows the same steps with Sequelize models. A <code>qn generate crud product</code> command that writes these files for you is planned; until then, the steps below are the reference.</p>
+
+<h2 id="entity" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1. How do I write the entity?</h2>
+<p>Create <code>src/domain/entities/product.ts</code>. It is a plain class: no Express, no TypeORM.</p>
+<pre class="term"><code>export class Product {
+  constructor(
+    public readonly id: string,
+    public readonly name: string,
+    public readonly priceInCents: number,
+    public readonly createdAt: Date = new Date()
+  ) {}
+}
+
+export interface CreateProductData {
+  name: string;
+  priceInCents: number;
+}</code></pre>
+
+<h2 id="repository" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2. How do I declare what the domain needs from storage?</h2>
+<p>Create the interface in <code>src/domain/repositories/product-repository.ts</code>:</p>
+<pre class="term"><code>import { Product, CreateProductData } from '../entities/product.js';
+
+export interface ProductRepository {
+  findByName(name: string): Promise&lt;Product | null&gt;;
+  create(data: CreateProductData): Promise&lt;Product&gt;;
+  findAll(): Promise&lt;Product[]&gt;;
+}</code></pre>
+
+<h2 id="use-case" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3. How do I write the use case?</h2>
+<p>Business rules go in <code>src/domain/use-cases/product-use-cases.ts</code>. The use case receives the interface, never the TypeORM class:</p>
+<pre class="term"><code>import { Product, CreateProductData } from '../entities/product.js';
+import { ProductRepository } from '../repositories/product-repository.js';
+
+export class CreateProductUseCase {
+  constructor(private products: ProductRepository) {}
+
+  async execute(data: CreateProductData): Promise&lt;Product&gt; {
+    if (!Number.isInteger(data.priceInCents) || data.priceInCents &lt;= 0) {
+      throw new Error('Price must be a positive amount in cents');
+    }
+    if (await this.products.findByName(data.name)) {
+      throw new Error('A product with this name already exists');
+    }
+    return this.products.create(data);
+  }
+}
+
+export class ListProductsUseCase {
+  constructor(private products: ProductRepository) {}
+
+  execute(): Promise&lt;Product[]&gt; {
+    return this.products.findAll();
+  }
+}</code></pre>
+
+<h2 id="test" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>4. How do I test it without a database?</h2>
+<p>Because the use case depends on an interface, a Jest mock is enough. Create <code>src/__tests__/use-cases/product-use-cases.test.ts</code>:</p>
+<pre class="term"><code>import { CreateProductUseCase } from '../../domain/use-cases/product-use-cases';
+import { ProductRepository } from '../../domain/repositories/product-repository';
+import { Product } from '../../domain/entities/product';
+
+describe('CreateProductUseCase', () =&gt; {
+  const products: jest.Mocked&lt;ProductRepository&gt; = {
+    findByName: jest.fn(),
+    create: jest.fn(),
+    findAll: jest.fn(),
+  };
+  const createProduct = new CreateProductUseCase(products);
+
+  it('creates a product with a unique name', async () =&gt; {
+    products.findByName.mockResolvedValue(null);
+    products.create.mockResolvedValue(new Product('1', 'Coffee', 1500));
+    await expect(createProduct.execute({ name: 'Coffee', priceInCents: 1500 }))
+      .resolves.toMatchObject({ name: 'Coffee' });
+  });
+
+  it('rejects a price of zero', async () =&gt; {
+    await expect(createProduct.execute({ name: 'Free', priceInCents: 0 }))
+      .rejects.toThrow('Price must be a positive amount in cents');
+  });
+});</code></pre>
+<pre class="term"><code>$ npm test</code></pre>
+
+<h2 id="database" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>5. How do I store it in PostgreSQL?</h2>
+<p>Map the table in <code>src/infrastructure/database/entities/product-entity.ts</code>:</p>
+<pre class="term"><code>import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+
+@Entity('products')
+export class ProductEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
+
+  @Column('varchar', { length: 255, unique: true })
+  name!: string;
+
+  @Column('int')
+  priceInCents!: number;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+}</code></pre>
+<p>Add <code>ProductEntity</code> next to <code>UserEntity</code> in every <code>entities: [...]</code> list of <code>connection.ts</code>. In development (<code>NODE_ENV=development</code>), TypeORM creates the table on start; for production, write a migration.</p>
+<p>Then implement the interface in <code>src/infrastructure/database/repositories/product-repository.ts</code>, converting rows into domain entities:</p>
+<pre class="term"><code>import { Repository } from 'typeorm';
+import { ProductRepository } from '../../../domain/repositories/product-repository';
+import { Product, CreateProductData } from '../../../domain/entities/product';
+import { ProductEntity } from '../entities/product-entity';
+import { databaseConnection } from '../connection';
+
+export class PostgreSQLProductRepository implements ProductRepository {
+  private repository: Repository&lt;ProductEntity&gt; =
+    databaseConnection.getDataSource().getRepository(ProductEntity);
+
+  async findByName(name: string): Promise&lt;Product | null&gt; {
+    const row = await this.repository.findOne({ where: { name } });
+    return row ? this.toDomain(row) : null;
+  }
+
+  async create(data: CreateProductData): Promise&lt;Product&gt; {
+    return this.toDomain(await this.repository.save(this.repository.create(data)));
+  }
+
+  async findAll(): Promise&lt;Product[]&gt; {
+    return (await this.repository.find()).map((row) =&gt; this.toDomain(row));
+  }
+
+  private toDomain(row: ProductEntity): Product {
+    return new Product(row.id, row.name, row.priceInCents, row.createdAt);
+  }
+}</code></pre>
+
+<h2 id="http" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>6. How do I expose it over HTTP?</h2>
+<p>The controller in <code>src/infrastructure/controllers/product-controller.ts</code> only translates HTTP to the use case and back:</p>
+<pre class="term"><code>import { Request, Response, NextFunction } from 'express';
+import { CreateProductUseCase, ListProductsUseCase } from '../../domain/use-cases/product-use-cases.js';
+import { AppError } from '../middleware/error-handler.js';
+
+export class ProductController {
+  constructor(
+    private createProduct: CreateProductUseCase,
+    private listProducts: ListProductsUseCase
+  ) {}
+
+  async create(req: Request, res: Response, next: NextFunction): Promise&lt;void&gt; {
+    try {
+      const product = await this.createProduct.execute({
+        name: req.body.name,
+        priceInCents: req.body.priceInCents,
+      });
+      res.status(201).json({ success: true, data: product });
+    } catch (error) {
+      next(error instanceof Error ? new AppError(error.message, 400) : error);
+    }
+  }
+
+  async list(_req: Request, res: Response, next: NextFunction): Promise&lt;void&gt; {
+    try {
+      res.json({ success: true, data: await this.listProducts.execute() });
+    } catch (error) {
+      next(error);
+    }
+  }
+}</code></pre>
+<p>And the router in <code>src/infrastructure/routes/product-routes.ts</code>:</p>
+<pre class="term"><code>import { Router } from 'express';
+import { ProductController } from '../controllers/product-controller';
+
+export function createProductRoutes(controller: ProductController): Router {
+  const router = Router();
+  router.get('/', (req, res, next) =&gt; controller.list(req, res, next));
+  router.post('/', (req, res, next) =&gt; controller.create(req, res, next));
+  return router;
+}</code></pre>
+
+<h2 id="wire" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>7. How do I wire everything together?</h2>
+<p>In <code>server.ts</code>, inside the "Dependency Injection Setup" block, next to the user wiring (and the imports at the top of the file):</p>
+<pre class="term"><code>const productRepository = new PostgreSQLProductRepository();
+const productController = new ProductController(
+  new CreateProductUseCase(productRepository),
+  new ListProductsUseCase(productRepository)
+);
+app.use('/api/v1/products', createProductRoutes(productController));</code></pre>
+<p>This is the only place that knows the concrete classes. Try it:</p>
+<pre class="term"><code>$ npm run dev
+$ curl -X POST localhost:3000/api/v1/products -H 'content-type: application/json' -d '{"name":"Coffee","priceInCents":1500}'
+$ curl localhost:3000/api/v1/products</code></pre>
+
+<h2 id="checklist" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>How do I know I kept the architecture clean?</h2>
+<ul class="list" role="list">
+  <li>No file under <code>src/domain</code> imports <code>express</code>, <code>typeorm</code> or anything from <code>src/infrastructure</code>.</li>
+  <li>The use case test runs without Docker.</li>
+  <li><code>server.ts</code> is the only file that creates <code>PostgreSQLProductRepository</code>.</li>
+</ul>
+<p>To document the endpoints in Swagger, copy the <code>@swagger</code> comments of <code>user-routes.ts</code>. To validate input with express-validator, reuse its <code>validate</code> middleware.</p>

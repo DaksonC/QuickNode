@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <title>Receitas do qn add (em breve): ferramentas em projetos existentes</title>
+  <meta name="description" content="Receitas planejadas do qn add para projetos QuickNode: Docker, ESLint, Husky, Swagger, GitHub Actions, autenticação JWT, healthcheck e mais, idempotentes e com --dry-run.">
+  <link rel="canonical" href="https://daksonc.github.io/QuickNode/pt/add/">
+  <link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/add/">
+  <link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/add/">
+  <link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/add/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="QuickNode CLI">
+  <meta property="og:title" content="Receitas do qn add (em breve): ferramentas em projetos existentes">
+  <meta property="og:description" content="Receitas planejadas do qn add para projetos QuickNode: Docker, ESLint, Husky, Swagger, GitHub Actions, autenticação JWT, healthcheck e mais, idempotentes e com --dry-run.">
+  <meta property="og:url" content="https://daksonc.github.io/QuickNode/pt/add/">
+  <meta property="og:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Receitas do qn add (em breve): ferramentas em projetos existentes">
+  <meta name="twitter:description" content="Receitas planejadas do qn add para projetos QuickNode: Docker, ESLint, Husky, Swagger, GitHub Actions, autenticação JWT, healthcheck e mais, idempotentes e com --dry-run.">
+  <meta name="twitter:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta name="twitter:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
+
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../../assets/fonts/VT323-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <link rel="stylesheet" href="../../assets/css/docs.css">
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/qn-data.js" defer></script>
+  <script src="../../assets/js/docs.js" defer></script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "qn add (em breve)",
+      "name": "Receitas do qn add (em breve): ferramentas em projetos existentes",
+      "description": "Receitas planejadas do qn add para projetos QuickNode: Docker, ESLint, Husky, Swagger, GitHub Actions, autenticação JWT, healthcheck e mais, idempotentes e com --dry-run.",
+      "url": "https://daksonc.github.io/QuickNode/pt/add/",
+      "inLanguage": "pt-BR",
+      "dateModified": "2026-11-14",
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      },
+      "about": {
+        "@id": "https://daksonc.github.io/QuickNode/#software"
+      },
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://daksonc.github.io/QuickNode/#software",
+      "name": "QuickNode CLI",
+      "alternateName": "@10565/quicknode-cli",
+      "description": "CLI sem dependências para criar APIs Node.js com arquitetura limpa",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Windows, macOS, Linux",
+      "softwareRequirements": "Node.js 22.13+",
+      "softwareVersion": "2.0.0",
+      "license": "https://opensource.org/licenses/MIT",
+      "url": "https://daksonc.github.io/QuickNode/",
+      "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "installUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "sameAs": [
+        "https://www.npmjs.com/package/@10565/quicknode-cli",
+        "https://github.com/DaksonC/QuickNode"
+      ],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Início",
+          "item": "https://daksonc.github.io/QuickNode/pt/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "qn add (em breve)",
+          "item": "https://daksonc.github.io/QuickNode/pt/add/"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+</head>
+<body id="top">
+  <a class="skip" href="#main">Pular para o conteúdo</a>
+
+  <header class="wrap site-header">
+    <p class="title"><a href="../" class="home"><span aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Documentação do QuickNode CLI, início</span></a></p>
+    <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="header-panel">[MENU]</button>
+
+    <div class="panel" id="header-panel">
+      <div class="controls">
+        <ul class="lang" role="list" aria-label="Idioma">
+          <li><a href="../../add/" hreflang="en" lang="en">[EN]<span class="sr-only"> English</span></a></li>
+          <li><a href="./" hreflang="pt-BR" lang="pt-BR" aria-current="page">[PT]<span class="sr-only"> Português</span></a></li>
+        </ul>
+        <button type="button" id="fx-toggle" hidden>[FX: <span id="fx-state">ON</span>]<span class="sr-only"> efeitos visuais e animação</span></button>
+        <button type="button" id="theme-toggle" hidden>[<span id="theme-state">LIGHT</span>]<span class="sr-only" id="theme-hint"> mudar para o tema claro</span></button>
+      </div>
+
+      <nav class="menu" aria-label="Documentação">
+        <ul>
+          <li><a href="../start/">[start]</a></li>
+          <li><a href="../commands/">[commands]</a></li>
+          <li><a href="../structure/">[structure]</a></li>
+          <li><a href="../tutorial/">[tutorial]</a></li>
+          <li><a href="../add/" aria-current="page">[add]</a></li>
+          <li><a href="../faq/">[faq]</a></li>
+          <li><a href="../compare/">[compare]</a></li>
+          <li><a href="../changelog/">[changelog]</a></li>
+          <li><a href="../adr/">[adr]</a></li>
+        </ul>
+      </nav>
+
+      <section class="cli-wrap" id="cli-wrap" aria-label="Linha de comando opcional. Digite help para listar os comandos." hidden>
+        <form class="cli" id="cli">
+          <label for="cli-input"><span class="prompt" aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Linha de comando opcional. Digite help para listar os comandos.</span></label>
+          <input id="cli-input" name="command" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="digite help">
+        </form>
+        <div class="cli-output" id="cli-output" role="log" aria-live="polite" aria-label="Saída dos comandos"></div>
+      </section>
+    </div>
+
+    <span class="sr-only" role="status" id="status"></span>
+  </header>
+
+  <main id="main" class="wrap" tabindex="-1">
+    <nav aria-label="Trilha de navegação"><ol class="crumbs" role="list"><li><a href="../">Início</a></li><li aria-current="page">qn add (em breve)</li></ol></nav>
+    <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui add</p>
+    <p class="meta">Atualizado em <time datetime="2026-11-14">2026-11-14</time> · válido para a v2.x</p>
+<h1 tabindex="-1">Receitas do qn add <span class="dim">(em breve)</span></h1>
+<p class="answer">O <code>qn add</code> ainda não está disponível: ele vai aplicar uma ferramenta a um projeto QuickNode existente com um único comando idempotente, com <code>--dry-run</code> mostrando o diff antes de gravar qualquer coisa.</p>
+<p class="note">Nada nesta página funciona hoje. Ela lista as receitas planejadas para você saber o que vem por aí; os comandos atuais estão na <a href="../commands/">referência de comandos</a>.</p>
+
+<h2 id="rules" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como vai funcionar?</h2>
+<ul class="list" role="list">
+  <li>Rodar a mesma receita duas vezes não muda nada na segunda.</li>
+  <li>O <code>--dry-run</code> mostra os arquivos a criar ou alterar; nada é sobrescrito sem <code>--force</code>.</li>
+  <li>Funciona sem perguntas no CI (<code>--yes</code>, <code>--json</code>), como o <code>qn create</code>.</li>
+  <li>As receitas são dados dentro do pacote da CLI: nenhum download durante a execução e continua sem dependências.</li>
+</ul>
+
+<h2 id="recipes" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quais receitas estão planejadas?</h2>
+<dl class="opts">
+  <dt>docker</dt>
+  <dd>Dockerfile em etapas que roda a API sem root.</dd>
+  <dt>eslint, husky</dt>
+  <dd>Configuração flat do ESLint, hooks do Husky e commitlint, para projetos que os removeram.</dd>
+  <dt>swagger</dt>
+  <dd>Configuração do OpenAPI 3 com a interface em <code>/api-docs</code>.</dd>
+  <dt>github-actions, ci</dt>
+  <dd>Workflow com lint, testes, <code>qn check</code> e <code>npm audit</code>.</dd>
+  <dt>tests</dt>
+  <dd>Configuração do executor de testes com um teste de caso de uso de exemplo.</dd>
+  <dt>auth</dt>
+  <dd>Autenticação JWT com o segredo lido do <code>.env</code>.</dd>
+  <dt>healthcheck</dt>
+  <dd>Rotas de saúde e de prontidão.</dd>
+  <dt>graceful-shutdown, rate-limit</dt>
+  <dd>Fecha as conexões com calma no SIGTERM; limita requisições por cliente.</dd>
+  <dt>agents</dt>
+  <dd>Um <code>AGENTS.md</code> que explica as camadas e a regra de dependência para assistentes de código com IA.</dd>
+</dl>
+<p>Acompanhe pelo <a href="../changelog/">changelog</a> e pela <a href="../adr/001/#d6">decisão D6 do ADR-001</a>.</p>
+    <nav class="pager" aria-label="Mais páginas"><ul class="list" role="list"><li><a href="../tutorial/" rel="prev"><span class="dim">Anterior:</span> Entidade e caso de uso</a></li><li><a href="../faq/" rel="next"><span class="dim">Próxima:</span> Perguntas frequentes</a></li></ul></nav>
+  </main>
+
+  <footer class="wrap">
+    <p>© 2026 <a href="https://daksonc.github.io/">Dakson Chaves Cruz</a>. MIT License. HTML, CSS e JavaScript puros: sem frameworks, sem rastreadores, sem recursos de terceiros.</p>
+    <ul class="list" role="list">
+      <li><a href="https://github.com/DaksonC/QuickNode" rel="noopener noreferrer">Código-fonte no GitHub</a></li>
+      <li><a href="https://www.npmjs.com/package/@10565/quicknode-cli" rel="noopener noreferrer">Pacote no npm: <code>@10565/quicknode-cli</code></a></li>
+    </ul>
+    <p class="dim"><a href="../../assets/fonts/OFL.txt">VT323</a>: SIL Open Font License.</p>
+  </footer>
+
+  <a class="to-top" id="to-top" href="#top"><span aria-hidden="true">[^]</span> topo</a>
+</body>
+</html>

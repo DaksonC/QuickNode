@@ -1,0 +1,34 @@
+<h1 tabindex="-1">qn add recipes <span class="dim">(coming soon)</span></h1>
+<p class="answer"><code>qn add</code> is not available yet: it is planned to apply a tool to an existing QuickNode project in one idempotent command, with <code>--dry-run</code> showing the diff before anything is written.</p>
+<p class="note">Nothing on this page works today. It lists the planned recipes so you know what is coming; the current commands are in the <a href="{{home}}commands/">command reference</a>.</p>
+
+<h2 id="rules" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>How will it behave?</h2>
+<ul class="list" role="list">
+  <li>Running a recipe twice changes nothing the second time.</li>
+  <li><code>--dry-run</code> shows the files to create or change; nothing is overwritten without <code>--force</code>.</li>
+  <li>Works without prompts in CI (<code>--yes</code>, <code>--json</code>), like <code>qn create</code>.</li>
+  <li>Recipes are data inside the CLI package: no download while they run, and still zero dependencies.</li>
+</ul>
+
+<h2 id="recipes" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Which recipes are planned?</h2>
+<dl class="opts">
+  <dt>docker</dt>
+  <dd>Multi-stage Dockerfile that runs the API without root.</dd>
+  <dt>eslint, husky</dt>
+  <dd>ESLint flat config, Husky hooks and commitlint, for projects that removed them.</dd>
+  <dt>swagger</dt>
+  <dd>OpenAPI 3 setup with the UI at <code>/api-docs</code>.</dd>
+  <dt>github-actions, ci</dt>
+  <dd>Workflow with lint, tests, <code>qn check</code> and <code>npm audit</code>.</dd>
+  <dt>tests</dt>
+  <dd>Test runner setup with an example use case test.</dd>
+  <dt>auth</dt>
+  <dd>JWT authentication with the secret read from <code>.env</code>.</dd>
+  <dt>healthcheck</dt>
+  <dd>Liveness and readiness routes.</dd>
+  <dt>graceful-shutdown, rate-limit</dt>
+  <dd>Close connections cleanly on SIGTERM; limit requests per client.</dd>
+  <dt>agents</dt>
+  <dd>An <code>AGENTS.md</code> that tells AI coding assistants about the layers and the dependency rule.</dd>
+</dl>
+<p>Follow the progress in the <a href="{{home}}changelog/">changelog</a> and in <a href="{{home}}adr/001/#d6">ADR-001, decision D6</a>.</p>

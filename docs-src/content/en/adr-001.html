@@ -145,7 +145,7 @@
 <ul class="list" role="list">
   <li>DOS terminal look: a prompt in the header (e.g. C:\QUICKNODE&gt;), buttons and selectors in brackets ([MENU], [EN], [PT]), section titles with a dashed line, lists with the &gt;  marker and code blocks as terminal output.</li>
   <li>WCAG 2.2 AA accessibility, as on the site: minimum contrast of 4.5:1 in both themes, visible focus with green/black inversion, correct lang and content readable at 320 px.</li>
-  <li>CRT effects (glow and scanlines) only by opt-in ([FX: ON]), only in the dark theme and turned off by prefers-reduced-motion.</li>
+  <li>CRT effects (glow and scanlines) on by default ([FX: ON]), with [FX: OFF] to turn them off (the choice is remembered); only in the dark theme, and animations stop with prefers-reduced-motion.</li>
   <li>Bilingual EN/PT, with the same page structure and language selector as the site; light/dark theme saved before the first paint, without a "flash".</li>
   <li>An optional command line on the page, as on the site, simulating qn --help, qn create, qn add and qn ui so developers can try it before installing. It is progressive enhancement: the page works fully without JavaScript.</li>
   <li>Consistency in the terminal: the CLI itself uses the same color logic through util.styleText (green for success, amber for highlights and links) and the ASCII banner follows the same style.</li>

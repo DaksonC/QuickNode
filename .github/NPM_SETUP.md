@@ -43,24 +43,32 @@ Na [página de configurações do pacote](https://www.npmjs.com/package/@10565/q
 
 ## 4. Publicar uma versão
 
+A `main` só muda por PR, então a release tem dois passos. Os dois rodam `npm run verify`
+(lint, testes com cobertura >= 80%, `npm audit signatures` e `npm audit`), as mesmas
+checagens do job `verify` do workflow: uma tag que passou localmente não fica "queimada"
+por falhar no CI.
+
 ```bash
-git checkout main && git pull --ff-only
-npm run release:patch   # ou release:minor / release:major / release:prerelease
+# 1. Na develop: bump + commit + push, depois PR develop → main
+git checkout develop && npm run release:minor   # ou release:patch / release:major / release:prerelease
+
+# 2. Depois do merge, na main: cria e envia a tag vX.Y.Z da versão atual
+git checkout main && npm run release:tag
 ```
 
-O script faz o bump, cria a tag anotada `vX.Y.Z` e envia as duas coisas. O workflow então:
+> ⚠️ **Primeira release da v2:** o `package.json` ainda está em `1.1.0`, mas o código já é a
+> v2 (Node 22.13+, quebra de compatibilidade). A primeira release depois do merge das fases
+> do ADR-001 precisa ser `npm run release:major` (→ `2.0.0`); `minor`/`patch` publicariam a
+> quebra como `1.x` para quem usa `^1.1.0`.
+
+O push da tag dispara o workflow, que:
 
 1. confere se a tag é igual à versão do `package.json` e se aponta para a `main`;
-2. roda `npm ci`, `npm audit signatures`, lint, testes com cobertura e `npm audit`;
-3. publica com `npm publish --provenance` (prerelease vai para a dist-tag `next`);
-4. cria o GitHub Release com notas geradas e a SBOM CycloneDX anexada.
-
-Se o bump foi feito na `develop`, depois do merge na `main` basta criar a tag:
-
-```bash
-git checkout main && git pull --ff-only
-git tag -a v2.1.0 -m "Release v2.1.0" && git push origin v2.1.0
-```
+2. roda `npm ci --ignore-scripts` e `npm run verify`, e empacota esse build com `npm pack`;
+3. publica **esse mesmo tarball** com `npm publish --provenance`, num job sem checkout e sem
+   `npm install` (nada da árvore de dependências roda enquanto existe o token OIDC);
+   prerelease vai para a dist-tag `next`;
+4. cria o GitHub Release com notas geradas, o tarball e a SBOM CycloneDX anexados.
 
 ## 5. Verificar
 
@@ -74,5 +82,6 @@ git tag -a v2.1.0 -m "Release v2.1.0" && git push origin v2.1.0
 | --- | --- |
 | `404`/`ENEEDAUTH` no `npm publish` | Campos do Trusted Publisher diferentes do workflow (nome do arquivo, environment `npm`, maiúsculas em owner/repo). |
 | `npm >= 11.5.1 is required` | O job de publicação precisa rodar em Node 24 (que traz o npm 11). |
-| `Tag … does not match package.json` | Tag criada sem bump; apague a tag, faça o bump e crie de novo. |
+| `Tag … does not match package.json` | Tag criada à mão sem bump. Use `npm run release:tag`, que sempre usa a versão do `package.json`. |
+| `Tag vX.Y.Z already exists` (release:tag) | A versão já foi publicada (ou tentada); faça um novo bump na `develop`. |
 | `points to a commit that is not on main` | Tag criada em outra branch; só tags da `main` são publicadas. |

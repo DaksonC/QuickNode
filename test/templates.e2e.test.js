@@ -1,7 +1,9 @@
 /**
- * End-to-end check of the generated projects (ADR-001, D3/D5): generate each template
- * with the real CLI, then run npm install, npm audit (high/critical fail), lint, test
- * and, for TypeScript, build — the same steps a user would run on day one.
+ * End-to-end check of the generated projects (ADR-001, D3/D5). The CLI is packed with
+ * `npm pack` and run from the extracted tarball, so the templates come from exactly what
+ * npm would publish (the `files` field and npm's own exclusions included). Each template
+ * is generated, then npm install, npm audit (high/critical fail), lint, test and, for
+ * TypeScript, build run — the same steps a user would run on day one.
  *
  * Needs network and takes minutes, so it only runs when asked:
  *   QN_E2E_TEMPLATES=all npm run test:templates          # both templates
@@ -9,14 +11,16 @@
  */
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
+import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
-import { describe, it } from 'node:test';
+import { after, before, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
-import { exists, makeTmp } from './helpers.js';
+import { exists, makeTmp, read } from './helpers.js';
 
 const execFileAsync = promisify(execFile);
-const cli = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
+const root = fileURLToPath(new URL('..', import.meta.url));
 const npmCli = process.env.npm_execpath;
 
 const TEMPLATES = ['typescript', 'javascript'];
@@ -51,6 +55,26 @@ describe(
   'generated projects (e2e)',
   { skip: selected.length ? false : 'set QN_E2E_TEMPLATES to run' },
   () => {
+    let packDir;
+    let cli;
+
+    before(async () => {
+      packDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qn-pack-'));
+      const { stdout } = await npm(
+        root,
+        'pack',
+        '--ignore-scripts',
+        '--json',
+        '--pack-destination',
+        packDir
+      );
+      const [{ filename }] = JSON.parse(stdout);
+      await execFileAsync('tar', ['-xzf', path.join(packDir, filename), '-C', packDir]);
+      cli = path.join(packDir, 'package', 'dist', 'cli.js');
+    });
+
+    after(() => packDir && fs.rm(packDir, { recursive: true, force: true }));
+
     for (const template of selected) {
       it(
         `${template}: install, audit, lint, test${template === 'typescript' ? ', build' : ''}`,
@@ -67,6 +91,8 @@ describe(
               env: { ...process.env, NO_COLOR: '1' },
             }
           );
+          // npm drops .gitignore from tarballs; the template ships it as `gitignore`.
+          assert.match(await read(project, '.gitignore'), /^\.env$/m);
           assert.equal(await exists(project, '.env'), true);
           assert.equal(await exists(project, 'package-lock.json'), false);
 

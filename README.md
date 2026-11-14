@@ -299,7 +299,7 @@ All endpoints include:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Run the checks: `npm run lint`, `npm run test:coverage` and, when you touch a template,
+3. Run the checks: `npm run verify` (lint, tests with coverage, audits) and, when you touch a template,
    `QN_E2E_TEMPLATES=all npm run test:templates` (generates both templates and runs install,
    audit, lint, test and build — needs network)
 4. Commit changes: `git commit -m 'feat: add amazing feature'`

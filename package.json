@@ -13,6 +13,7 @@
     "test": "npm run build && node --test test/*.test.js",
     "test:coverage": "npm run build && node --test --experimental-test-coverage --test-coverage-include=dist/** --test-coverage-lines=80 test/*.test.js",
     "test:templates": "npm run build && node --test test/templates.e2e.test.js",
+    "verify": "npm run lint && npm run test:coverage && npm audit signatures && npm audit --omit=dev --audit-level=high",
     "lint": "eslint src test",
     "lint:fix": "eslint src test --fix",
     "format": "prettier --write src test",
@@ -20,7 +21,8 @@
     "release:patch": "./scripts/release.sh patch",
     "release:minor": "./scripts/release.sh minor",
     "release:major": "./scripts/release.sh major",
-    "release:prerelease": "./scripts/release.sh prerelease"
+    "release:prerelease": "./scripts/release.sh prerelease",
+    "release:tag": "./scripts/release.sh tag"
   },
   "keywords": [
     "nodejs",

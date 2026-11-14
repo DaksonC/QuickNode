@@ -27,8 +27,7 @@ git push origin feature/minha-nova-feature
 
 ### 2. 🧪 Antes de abrir o PR
 ```bash
-npm run lint
-npm run test:coverage                         # build + testes, cobertura >= 80%
+npm run verify                                # lint, build + testes (cobertura >= 80%), audits
 QN_E2E_TEMPLATES=all npm run test:templates   # gera os dois templates e roda install, audit, lint, test e build
 ```
 
@@ -37,16 +36,15 @@ QN_E2E_TEMPLATES=all npm run test:templates   # gera os dois templates e roda in
 Só uma tag `v*` na `main` publica. Detalhes e configuração única em [NPM_SETUP.md](NPM_SETUP.md).
 
 ```bash
-# Opção A (recomendada): na main
-git checkout main && git pull --ff-only
-npm run release:minor     # bump + commit + tag vX.Y.Z + push → publica
+# 1. Na develop: checagens (npm run verify) + bump + commit + push
+git checkout develop && npm run release:minor   # patch / minor / major / prerelease
+# PR develop → main e merge
 
-# Opção B: bump na develop, tag depois do merge
-npm run release:minor     # na develop: bump + commit + push
-# PR develop → main, merge, e então:
-git checkout main && git pull --ff-only
-git tag -a v2.1.0 -m "Release v2.1.0" && git push origin v2.1.0
+# 2. Na main: checagens + tag vX.Y.Z da versão atual + push da tag → publica
+git checkout main && npm run release:tag
 ```
+
+> ⚠️ A primeira release depois das fases do ADR-001 é `npm run release:major` (1.1.0 → 2.0.0).
 
 ## 🤖 Automação (GitHub Actions)
 
@@ -54,7 +52,8 @@ Todas as actions são fixadas por SHA de commit (o Dependabot mantém atualizada
 workflow pede só as permissões de que precisa.
 
 ### CI Tests (`ci.yml`)
-**Gatilhos:** push em `main`, `develop`, `feature/*`; PRs para `main` e `develop`.
+**Gatilhos:** push em `main` e `develop`; PRs para `main`, `develop` e `feature/*` (PRs empilhados).
+Runs de PR substituídos são cancelados; cada commit de `main`/`develop` mantém o próprio resultado.
 
 - Node 22 e 24: `npm ci`, `npm audit signatures`, lint, testes com cobertura >= 80%
 - Zero dependências de runtime, `npm audit` e orçamento de tamanho do pacote (300 KB)
@@ -63,9 +62,10 @@ workflow pede só as permissões de que precisa.
 ### Publish to NPM (`publish.yml`)
 **Gatilho:** push de tag `v*`.
 
-- `verify`: tag = versão do `package.json`, tag na `main`, lint, testes, audits
-- `publish`: Trusted Publishing (OIDC) com `--provenance`, environment `npm`
-- `release`: GitHub Release com notas geradas e SBOM CycloneDX
+- `verify`: tag = versão do `package.json`, tag na `main`, `npm run verify` e `npm pack`
+- `publish`: publica o tarball testado com Trusted Publishing (OIDC) e `--provenance`,
+  environment `npm`, sem checkout e sem `npm install`
+- `release`: GitHub Release com notas geradas, tarball e SBOM CycloneDX
 
 ### CodeQL (`codeql.yml`) e OpenSSF Scorecard (`scorecard.yml`)
 Análise estática do código e dos workflows, e nota de supply chain; resultados na aba
@@ -106,7 +106,8 @@ Veja a tabela de problemas comuns em [NPM_SETUP.md](NPM_SETUP.md#problemas-comun
 
 - [ ] CI verde na `main`
 - [ ] `QN_E2E_TEMPLATES=all npm run test:templates` passando
-- [ ] Versão com bump e tag `vX.Y.Z` na `main`
+- [ ] Bump feito na `develop` (`npm run release:<tipo>`) e PR mergeado na `main`
+- [ ] `npm run release:tag` na `main`
 - [ ] Workflow `Publish to NPM` verde
 - [ ] Provenance visível na página do npm
 - [ ] GitHub Release criado com a SBOM

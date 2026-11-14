@@ -1,17 +1,20 @@
 name: 🧪 CI Tests
 
+# Feature branches are tested through their PR (feature/* as base covers stacked PRs);
+# pushes only run on the long-lived branches, so a push to an open PR runs CI once.
 on:
   push:
-    branches: [main, develop, feature/*]
-  pull_request:
     branches: [main, develop]
+  pull_request:
+    branches: [main, develop, feature/*]
 
 permissions:
   contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded PR runs are cancelled; every commit on main/develop keeps its own result.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -33,7 +36,7 @@ jobs:
           cache: 'npm'
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: 🔏 Verify registry signatures and provenance of dependencies
         run: npm audit signatures
@@ -82,7 +85,7 @@ jobs:
           cache: 'npm'
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: 🧾 Generate the ${{ matrix.template }} project, install, audit, lint, test and build it
         run: npm run test:templates

@@ -13,8 +13,10 @@ on:
 permissions:
   contents: read
 
+# One group per tag: a shared group would keep only the latest pending run and silently
+# drop the tags in between.
 concurrency:
-  group: publish
+  group: publish-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -45,20 +47,29 @@ jobs:
             exit 1
           fi
 
+      # No dev dependency needs an install script; skipping them keeps the build clean.
       - name: 📥 Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: 🔏 Verify registry signatures and provenance of dependencies
-        run: npm audit signatures
+      # Same checks as `npm run release:*` runs locally: lint, build + tests with coverage
+      # >= 80%, npm audit signatures and npm audit.
+      - name: 🧪 Release checks (npm run verify)
+        run: npm run verify
 
-      - name: 🔍 Run linting
-        run: npm run lint
+      # Pack the dist/ that was just tested; publish ships this exact file.
+      - name: 📦 Pack the tested build
+        run: |
+          mkdir -p pack
+          npm pack --ignore-scripts --pack-destination pack
+          ls -l pack
 
-      - name: 🧪 Build and run tests (coverage >= 80%)
-        run: npm run test:coverage
-
-      - name: 🛡️ Audit CLI dependencies
-        run: npm audit --omit=dev --audit-level=high
+      - name: 📤 Upload tarball
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package
+          path: pack/*.tgz
+          if-no-files-found: error
+          retention-days: 7
 
   publish:
     needs: verify
@@ -68,11 +79,14 @@ jobs:
     permissions:
       contents: read
       id-token: write # OIDC token exchanged with npm; enables Trusted Publishing and provenance
+    # No checkout and no npm install here: nothing from the dependency tree runs while
+    # the job can mint an OIDC token. It only publishes the tarball tested in verify.
     steps:
-      - name: 📦 Checkout tag
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: 📥 Download tested tarball
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          persist-credentials: false
+          name: package
+          path: pack
 
       # Node 24 ships npm 11; Trusted Publishing needs npm >= 11.5.1.
       - name: 🔧 Setup Node.js
@@ -86,18 +100,14 @@ jobs:
           npm --version
           node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); if (a<11||(a===11&&(b<5||(b===5&&c<1)))) { console.error("npm >= 11.5.1 is required for Trusted Publishing"); process.exit(1) }' "$(npm --version)"
 
-      - name: 📥 Install dependencies
-        run: npm ci
-
-      # prepublishOnly builds dist/. Prereleases (1.2.3-beta.0) go to the "next" dist-tag.
+      # Prereleases (v1.2.3-beta.0) go to the "next" dist-tag.
       - name: 🚀 Publish with provenance
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          case "$VERSION" in
+          case "$GITHUB_REF_NAME" in
             *-*) DIST_TAG=next ;;
             *) DIST_TAG=latest ;;
           esac
-          npm publish --provenance --access public --tag "$DIST_TAG"
+          npm publish pack/*.tgz --provenance --access public --tag "$DIST_TAG"
 
   release:
     needs: publish
@@ -116,18 +126,24 @@ jobs:
           node-version: 22.x
           package-manager-cache: false
 
+      - name: 📥 Download published tarball
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: package
+          path: pack
+
       - name: 🧾 Generate SBOM (CycloneDX)
         run: |
           npm ci --ignore-scripts
           npm sbom --sbom-format cyclonedx --omit dev > "quicknode-cli-${GITHUB_REF_NAME}.cdx.json"
 
-      - name: 📝 Create GitHub Release with the SBOM
+      - name: 📝 Create GitHub Release with the tarball and the SBOM
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           PRERELEASE=""
           case "$GITHUB_REF_NAME" in *-*) PRERELEASE="--prerelease" ;; esac
-          gh release create "$GITHUB_REF_NAME" "quicknode-cli-${GITHUB_REF_NAME}.cdx.json" \
+          gh release create "$GITHUB_REF_NAME" pack/*.tgz "quicknode-cli-${GITHUB_REF_NAME}.cdx.json" \
             --verify-tag --generate-notes --title "$GITHUB_REF_NAME" $PRERELEASE
           {
             echo "✅ Published @10565/quicknode-cli@${GITHUB_REF_NAME#v} with provenance"

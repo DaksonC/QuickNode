@@ -16,8 +16,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { PassThrough } from 'node:stream';
 import { fileURLToPath } from 'node:url';
-import { ERROR_CODES } from '../dist/core/errors.js';
-import { EXIT_ERROR, EXIT_OK, EXIT_USAGE, main, renderHelp } from '../dist/main.js';
+import { ERROR_CODES, EXIT_CODES } from '../dist/core/errors.js';
+import { EXIT_OK, main, renderHelp } from '../dist/main.js';
 import { COMMANDS, DOCS_TOPICS, GLOBAL_OPTIONS, LEGACY_FLAGS } from '../dist/spec.js';
 import { createStyle } from '../dist/ui/style.js';
 import { COMMANDS_PT, ERRORS_PT, LANGS, LLMS, PAGES, REFERENCE_TEXT, SITE, UI } from '../docs-src/site.mjs';
@@ -142,7 +142,7 @@ export function renderReference(lang) {
     '<section aria-labelledby="exit-codes">',
     `<h2 id="exit-codes" tabindex="-1">${t.exit}</h2>`,
     '<dl class="opts">',
-    ...[EXIT_OK, EXIT_ERROR, EXIT_USAGE].map((code, index) => `  <dt><code>${code}</code></dt>\n  <dd>${esc(t.exitCodes[index])}</dd>`),
+    ...Object.keys(EXIT_CODES).map((code) => `  <dt><code>${code}</code></dt>\n  <dd>${esc(t.exitCodes[code])}</dd>`),
     '</dl>',
     '</section>',
     '<section aria-labelledby="errors">',
@@ -458,8 +458,9 @@ function renderMarkdown(page, lang) {
 
 function renderLlmsTxt() {
   const entry = (page, lang) => `- [${page[lang].crumb}](${markdownUrl(page.slug, lang)}): ${page[lang].description}`;
-  const docs = PAGES.filter((page) => !page.slug.startsWith('adr/'));
-  const adrs = PAGES.filter((page) => page.slug.startsWith('adr/'));
+  const isAdr = (page) => page.slug.startsWith('adr/');
+  const docs = PAGES.filter((page) => !isAdr(page));
+  const adrs = PAGES.filter(isAdr);
   return [
     `# ${SITE.name}`,
     '',

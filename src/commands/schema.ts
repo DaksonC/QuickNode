@@ -1,4 +1,4 @@
-import { ERROR_CODES, JSON_SCHEMA_VERSION } from '../core/errors.js';
+import { ERROR_CODES, EXIT_CODES, JSON_SCHEMA_VERSION } from '../core/errors.js';
 import { COMMANDS, GLOBAL_OPTIONS, LEGACY_FLAGS, resolveCommand, UsageError, type CommandSpec, type OptionSpec } from '../spec.js';
 
 /**
@@ -6,11 +6,12 @@ import { COMMANDS, GLOBAL_OPTIONS, LEGACY_FLAGS, resolveCommand, UsageError, typ
  * `qn --help --json` and the MCP server return. Built from the same spec the
  * parser and the documentation use, so an agent never has to guess a flag.
  */
-export const EXIT_CODES = {
-  0: 'Success',
-  1: 'The command failed (see the error code)',
-  2: 'Invalid usage (E_USAGE)'
-} as const;
+
+/** Declared default; boolean flags are false unless given. */
+function defaultOf(spec: OptionSpec): { default?: string | boolean } {
+  const value = spec.default ?? (spec.type === 'boolean' ? false : undefined);
+  return value === undefined ? {} : { default: value };
+}
 
 function describeOptions(options: Record<string, OptionSpec>) {
   return Object.fromEntries(
@@ -22,13 +23,13 @@ function describeOptions(options: Record<string, OptionSpec>) {
         description: spec.description,
         ...(spec.choices ? { choices: [...spec.choices] } : {}),
         ...(spec.valueName ? { valueName: spec.valueName } : {}),
-        ...(spec.default !== undefined ? { default: spec.default } : spec.type === 'boolean' ? { default: false } : {})
+        ...defaultOf(spec)
       }
     ])
   );
 }
 
-export function describeCommand(spec: CommandSpec) {
+function describeCommand(spec: CommandSpec) {
   return {
     name: spec.name,
     aliases: spec.aliases ?? [],
@@ -56,7 +57,8 @@ export function buildSchema(version: string) {
     notes: [
       'Without a terminal (agents, CI, pipes) qn never prompts: it uses the declared defaults or fails with E_USAGE and a fix.',
       'Commands that write files accept --dry-run; with --json they list every file to create or change, with diffs.',
-      'Every --json output has "ok" and "schemaVersion"; failures add "error": { code, message, fix }.'
+      'Every --json output has "ok" and "schemaVersion"; failures add "error": { code, message, fix }.',
+      'No command deletes files: dry runs list the files to create and to change.'
     ],
     commands: Object.values(COMMANDS).map(describeCommand),
     globalOptions: describeOptions(GLOBAL_OPTIONS),

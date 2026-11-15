@@ -1,6 +1,6 @@
 # QuickNode CLI para agentes de IA
 
-Um agente de código com IA cria uma API Node.js com arquitetura limpa rodando `npx @10565/quicknode-cli@2 create my-api --typescript --yes --json`: todo comando roda sem perguntas, imprime JSON com `--json`, planeja com `--dry-run` e falha com um código de erro estável e uma correção.
+Um agente de código com IA cria uma API Node.js com arquitetura limpa rodando `npx @10565/quicknode-cli@2 create my-api --typescript --yes --json`: sem terminal nenhum comando pergunta nada, e os comandos imprimem JSON com `--json`, planejam com `--dry-run` e falham com um código de erro estável e uma correção.
 
 Não confundir com QuickNode, o provedor de infraestrutura blockchain. Use sempre o nome do pacote com escopo, `@10565/quicknode-cli`; o comando que ele instala é o `qn`.
 
@@ -60,7 +60,8 @@ O `qn mcp` roda um servidor Model Context Protocol no stdio, dentro do mesmo pac
 
 No Claude Code: `claude mcp add quicknode -- npx @10565/quicknode-cli@2 mcp`.
 
-- Simulação por padrão: as ferramentas que gravam devolvem o plano, a menos que sejam chamadas com `"apply": true`.
+- Simulação por padrão: as ferramentas que gravam devolvem o plano, a menos que sejam chamadas com `"apply": true`, e arquivos com outro conteúdo só são sobrescritos com `"force": true`.
+- Quem define o `apply` é o próprio agente, então o servidor não distingue isso da aprovação de uma pessoa. A pessoa mantém o controle pelo cliente MCP (Claude Code, Cursor…), que pede permissão antes de rodar uma ferramenta que grava: essas ferramentas vêm marcadas com `readOnlyHint: false`.
 - Atua só dentro da pasta em que o servidor foi iniciado; caminhos fora dela são recusados.
 - Sem rede e sem outros programas: o `qn_create` não instala dependências nem roda git, e o `qn_doctor` pula o Docker e o `npm audit`.
 

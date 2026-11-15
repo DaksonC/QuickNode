@@ -1,15 +1,16 @@
+import { realpathSync } from 'node:fs';
 import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { describeError } from '../core/error-report.js';
-import { QnError } from '../core/errors.js';
+import { isInside, realpathNearest } from '../core/fs.js';
 import { detectProject } from '../core/project.js';
 import type { RecipeName } from '../core/recipes.js';
 import { CRUD_PARTS, GENERATOR_TYPES, PACKAGE_MANAGERS, RECIPES, TEST_RUNNERS, UsageError } from '../spec.js';
 import { addRecipes } from './add.js';
 import { checkProject } from './check.js';
-import { createProject } from './create.js';
+import { createInputFromFlags, createProject } from './create.js';
 import { doctor } from './doctor.js';
-import { generate, type GeneratorType, type Part } from './generate.js';
+import { generate, generateInputFromFlags } from './generate.js';
 import { buildSchema } from './schema.js';
 
 /**
@@ -75,20 +76,22 @@ function listArg<T extends string>(args: Args, name: string, choices: readonly T
 
 const flag = (args: Args, name: string) => args[name] === true;
 
-/** Resolves `path` inside the server folder; anything outside is refused. */
+/**
+ * Resolves `relative` inside the server folder and refuses anything outside
+ * it, also when a symbolic link inside the folder points elsewhere.
+ */
 function insideRoot(ctx: ToolContext, relative: string | undefined): string {
   const target = path.resolve(ctx.root, relative ?? '.');
-  const fromRoot = path.relative(ctx.root, target);
-  if (fromRoot.startsWith('..') || path.isAbsolute(fromRoot)) {
+  if (!isInside(target, ctx.root) || !isInside(realpathNearest(target), ctx.root)) {
     throw new UsageError(`"${relative}" is outside the folder the MCP server runs in.`, 'mcp', 'use a path inside the project');
   }
   return target;
 }
 
-/** A project folder inside the server folder (detection walks up, so check the root found). */
+/** A project folder inside the server folder; detection walks up, so the root it finds is checked too. */
 function projectDir(args: Args, ctx: ToolContext): string {
   const cwd = insideRoot(ctx, stringArg(args, 'path'));
-  insideRoot(ctx, path.relative(ctx.root, detectProject(cwd).root));
+  insideRoot(ctx, detectProject(cwd).root);
   return cwd;
 }
 
@@ -130,13 +133,15 @@ export const TOOLS: Record<string, Tool> = {
     },
     readOnly: false,
     run: async (args, ctx) => {
-      const type = choiceArg<GeneratorType>(args, 'type', GENERATOR_TYPES);
-      if (args.only !== undefined && type !== 'crud') throw new UsageError('"only" works with type "crud" only.', 'mcp');
-      const only = args.only === undefined ? undefined : listArg<Part>(args, 'only', CRUD_PARTS);
-      return generate(
-        { type, name: stringArg(args, 'name', true), only, test: args.test !== false, dryRun: !flag(args, 'apply'), force: flag(args, 'force') },
-        projectDir(args, ctx)
-      );
+      // Same validation as the command line: the arguments become the flags they mirror.
+      const only = args.only === undefined ? undefined : listArg(args, 'only', CRUD_PARTS).join(',');
+      const input = generateInputFromFlags([stringArg(args, 'type', true), stringArg(args, 'name', true)], {
+        only,
+        'no-test': args.test === false,
+        'dry-run': !flag(args, 'apply'),
+        force: flag(args, 'force')
+      });
+      return generate(input, projectDir(args, ctx));
     }
   },
   qn_add: {
@@ -171,19 +176,21 @@ export const TOOLS: Record<string, Tool> = {
       }
     },
     readOnly: false,
-    run: async (args, ctx) =>
-      createProject(
-        {
-          name: stringArg(args, 'name', true),
-          template: choiceArg(args, 'template', ['typescript', 'javascript'] as const),
-          pm: choiceArg(args, 'pm', PACKAGE_MANAGERS, 'npm'),
-          testRunner: choiceArg(args, 'test', TEST_RUNNERS, 'jest'),
-          yes: true,
-          dryRun: !flag(args, 'apply'),
-          force: flag(args, 'force')
-        },
-        { cwd: ctx.root }
-      )
+    run: async (args, ctx) => {
+      const name = stringArg(args, 'name', true);
+      insideRoot(ctx, name);
+      const template = choiceArg(args, 'template', ['typescript', 'javascript'] as const);
+      // Never --install or --git: the server runs no programs.
+      const input = createInputFromFlags([name], {
+        [template]: true,
+        pm: choiceArg(args, 'pm', PACKAGE_MANAGERS, 'npm'),
+        test: choiceArg(args, 'test', TEST_RUNNERS, 'jest'),
+        yes: true,
+        'dry-run': !flag(args, 'apply'),
+        force: flag(args, 'force')
+      });
+      return createProject(input, { cwd: ctx.root });
+    }
   }
 };
 
@@ -203,6 +210,13 @@ class RpcError extends Error {
   }
 }
 
+/** Fixes phrased for MCP callers, instead of command lines. */
+const MCP_FIXES = {
+  E_DIR_NOT_EMPTY: 'show the person the plan, then call the tool again with "force": true',
+  E_FILES_EXIST: 'show the person the plan, then call the tool again with "force": true',
+  E_NOT_A_PROJECT: 'pass "path" with the folder of a QuickNode project, or create one with qn_create'
+};
+
 function listTools() {
   return Object.entries(TOOLS).map(([name, tool]) => ({
     name,
@@ -218,14 +232,19 @@ async function callTool(params: Record<string, unknown> | undefined, ctx: ToolCo
   if (!tool) throw new RpcError(-32602, `Unknown tool: ${String(name)}`);
   const args = (params?.arguments ?? {}) as Args;
   if (typeof args !== 'object' || args === null || Array.isArray(args)) throw new RpcError(-32602, 'arguments must be an object');
+  const reply = (payload: object, isError: boolean) => ({
+    content: [{ type: 'text', text: JSON.stringify(payload, null, 2) }],
+    structuredContent: payload,
+    isError
+  });
   try {
-    const result = { ok: true, ...(await tool.run(args, ctx)) };
-    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }], structuredContent: result, isError: false };
+    return reply({ ok: true, ...(await tool.run(args, ctx)) }, false);
   } catch (error) {
     // Tool failures are results the model can read and fix, not protocol errors.
-    const report = { ok: false, error: describeError(error, []) };
-    if (!(error instanceof QnError)) delete report.error.fix;
-    return { content: [{ type: 'text', text: JSON.stringify(report, null, 2) }], structuredContent: report, isError: true };
+    // Usage errors from the CLI validators suggest "qn <command> --help"; the server's own are already phrased for MCP.
+    const fromCli = error instanceof UsageError && error.command !== 'mcp';
+    const override = fromCli ? { ...MCP_FIXES, E_USAGE: 'call qn_schema to see the parameters and accepted values' } : MCP_FIXES;
+    return reply({ ok: false, error: describeError(error, { override }) }, true);
   }
 }
 
@@ -236,6 +255,10 @@ export async function handleMessage(line: string, ctx: ToolContext): Promise<obj
     request = JSON.parse(line);
   } catch {
     return { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } };
+  }
+  // null, numbers, arrays (batches are not supported): invalid requests, answered with id null.
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+    return { jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid request' } };
   }
   const isNotification = request.id === undefined;
   try {
@@ -282,7 +305,7 @@ export interface McpOptions {
 
 /** Serves MCP on stdio until stdin closes; messages are handled one at a time, in order. */
 export async function runMcpServer({ stdin, stdout, cwd, version }: McpOptions): Promise<number> {
-  const ctx: ToolContext = { root: path.resolve(cwd), version };
+  const ctx: ToolContext = { root: realpathSync(path.resolve(cwd)), version };
   const lines = createInterface({ input: stdin, crlfDelay: Infinity });
   for await (const line of lines) {
     if (line.trim() === '') continue;

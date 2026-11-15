@@ -252,3 +252,59 @@ describe('agent evaluation runner', async () => {
     }
   });
 });
+
+describe('review fixes (4b)', () => {
+  it('answers non-object messages instead of crashing', async (t) => {
+    const ctx = { root: await makeTmp(t), version: '1' };
+    for (const line of ['null', '1', '[]', '"x"']) {
+      assert.deepEqual(await handleMessage(line, ctx), { jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid request' } }, line);
+    }
+    const responses = await mcpSession(ctx.root, ['null', { jsonrpc: '2.0', id: 7, method: 'ping' }]);
+    assert.deepEqual(responses.map((response) => response.id), [null, 7]);
+  });
+
+  it('phrases fixes for MCP callers', async (t) => {
+    const project = await makeProject(t, 'javascript');
+    await runQn(project, 'g', 'entity', 'product');
+    await fs.writeFile(path.join(project, 'src', 'domain', 'entities', 'product.js'), 'mine');
+    const [conflict, usage, outside] = await mcpSession(project, [
+      call(1, 'qn_generate', { type: 'entity', name: 'product', apply: true }),
+      call(2, 'qn_generate', { type: 'page', name: 'x' }),
+      call(3, 'qn_check', { path: '../..' })
+    ]);
+    assert.equal(conflict.result.structuredContent.error.code, 'E_FILES_EXIST');
+    assert.match(conflict.result.structuredContent.error.fix, /"force": true/);
+    assert.match(usage.result.structuredContent.error.fix, /qn_schema/);
+    assert.equal(outside.result.structuredContent.error.fix, 'use a path inside the project');
+  });
+
+  it('does not follow a symlink out of the MCP folder or out of a project', async (t) => {
+    const root = await makeTmp(t);
+    const elsewhere = await makeTmp(t);
+    await fs.symlink(elsewhere, path.join(root, 'link'));
+    const [create, check] = await mcpSession(root, [
+      call(1, 'qn_create', { name: 'link', template: 'javascript', apply: true, force: true }),
+      call(2, 'qn_check', { path: 'link' })
+    ]);
+    assert.equal(create.result.isError, true);
+    assert.equal(check.result.isError, true);
+    assert.deepEqual(await fs.readdir(elsewhere), []);
+
+    const project = await makeProject(t, 'javascript');
+    await fs.rm(path.join(project, 'src', 'domain', 'entities'), { recursive: true });
+    await fs.symlink(elsewhere, path.join(project, 'src', 'domain', 'entities'));
+    const result = await runQn(project, 'g', 'entity', 'product', '--json');
+    assert.equal(result.code, 1);
+    assert.match(JSON.parse(result.stdout).error.message, /outside the project/);
+    assert.deepEqual(await fs.readdir(elsewhere), []);
+  });
+
+  it('treats a folder named "..app" as inside, and ".." as outside', async () => {
+    const { isInside } = await import('../dist/core/fs.js');
+    const root = path.join(path.sep, 'work');
+    assert.equal(isInside(path.join(root, '..app'), root), true);
+    assert.equal(isInside(root, root), true);
+    assert.equal(isInside(path.join(root, '..', 'x'), root), false);
+    assert.equal(isInside(path.dirname(root), root), false);
+  });
+});

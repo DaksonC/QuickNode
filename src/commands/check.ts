@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
-import { isNotFound } from '../core/fs.js';
+import { isInside, isNotFound } from '../core/fs.js';
 import { findImports } from '../core/imports.js';
 import { detectProject } from '../core/project.js';
 
@@ -82,10 +82,6 @@ function packageName(specifier: string): string {
   return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
 }
 
-function isInside(child: string, parent: string): boolean {
-  const relative = path.relative(parent, child);
-  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
-}
 
 /** Why a domain file may not import `specifier`, or undefined when it may. */
 export function classifyDomainImport(

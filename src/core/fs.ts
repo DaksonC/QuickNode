@@ -1,4 +1,6 @@
+import { existsSync, realpathSync } from 'node:fs';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 /** True for "no such file or directory". */
 export const isNotFound = (error: unknown) => (error as NodeJS.ErrnoException).code === 'ENOENT';
@@ -11,4 +13,26 @@ export async function readIfExists(file: string): Promise<string | undefined> {
     if (isNotFound(error)) return undefined;
     throw error;
   }
+}
+
+/** True when `child` is `parent` or inside it (lexically; see realpathNearest for links). */
+export function isInside(child: string, parent: string): boolean {
+  const relative = path.relative(parent, child);
+  return relative === '' || (relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
+}
+
+/**
+ * Real path of `target` with symbolic links resolved, for a path that may not
+ * exist yet: the nearest existing ancestor is resolved and the rest appended.
+ */
+export function realpathNearest(target: string): string {
+  let existing = path.resolve(target);
+  const rest: string[] = [];
+  while (!existsSync(existing)) {
+    const parent = path.dirname(existing);
+    if (parent === existing) break;
+    rest.unshift(path.basename(existing));
+    existing = parent;
+  }
+  return path.join(realpathSync(existing), ...rest);
 }

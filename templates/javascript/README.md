@@ -247,9 +247,9 @@ This template follows Clean Architecture principles:
 Generate a feature with every layer already wired, then add its fields:
 
 ```bash
-npx @10565/quicknode-cli generate crud product --dry-run   # preview
-npx @10565/quicknode-cli generate crud product             # entity, repository, use cases + test, controller, route
-npx @10565/quicknode-cli add docker ci                     # recipes: auth, healthcheck, rate-limit, docker, ci...
+npx @10565/quicknode-cli@2 generate crud product --dry-run   # preview
+npx @10565/quicknode-cli@2 generate crud product             # entity, repository, use cases + test, controller, route
+npx @10565/quicknode-cli@2 add docker ci                     # recipes: auth, healthcheck, rate-limit, docker, ci...
 npm run check                                              # dependency rule (qn check)
 ```
 

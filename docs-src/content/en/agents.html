@@ -1,5 +1,5 @@
 <h1 tabindex="-1">QuickNode CLI for AI agents</h1>
-<p class="answer">An AI coding agent creates a Node.js API with clean architecture by running <code>npx {{package}}@2 create my-api --typescript --yes --json</code>: every command runs without prompts, prints JSON with <code>--json</code>, plans with <code>--dry-run</code> and fails with a stable error code and a fix.</p>
+<p class="answer">An AI coding agent creates a Node.js API with clean architecture by running <code>npx {{package}}@2 create my-api --typescript --yes --json</code>: without a terminal no command prompts, commands print JSON with <code>--json</code>, plan with <code>--dry-run</code> and fail with a stable error code and a fix.</p>
 <p class="note">Not to be confused with QuickNode, the blockchain infrastructure provider. Always use the scoped package name <code>{{package}}</code>; the command it installs is <code>qn</code>.</p>
 
 <h2 id="commands" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Which commands should an agent run?</h2>
@@ -44,7 +44,8 @@ $ npx {{package}}@2 check --json</code></pre>
 }</code></pre>
 <p>For Claude Code: <code>claude mcp add quicknode -- npx {{package}}@2 mcp</code>.</p>
 <ul class="list" role="list">
-  <li>Dry run by default: tools that write return the plan unless called with <code>"apply": true</code>.</li>
+  <li>Dry run by default: tools that write return the plan unless called with <code>"apply": true</code>, and files with other content are only overwritten with <code>"force": true</code>.</li>
+  <li>The agent sets <code>apply</code> itself, so the server cannot tell it from a person's approval. The person stays in control through the MCP client (Claude Code, Cursor…), which asks before running a tool that writes: those tools are marked <code>readOnlyHint: false</code>.</li>
   <li>Works only inside the folder the server was started in; paths outside it are refused.</li>
   <li>No network and no other programs: <code>qn_create</code> does not install dependencies or run git, and <code>qn_doctor</code> skips Docker and <code>npm audit</code>.</li>
 </ul>

@@ -10,7 +10,16 @@ import { buildSchema, commandSchema } from './commands/schema.js';
 import { DOCS_URL, openDocs, uiInputFromFlags, type UiContext } from './commands/ui.js';
 import { ConflictError } from './core/changes.js';
 import { describeError, type ErrorReport } from './core/error-report.js';
-import { ERROR_CODES, JSON_SCHEMA_VERSION, QnError } from './core/errors.js';
+import {
+  ERROR_CODES,
+  EXIT_ERROR,
+  EXIT_OK,
+  EXIT_USAGE,
+  JSON_SCHEMA_VERSION,
+  QnError,
+  shellQuote,
+  withFlag
+} from './core/errors.js';
 import { packageRoot } from './core/paths.js';
 import { PathBlockedError, TargetNotEmptyError } from './core/scaffold.js';
 import {
@@ -31,9 +40,7 @@ import { createStyle, type Style } from './ui/style.js';
 export { DOCS_URL };
 const MAX_LISTED_FILES = 10;
 
-export const EXIT_OK = 0;
-export const EXIT_ERROR = 1;
-export const EXIT_USAGE = 2;
+export { EXIT_ERROR, EXIT_OK, EXIT_USAGE };
 
 type TTYStream = NodeJS.WritableStream & { isTTY?: boolean; hasColors?: () => boolean };
 
@@ -151,7 +158,14 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
     const stepsOk = result.git?.ok !== false && result.install?.ok !== false;
     return finish({ ok: stepsOk, ...result }, renderCreate(result, out, DOCS_URL));
   } catch (error) {
-    const problem = describeError(error, argv);
+    const rerunWithForce = withFlag(argv, '--force');
+    const problem = describeError(error, {
+      fallback: {
+        E_DIR_NOT_EMPTY: rerunWithForce,
+        E_FILES_EXIST: rerunWithForce,
+        E_INTERNAL: `DEBUG=1 ${['qn', ...argv].map(shellQuote).join(' ')}`
+      }
+    });
     if (json) writeJson({ ok: false, error: problem });
     else io.stderr.write(renderError(error, problem, err));
     return ERROR_CODES[problem.code].exitCode;

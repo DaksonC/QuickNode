@@ -1,5 +1,5 @@
 import { ConflictError } from './changes.js';
-import { QnError, withFlag, type ErrorCode } from './errors.js';
+import { QnError, type ErrorCode } from './errors.js';
 import { PathBlockedError, TargetNotEmptyError } from './scaffold.js';
 
 export interface ErrorReport {
@@ -9,18 +9,24 @@ export interface ErrorReport {
   [detail: string]: unknown;
 }
 
-/** Stable code, message, fix and details of an error, for --json and for the text output. */
-export function describeError(error: unknown, argv: string[]): ErrorReport {
-  if (!(error instanceof QnError)) {
-    return {
-      code: 'E_INTERNAL',
-      message: error instanceof Error ? error.message : String(error),
-      fix: `DEBUG=1 qn ${argv.join(' ')}`.trim()
-    };
-  }
-  // Errors solved by --force suggest the same command with it.
-  const fix = error.fix ?? (error.code === 'E_DIR_NOT_EMPTY' || error.code === 'E_FILES_EXIST' ? withFlag(argv, '--force') : undefined);
-  const report: ErrorReport = { code: error.code, message: error.message, ...(fix ? { fix } : {}) };
+/**
+ * Fix texts that depend on how the CLI was called: on the command line the
+ * fix for E_FILES_EXIST is the same command with --force, over MCP it is
+ * "call the tool again with force: true".
+ */
+export interface FixTexts {
+  /** Used when the error has no fix of its own. */
+  fallback?: Partial<Record<ErrorCode, string>>;
+  /** Replaces the error's own fix (e.g. CLI usage hints that make no sense over MCP). */
+  override?: Partial<Record<ErrorCode, string>>;
+}
+
+/** Stable code, message, fix and details of an error, for --json, the text output and MCP. */
+export function describeError(error: unknown, { fallback = {}, override = {} }: FixTexts = {}): ErrorReport {
+  const code: ErrorCode = error instanceof QnError ? error.code : 'E_INTERNAL';
+  const message = error instanceof Error ? error.message : String(error);
+  const fix = override[code] ?? (error instanceof QnError ? error.fix : undefined) ?? fallback[code];
+  const report: ErrorReport = { code, message, ...(fix ? { fix } : {}) };
   if (error instanceof TargetNotEmptyError) Object.assign(report, { conflicts: error.conflicts, entries: error.entries });
   if (error instanceof PathBlockedError || error instanceof ConflictError) Object.assign(report, { paths: error.paths });
   return report;

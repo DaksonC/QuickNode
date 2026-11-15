@@ -3,14 +3,25 @@
  * and AI agents: a code is never renamed or reused within a major version.
  * The catalogue feeds `qn schema` and the documentation.
  */
+export const EXIT_OK = 0;
+export const EXIT_ERROR = 1;
+export const EXIT_USAGE = 2;
+
+/** Every exit code the CLI uses. */
+export const EXIT_CODES = {
+  [EXIT_OK]: 'Success',
+  [EXIT_ERROR]: 'The command failed (see the error code)',
+  [EXIT_USAGE]: 'Invalid usage (E_USAGE)'
+} as const;
+
 export const ERROR_CODES = {
-  E_USAGE: { exitCode: 2, description: 'Invalid usage: unknown command, flag or value, or a missing argument' },
-  E_DIR_NOT_EMPTY: { exitCode: 1, description: 'qn create: the target folder is not empty (use --force to write into it)' },
-  E_PATH_BLOCKED: { exitCode: 1, description: 'qn create: a project path is taken by a file or folder of another type' },
-  E_FILES_EXIST: { exitCode: 1, description: 'qn generate / qn add: files exist with other content (use --force to overwrite)' },
-  E_NOT_A_PROJECT: { exitCode: 1, description: 'The command must run inside a project created with qn create' },
-  E_ABORTED: { exitCode: 1, description: 'An interactive prompt was cancelled' },
-  E_INTERNAL: { exitCode: 1, description: 'Unexpected error (rerun with DEBUG=1 and report it)' }
+  E_USAGE: { exitCode: EXIT_USAGE, description: 'Invalid usage: unknown command, flag or value, or a missing argument' },
+  E_DIR_NOT_EMPTY: { exitCode: EXIT_ERROR, description: 'qn create: the target folder is not empty (use --force to write into it)' },
+  E_PATH_BLOCKED: { exitCode: EXIT_ERROR, description: 'qn create: a project path is taken by a file or folder of another type' },
+  E_FILES_EXIST: { exitCode: EXIT_ERROR, description: 'qn generate / qn add: files exist with other content (use --force to overwrite)' },
+  E_NOT_A_PROJECT: { exitCode: EXIT_ERROR, description: 'The command must run inside a project created with qn create' },
+  E_ABORTED: { exitCode: EXIT_ERROR, description: 'An interactive prompt was cancelled' },
+  E_INTERNAL: { exitCode: EXIT_ERROR, description: 'Unexpected error (rerun with DEBUG=1 and report it)' }
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;

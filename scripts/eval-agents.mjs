@@ -17,7 +17,7 @@
  *   npm run eval:agents -- --keep            # keep the work folders
  *
  * QN_EVAL_AGENT replaces the agent command ("claude" by default); it gets the
- * prompt as its last argument and must print Claude Code stream-json on stdout.
+ * prompt right after -p and must print Claude Code stream-json on stdout.
  */
 import { execFile, spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
@@ -116,24 +116,19 @@ async function packCli(dir) {
 /** Runs the agent and collects the shell commands it ran and its final result event. */
 function runAgent(prompt, cwd, binDir, model) {
   const agent = process.env.QN_EVAL_AGENT ?? 'claude';
+  // The prompt goes right after -p and the tools in one comma-separated value:
+  // --allowedTools takes several values and would swallow a trailing prompt.
   const args = [
     '-p',
+    `${prompt}\n\n${GUIDANCE}`,
     '--output-format',
     'stream-json',
     '--verbose',
     '--permission-mode',
     'acceptEdits',
     '--allowedTools',
-    'Bash(qn:*)',
-    'Bash(ls:*)',
-    'Bash(cat:*)',
-    'Read',
-    'Write',
-    'Edit',
-    'Glob',
-    'Grep',
-    ...(model ? ['--model', model] : []),
-    `${prompt}\n\n${GUIDANCE}`
+    ['Bash(qn:*)', 'Bash(ls:*)', 'Bash(cat:*)', 'Read', 'Write', 'Edit', 'Glob', 'Grep'].join(','),
+    ...(model ? ['--model', model] : [])
   ];
   return new Promise((resolve) => {
     const child = spawn(agent, args, {

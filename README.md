@@ -187,56 +187,18 @@ explained in the [project structure guide](https://daksonc.github.io/QuickNode/s
 
 ## 🏛️ Clean Architecture Structure
 
-```
-src/
-├── domain/                 # Domain layer (business logic)
-│   ├── entities/          # Domain entities
-│   ├── repositories/      # Repository interfaces
-│   └── use-cases/         # Application use cases
-├── infrastructure/        # Infrastructure layer
-│   ├── controllers/       # HTTP controllers
-│   ├── database/          # Database configuration
-│   │   ├── entities/      # TypeORM entities (TypeScript)
-│   │   ├── models/        # Sequelize models (JavaScript)
-│   │   └── repositories/  # Repository implementations
-│   ├── docs/             # API documentation setup
-│   ├── logging/          # Logging configuration
-│   ├── middleware/       # Express middleware
-│   └── routes/           # Route definitions
-└── server.ts/js          # Application entry point
-```
+`src/domain` (entities, repository interfaces, use cases) and `src/infrastructure` (Express,
+ORM, controllers, routes, feature modules); every folder is explained in the
+[structure guide](https://daksonc.github.io/QuickNode/structure/).
 
 ## 🚀 Quick Start
 
-After creating your project:
-
-1. **Navigate to your project**:
-   ```bash
-   cd my-awesome-app
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Review `.env`**: it was generated with random secrets and is git-ignored. Adjust
-   `DB_TYPE`, `PORT` and other settings if needed (see `.env.example`).
-
-4. **Start the database** (PostgreSQL via Docker):
-   ```bash
-   npm run docker:up
-   ```
-
-5. **Start development server**:
-   ```bash
-   npm run dev
-   ```
-
-6. **Visit your API**:
-   - API: http://localhost:3000
-   - Documentation: http://localhost:3000/api-docs
-   - Health Check: http://localhost:3000/health
+```bash
+cd my-awesome-app
+npm install
+npm run docker:up   # PostgreSQL; .env already has random secrets (git-ignored)
+npm run dev         # API on :3000, docs at /api-docs, health at /health
+```
 
 ## 📊 Database Setup
 

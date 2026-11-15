@@ -1,0 +1,18 @@
+{
+  "text": {
+    "dbStack": {
+      "typescript": "TypeORM, PostgreSQL",
+      "javascript": "Sequelize, PostgreSQL"
+    },
+    "dbFeature": {
+      "typescript": "PostgreSQL with TypeORM, in Docker for development",
+      "javascript": "PostgreSQL with Sequelize, in Docker for development"
+    },
+    "dbFolders": {
+      "typescript": "    database/              TypeORM connection, repository implementations, factory\n      entities/            TypeORM entities (persistence model)",
+      "javascript": "    database/              Sequelize connection, repository implementations, factory\n      models/              Sequelize models (persistence model)"
+    },
+    "dbRequirement": "- Docker, for the PostgreSQL container",
+    "dbReadme": "PostgreSQL runs in Docker (`docker-compose.yml`, reachable only from this machine), with\nthe credentials of `.env`.\n\n```bash\nnpm run docker:up      # start PostgreSQL (and Adminer on http://localhost:8080)\nnpm run db:seed        # sample data\nnpm run dev:docker     # database, sample data and dev server\nnpm run docker:down    # stop (docker:reset also deletes the data)\n```"
+  }
+}

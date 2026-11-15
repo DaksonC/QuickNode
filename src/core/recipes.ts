@@ -1,13 +1,18 @@
 import type { PackageManager, RECIPES } from '../spec.js';
 import type { PackageJson, QuickNodeProject } from './project.js';
+import type { RenderedProject } from './render.js';
 import { nodeTestScripts } from './variants.js';
 
 export type RecipeName = (typeof RECIPES)[number];
 
 export interface RecipeContext {
   project: QuickNodeProject;
+  /** The project's template rendered with its options: source of `templateFiles`. */
+  template: RenderedProject;
   /** package.json of the project's template: the source of versions and scripts. */
   templatePackage: PackageJson;
+  /** The connection predates v3: no ping(), and JavaScript exports sequelizeConnection. */
+  legacyConnection: boolean;
 }
 
 /** A line inserted before a `// qn:<marker>` comment. */
@@ -59,13 +64,23 @@ function templateScripts(ctx: RecipeContext, names: string[]): Record<string, st
   return Object.fromEntries(names.filter((name) => scripts[name] !== undefined).map((name) => [name, scripts[name]]));
 }
 
-const db = (ctx: RecipeContext) => (isTs(ctx) ? 'databaseConnection' : 'sequelizeConnection');
+/** Expression that closes the database connection. */
+const closeDatabase = (ctx: RecipeContext) =>
+  ctx.legacyConnection && !isTs(ctx) ? 'sequelizeConnection.close()' : 'databaseConnection.close()';
+
+/** Readiness check of the database. */
+function databaseCheck(ctx: RecipeContext): string {
+  if (!ctx.legacyConnection) return 'const databaseCheck = () => databaseConnection.ping();';
+  return isTs(ctx)
+    ? "const databaseCheck = () => databaseConnection.getDataSource().query('SELECT 1');"
+    : 'const databaseCheck = () => sequelizeConnection.getSequelize().authenticate();';
+}
 
 export const RECIPE_DEFINITIONS: Record<Exclude<RecipeName, 'github-actions'>, Recipe> = {
   agents: {
     summary: 'AGENTS.md (and a copy in CLAUDE.md) for AI coding assistants',
     templateFiles: () => ['AGENTS.md', 'CLAUDE.md'],
-    scripts: () => ({ check: 'npx @10565/quicknode-cli@2 check' }),
+    scripts: () => ({ check: 'npx @10565/quicknode-cli@3 check' }),
     notes: () => ['AI assistants read AGENTS.md (Copilot, Codex, Cursor) or CLAUDE.md (Claude Code); keep both equal.']
   },
   auth: {
@@ -89,7 +104,9 @@ export const RECIPE_DEFINITIONS: Record<Exclude<RecipeName, 'github-actions'>, R
     scripts: (ctx) => ({ 'docker:build': `docker build -t ${ctx.project.packageJson.name ?? 'app'} .` }),
     notes: (ctx) => [
       `Build and run: docker build -t ${ctx.project.packageJson.name ?? 'app'} . && docker run --env-file .env -p 3000:3000 ${ctx.project.packageJson.name ?? 'app'}`,
-      'Inside a container, DB_HOST must point to the database host (for docker-compose, the service name), not localhost.'
+      ...(ctx.project.db === 'postgres'
+        ? ['Inside a container, DB_HOST must point to the database host (for docker-compose, the service name), not localhost.']
+        : [])
     ]
   },
   eslint: {
@@ -117,7 +134,7 @@ export const RECIPE_DEFINITIONS: Record<Exclude<RecipeName, 'github-actions'>, R
       {
         file: server(ctx),
         region: 'shutdown',
-        snippet: `registerGracefulShutdown(server, { logger, onShutdown: () => ${db(ctx)}.close() });`
+        snippet: `registerGracefulShutdown(server, { logger, onShutdown: () => ${closeDatabase(ctx)} });`
       }
     ]
   },
@@ -129,12 +146,7 @@ export const RECIPE_DEFINITIONS: Record<Exclude<RecipeName, 'github-actions'>, R
       {
         file: server(ctx),
         marker: 'modules',
-        snippet: [
-          isTs(ctx)
-            ? "const databaseCheck = () => databaseConnection.getDataSource().query('SELECT 1');"
-            : 'const databaseCheck = () => sequelizeConnection.getSequelize().authenticate();',
-          "app.use('/health', createHealthRoutes({ database: databaseCheck }));"
-        ].join('\n')
+        snippet: [databaseCheck(ctx), "app.use('/health', createHealthRoutes({ database: databaseCheck }));"].join('\n')
       }
     ],
     notes: () => ['Point liveness probes to /health/live and readiness probes to /health/ready.']

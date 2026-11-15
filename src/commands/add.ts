@@ -2,9 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ChangePlan, type PlannedFile } from '../core/changes.js';
 import { ENV_EXAMPLE_FILE } from '../core/env.js';
-import { isNotFound } from '../core/fs.js';
-import { packageRoot, templateDir } from '../core/paths.js';
-import { detectProject, type PackageJson } from '../core/project.js';
+import { isNotFound, readIfExists } from '../core/fs.js';
+import { packageRoot } from '../core/paths.js';
+import { assertDefaultLayers, detectProject, type PackageJson } from '../core/project.js';
 import {
   fillRecipeTokens,
   RECIPE_DEFINITIONS,
@@ -13,6 +13,7 @@ import {
   type RecipeContext,
   type RecipeName
 } from '../core/recipes.js';
+import { renderFor } from '../core/render.js';
 import { listTemplateFiles } from '../core/scaffold.js';
 import { adaptTestFile, formatImports } from '../core/source-format.js';
 import { rewriteForPackageManager } from '../core/variants.js';
@@ -132,8 +133,13 @@ class RecipePlanner {
 
   async files(): Promise<void> {
     const { ctx, recipe } = this;
-    const sourceTemplate = templateDir(ctx.project.language);
-    const sources: [string, string][] = (recipe.templateFiles?.(ctx) ?? []).map((file) => [sourceTemplate, file]);
+    // Files of the project template come already adapted to the project (package manager, test runner).
+    for (const file of recipe.templateFiles?.(ctx) ?? []) {
+      const rendered = ctx.template.get(file);
+      if (!rendered) throw new Error(`Recipe ${this.name} needs ${file}, which the template does not have.`);
+      await this.track(file, () => this.plan.write(file, rendered.content));
+    }
+    const sources: [string, string][] = [];
     if (recipe.ownFiles) {
       const dir = recipeDir(resolveRecipe(this.name));
       for (const base of [path.join(dir, 'common'), path.join(dir, ctx.project.language)]) {
@@ -223,9 +229,15 @@ class RecipePlanner {
  */
 export async function addRecipes(input: AddInput, cwd: string): Promise<AddResult> {
   const project = detectProject(cwd);
+  assertDefaultLayers(project, 'add');
+  const template = await renderFor(project);
+  const connection = await readIfExists(path.join(project.root, `src/infrastructure/database/connection.${project.ext}`));
   const ctx: RecipeContext = {
     project,
-    templatePackage: JSON.parse(await fs.readFile(path.join(templateDir(project.language), 'package.json'), 'utf8')) as PackageJson
+    template,
+    templatePackage: JSON.parse(template.get('package.json')?.content ?? '{}') as PackageJson,
+    // Projects created before v3 have no ping() and, in JavaScript, export sequelizeConnection.
+    legacyConnection: connection !== undefined && !/\bping\(/.test(connection)
   };
   const plan = new ChangePlan(project.root, input.force);
   const outcomes: RecipeOutcome[] = [];
@@ -244,6 +256,10 @@ export async function addRecipes(input: AddInput, cwd: string): Promise<AddResul
     });
   }
 
+  const envExample = plan.list().find((change) => change.path === ENV_EXAMPLE_FILE);
+  if (envExample && envExample.action === 'update') {
+    plan.notes.push('New variables in .env.example: "qn env --generate-secrets" adds them to .env.');
+  }
   const packageJson = plan.list().find((change) => change.path === 'package.json');
   if (packageJson && packageJson.action !== 'unchanged') {
     plan.notes.push(`Run "${project.packageManager} install" to install what changed in package.json.`);

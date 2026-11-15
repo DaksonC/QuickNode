@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,8 +18,9 @@ export function packageRoot(fromUrl: string = import.meta.url): string {
   return dir;
 }
 
-export function templateDir(name: TemplateName): string {
-  return path.join(packageRoot(), 'templates', name);
+/** Version of the installed CLI (also the template version recorded in quicknode.json). */
+export function cliVersion(): string {
+  return (JSON.parse(readFileSync(path.join(packageRoot(), 'package.json'), 'utf8')) as { version: string }).version;
 }
 
 /** Source files that `qn generate` fills in, per language (see templates/generators). */

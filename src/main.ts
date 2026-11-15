@@ -1,13 +1,13 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { addInputFromFlags, addRecipes } from './commands/add.js';
 import { checkProject } from './commands/check.js';
 import { createInputFromFlags, createProject, type CreateResult } from './commands/create.js';
 import { doctor } from './commands/doctor.js';
+import { envCommand, envInputFromFlags } from './commands/env.js';
 import { generate, generateInputFromFlags } from './commands/generate.js';
 import { runMcpServer } from './commands/mcp.js';
 import { buildSchema, commandSchema } from './commands/schema.js';
 import { DOCS_URL, openDocs, uiInputFromFlags, type UiContext } from './commands/ui.js';
+import { upgrade, upgradeInputFromFlags } from './commands/upgrade.js';
 import { ConflictError } from './core/changes.js';
 import { describeError, type ErrorReport } from './core/error-report.js';
 import {
@@ -20,7 +20,7 @@ import {
   shellQuote,
   withFlag
 } from './core/errors.js';
-import { packageRoot } from './core/paths.js';
+import { cliVersion } from './core/paths.js';
 import { PathBlockedError, TargetNotEmptyError } from './core/scaffold.js';
 import {
   COMMANDS,
@@ -34,7 +34,7 @@ import {
 } from './spec.js';
 import { renderBanner } from './ui/banner.js';
 import { createPrompter } from './ui/prompt.js';
-import { renderAdd, renderCheck, renderCreate, renderDoctor, renderGenerate } from './ui/render.js';
+import { renderAdd, renderCheck, renderCreate, renderDoctor, renderEnv, renderGenerate, renderUpgrade } from './ui/render.js';
 import { createStyle, type Style } from './ui/style.js';
 
 export { DOCS_URL };
@@ -59,9 +59,7 @@ export interface IO {
 
 const defaultIO = (): IO => ({ stdin: process.stdin, stdout: process.stdout, stderr: process.stderr, cwd: process.cwd() });
 
-export function getVersion(): string {
-  return JSON.parse(readFileSync(path.join(packageRoot(), 'package.json'), 'utf8')).version;
-}
+export const getVersion = cliVersion;
 
 /** Runs the CLI and returns the process exit code. */
 export async function main(argv: string[], io: IO = defaultIO()): Promise<number> {
@@ -133,6 +131,30 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
         const result = await addRecipes(addInputFromFlags(positionals, values), io.cwd);
         return finish({ ok: !result.files.some((file) => file.action === 'conflict'), ...result }, renderAdd(result, out));
       }
+      case 'env': {
+        const result = await envCommand(envInputFromFlags(positionals, values), io.cwd);
+        return finish(result, renderEnv(result, out));
+      }
+      case 'upgrade': {
+        const input = upgradeInputFromFlags(positionals, values);
+        const interactive = !json && !input.yes && Boolean(io.stdin.isTTY && io.stderr.isTTY);
+        const prompter = interactive ? createPrompter(io.stdin, io.stderr) : undefined;
+        try {
+          const result = await upgrade(input, {
+            cwd: io.cwd,
+            confirm: prompter
+              ? async (plan) => {
+                  // The plan (with the diffs of changed files) comes first, then the question.
+                  io.stderr.write(renderUpgrade(plan, err, true));
+                  return prompter.confirm('Apply these changes?');
+                }
+              : undefined
+          });
+          return finish(result, renderUpgrade(result, out));
+        } finally {
+          prompter?.close();
+        }
+      }
       case 'doctor': {
         if (positionals.length > 0) throw new UsageError('qn doctor takes no arguments.', 'doctor');
         const result = await doctor({ cwd: io.cwd, offline: Boolean(values.offline) });
@@ -163,6 +185,7 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
       fallback: {
         E_DIR_NOT_EMPTY: rerunWithForce,
         E_FILES_EXIST: rerunWithForce,
+        E_CONFIRM_REQUIRED: withFlag(argv, '--yes'),
         E_INTERNAL: `DEBUG=1 ${['qn', ...argv].map(shellQuote).join(' ')}`
       }
     });

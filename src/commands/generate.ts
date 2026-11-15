@@ -1,9 +1,11 @@
+import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ChangePlan, type PlannedFile } from '../core/changes.js';
 import type { MarkerStatus } from '../core/markers.js';
 import { generatorDir, type TemplateName } from '../core/paths.js';
-import { detectProject } from '../core/project.js';
+import { readIfExists } from '../core/fs.js';
+import { assertDefaultLayers, detectProject } from '../core/project.js';
 import { listTemplateFiles } from '../core/scaffold.js';
 import { adaptTestFile, formatImports } from '../core/source-format.js';
 import { CRUD_PARTS, GENERATOR_TYPES, UsageError } from '../spec.js';
@@ -164,6 +166,19 @@ interface WiringEntry {
 /** wiring.json of a generator folder: marker edits per unit. */
 type WiringFile = Partial<Record<Unit, WiringEntry[]>>;
 
+/** Marker edits of the language generators plus those of the project's database. */
+async function readWiring(sourceDir: string, dbDir: string): Promise<WiringFile> {
+  const merged: WiringFile = {};
+  for (const file of [path.join(sourceDir, 'wiring.json'), path.join(dbDir, 'wiring.json')]) {
+    const content = await readIfExists(file);
+    if (content === undefined) continue;
+    for (const [unit, entries] of Object.entries(JSON.parse(content) as WiringFile)) {
+      merged[unit as Unit] = [...(merged[unit as Unit] ?? []), ...(entries ?? [])];
+    }
+  }
+  return merged;
+}
+
 /** Parts each unit relies on, to warn when they are neither present nor generated. */
 const REQUIRES: Record<Unit, Part[]> = {
   entity: [],
@@ -193,20 +208,25 @@ function partFile(part: Part, names: FeatureNames, ext: string): string | undefi
  */
 export async function generate(input: GenerateInput, cwd: string): Promise<GenerateResult> {
   const project = detectProject(cwd);
+  assertDefaultLayers(project, 'generate');
   const names = featureNames(input.name);
   const units = unitsFor(input);
   const sourceDir = generatorDir(project.language);
+  // Parts that depend on the database (ORM entity, repository implementation) come from db/<db>.
+  const dbDir = path.join(sourceDir, 'db', project.db);
   const plan = new ChangePlan(project.root, input.force);
   const wiring: WiringResult[] = [];
 
-  const allWiring = JSON.parse(await fs.readFile(path.join(sourceDir, 'wiring.json'), 'utf8')) as WiringFile;
+  const allWiring = await readWiring(sourceDir, dbDir);
 
   for (const unit of units) {
-    const unitDir = path.join(sourceDir, unit);
-    for (const file of await listTemplateFiles(unitDir)) {
-      let content = formatImports(fillPlaceholders(await fs.readFile(path.join(unitDir, file), 'utf8'), names));
-      if (unit === 'test') content = adaptTestFile(content, project.testRunner, project.language);
-      await plan.write(fillPlaceholders(file, names), content);
+    for (const unitDir of [path.join(sourceDir, unit), path.join(dbDir, unit)]) {
+      if (!existsSync(unitDir)) continue;
+      for (const file of await listTemplateFiles(unitDir)) {
+        let content = formatImports(fillPlaceholders(await fs.readFile(path.join(unitDir, file), 'utf8'), names));
+        if (unit === 'test') content = adaptTestFile(content, project.testRunner, project.language);
+        await plan.write(fillPlaceholders(file, names), content);
+      }
     }
 
     for (const entry of allWiring[unit] ?? []) {

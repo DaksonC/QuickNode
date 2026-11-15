@@ -1,16 +1,11 @@
 import { randomBytes } from 'node:crypto';
-import { constants, type Stats } from 'node:fs';
+import type { Stats } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { QnError } from './errors.js';
 
 /** Template entries that are never copied into a generated project. */
 const IGNORED = new Set(['node_modules', 'package-lock.json', '.env', 'dist', 'coverage', '.DS_Store']);
-/**
- * npm never publishes `.gitignore` files, so templates store them without the
- * dot and they are renamed when the project is generated.
- */
-const RENAMED_ON_COPY: Record<string, string> = { gitignore: '.gitignore' };
 /** Prefix of the temporary folder the project is generated in. */
 export const STAGING_PREFIX = '.qn-staging-';
 /** Entries in the target directory that do not count as "non empty". */
@@ -43,19 +38,17 @@ export class PathBlockedError extends QnError {
 }
 
 export interface PlanOptions {
-  templateDir: string;
+  /** Files of the project, relative to its root ("/" separators). */
+  files: string[];
   targetDir: string;
   /** Files that are never overwritten when they already exist (e.g. ".env"). */
   preserve?: string[];
 }
 
 export interface ScaffoldPlan {
-  templateDir: string;
   targetDir: string;
   targetExists: boolean;
-  /** Template files, relative to the template root. */
-  sources: string[];
-  /** Files to generate, relative to the project root (after renames). */
+  /** Files to generate, relative to the project root. */
   files: string[];
   /** Entries already in the target directory (excluding .git). */
   existingEntries: string[];
@@ -113,12 +106,6 @@ export function listTemplateFiles(templateDir: string): Promise<string[]> {
   return listFiles(templateDir, IGNORED);
 }
 
-/** Path a template file gets in the generated project. */
-function destinationOf(templateFile: string): string {
-  const renamed = RENAMED_ON_COPY[path.basename(templateFile)];
-  return renamed ? path.join(path.dirname(templateFile), renamed) : templateFile;
-}
-
 /** Leftovers of an interrupted run, or our own staging folder. */
 const isIgnoredInTarget = (name: string) => IGNORED_IN_TARGET.has(name) || name.startsWith(STAGING_PREFIX);
 
@@ -140,9 +127,8 @@ async function isBlocked(targetDir: string, file: string): Promise<boolean> {
 }
 
 /** Computes what generating the project would do, without writing anything. */
-export async function planScaffold({ templateDir, targetDir, preserve = [] }: PlanOptions): Promise<ScaffoldPlan> {
-  const sources = await listTemplateFiles(templateDir);
-  const files = sources.map(destinationOf);
+export async function planScaffold({ files: projectFiles, targetDir, preserve = [] }: PlanOptions): Promise<ScaffoldPlan> {
+  const files = projectFiles.map((file) => file.split('/').join(path.sep));
   const targetStats = await lstatOrUndefined(targetDir);
 
   if (targetStats && !targetStats.isDirectory()) {
@@ -167,10 +153,8 @@ export async function planScaffold({ templateDir, targetDir, preserve = [] }: Pl
   }
 
   return {
-    templateDir,
     targetDir,
     targetExists: targetStats !== undefined,
-    sources,
     files,
     existingEntries,
     conflicts,
@@ -193,8 +177,8 @@ export function assertWritable(plan: ScaffoldPlan, force = false): void {
 }
 
 export interface WriteOptions {
-  /** Customize the staged project before it is moved into place. */
-  transform?: (stagingDir: string) => Promise<void>;
+  /** Writes the project files into the (empty) staging folder. */
+  populate: (stagingDir: string) => Promise<void>;
 }
 
 /**
@@ -204,7 +188,7 @@ export interface WriteOptions {
  * path was validated beforehand, so the remaining failure modes are I/O errors
  * such as a full disk or missing permissions.
  */
-export async function writeScaffold(plan: ScaffoldPlan, { transform }: WriteOptions = {}): Promise<void> {
+export async function writeScaffold(plan: ScaffoldPlan, { populate }: WriteOptions): Promise<void> {
   // Staging must live on the same filesystem as the target so rename() works.
   const stagingParent = plan.targetExists ? plan.targetDir : path.dirname(plan.targetDir);
   // mkdir (unlike mkdtemp, which forces 0700) honors the umask, so a new
@@ -213,13 +197,7 @@ export async function writeScaffold(plan: ScaffoldPlan, { transform }: WriteOpti
   await fs.mkdir(stagingDir);
 
   try {
-    for (const source of plan.sources) {
-      const destination = path.join(stagingDir, destinationOf(source));
-      await fs.mkdir(path.dirname(destination), { recursive: true });
-      await fs.copyFile(path.join(plan.templateDir, source), destination, constants.COPYFILE_EXCL);
-    }
-
-    if (transform) await transform(stagingDir);
+    await populate(stagingDir);
 
     if (plan.targetExists) {
       await moveInto(stagingDir, plan.targetDir, new Set(plan.preserved));

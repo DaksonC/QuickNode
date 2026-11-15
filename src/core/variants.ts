@@ -1,9 +1,7 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import type { PackageManager } from '../spec.js';
-import { readIfExists } from './fs.js';
 import type { TemplateName } from './paths.js';
 import type { PackageJson, TestRunner } from './project.js';
+import type { RenderedProject } from './render.js';
 import { adaptTestFile } from './source-format.js';
 
 /** Files of a generated project that mention package manager commands. */
@@ -31,13 +29,12 @@ export const installCommand = (pm: PackageManager) => `${pm} install`;
 /** Command line that runs a package.json script with `pm`. */
 export const runScript = (pm: PackageManager, script: string) => (script === 'test' ? `${pm} test` : `${pm} run ${script}`);
 
-/** Adapts the scripts, docs and git hooks of a staged project to `pm`. */
-export async function applyPackageManager(projectDir: string, pm: PackageManager): Promise<void> {
+/** Adapts the scripts, docs and git hooks of a rendered project to `pm`. */
+export function applyPackageManager(files: RenderedProject, pm: PackageManager): void {
   if (pm === 'npm') return;
   for (const file of PM_FILES) {
-    const full = path.join(projectDir, file);
-    const content = await readIfExists(full);
-    if (content !== undefined) await fs.writeFile(full, rewriteForPackageManager(content, pm));
+    const entry = files.get(file);
+    if (entry) entry.content = rewriteForPackageManager(entry.content, pm);
   }
 }
 
@@ -54,30 +51,21 @@ export function nodeTestScripts(language: TemplateName): Record<string, string> 
   };
 }
 
-async function listTestFiles(dir: string): Promise<string[]> {
-  const found: string[] = [];
-  for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...(await listTestFiles(full)));
-    else if (/\.test\.[jt]s$/.test(entry.name)) found.push(full);
-  }
-  return found;
-}
-
 /**
- * Switches a staged project from Jest to node:test: scripts, dev
+ * Switches a rendered project from Jest to node:test: scripts, dev
  * dependencies, jest.config.js and the imports of the test files.
  */
-export async function applyTestRunner(projectDir: string, language: TemplateName, runner: TestRunner): Promise<void> {
+export function applyTestRunner(files: RenderedProject, language: TemplateName, runner: TestRunner): void {
   if (runner === 'jest') return;
-  const packageJsonPath = path.join(projectDir, 'package.json');
-  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8')) as PackageJson;
-  packageJson.scripts = { ...packageJson.scripts, ...nodeTestScripts(language) };
-  for (const name of JEST_PACKAGES) delete packageJson.devDependencies?.[name];
-  await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
-  await fs.rm(path.join(projectDir, 'jest.config.js'), { force: true });
-
-  for (const file of await listTestFiles(path.join(projectDir, 'src'))) {
-    await fs.writeFile(file, adaptTestFile(await fs.readFile(file, 'utf8'), 'node', language));
+  const manifest = files.get('package.json');
+  if (manifest) {
+    const packageJson = JSON.parse(manifest.content) as PackageJson;
+    packageJson.scripts = { ...packageJson.scripts, ...nodeTestScripts(language) };
+    for (const name of JEST_PACKAGES) delete packageJson.devDependencies?.[name];
+    manifest.content = `${JSON.stringify(packageJson, null, 2)}\n`;
+  }
+  files.delete('jest.config.js');
+  for (const [file, entry] of files) {
+    if (file.startsWith('src/') && /\.test\.[jt]s$/.test(file)) entry.content = adaptTestFile(entry.content, 'node', language);
   }
 }

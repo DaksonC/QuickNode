@@ -2,7 +2,9 @@ import type { AddResult } from '../commands/add.js';
 import type { CheckResult } from '../commands/check.js';
 import type { CreateResult } from '../commands/create.js';
 import type { DoctorResult } from '../commands/doctor.js';
+import type { EnvResult } from '../commands/env.js';
 import type { GenerateResult } from '../commands/generate.js';
+import type { UpgradeAction, UpgradeResult } from '../commands/upgrade.js';
 import type { ChangeAction } from '../core/changes.js';
 import { installCommand, runScript } from '../core/variants.js';
 import type { Style } from './style.js';
@@ -10,9 +12,10 @@ import type { Style } from './style.js';
 /** Human-readable output of each command (the --json output is the result object itself). */
 
 const TEMPLATE_LABEL = { typescript: 'TypeScript', javascript: 'JavaScript' } as const;
+const DATABASE_LABEL = { postgres: 'PostgreSQL', sqlite: 'SQLite', none: 'no database' } as const;
 
 export function renderCreate(result: CreateResult, style: Style, docsUrl: string): string {
-  const label = `${result.packageName} (${TEMPLATE_LABEL[result.template]})`;
+  const label = `${result.packageName} (${TEMPLATE_LABEL[result.template]}, ${DATABASE_LABEL[result.db]})`;
   const overwritten = new Set(result.overwritten);
   const lines: string[] = [];
 
@@ -44,8 +47,8 @@ export function renderCreate(result: CreateResult, style: Style, docsUrl: string
   lines.push('', style.accent('Next steps:'));
   if (!result.inCurrentDir) lines.push(`  cd ${result.name}`);
   if (!result.install?.ok) lines.push(`  ${installCommand(result.pm)}`);
+  if (result.db === 'postgres') lines.push(`  ${runScript(result.pm, 'docker:up')}   # start PostgreSQL`);
   lines.push(
-    `  ${runScript(result.pm, 'docker:up')}   # start PostgreSQL`,
     `  ${runScript(result.pm, 'dev')}`,
     '  qn generate crud product   # add a feature, already wired'
   );
@@ -134,5 +137,68 @@ export function renderDoctor(result: DoctorResult, style: Style): string {
     '',
     result.ok ? style.success('No blocking problems found.') : style.error('Fix the items marked ✖ and run "qn doctor" again.')
   );
+  return `${lines.join('\n')}\n`;
+}
+
+export function renderEnv(result: EnvResult, style: Style): string {
+  const list = (names: string[]) => names.join(', ');
+  const lines: string[] = [];
+  if (result.dryRun) lines.push(style.accent('Dry run: nothing was written.'));
+  const [generate, add] = result.dryRun ? ['Would generate', 'Would add'] : ['✔ Generated', '✔ Added'];
+  if (result.generated.length > 0) lines.push(style.success(`${generate} random values: ${list(result.generated)}`));
+  if (result.added.length > 0) lines.push(style.success(`${add} from .env.example: ${list(result.added)}`));
+  if (!result.envExists) lines.push(style.error('✖ .env is missing'));
+  if (result.missing.length > 0) lines.push(style.error(`✖ Missing in .env: ${list(result.missing)}`));
+  if (result.placeholders.length > 0) lines.push(style.error(`✖ Placeholder values in .env: ${list(result.placeholders)}`));
+  if (result.extra.length > 0) lines.push(style.accent(`! Not in .env.example: ${list(result.extra)}`));
+  if (result.ok && result.extra.length === 0) lines.push(style.success('✔ .env has every variable of .env.example'));
+  if (!result.ok && !result.dryRun) lines.push('', style.muted('Fix: qn env --generate-secrets (values are never printed)'));
+  return `${lines.join('\n')}\n`;
+}
+
+const UPGRADE_SYMBOL: Record<UpgradeAction, string> = {
+  create: '+',
+  update: '~',
+  unchanged: '=',
+  modified: '!',
+  deleted: '-',
+  obsolete: '?'
+};
+
+/** `asPlan` renders the plan shown before asking to apply it. */
+export function renderUpgrade(result: UpgradeResult, style: Style, asPlan = false): string {
+  const changed = result.files.filter((file) => file.action !== 'unchanged');
+  const header = asPlan
+    ? style.accent(`qn upgrade would change (template ${result.from} -> ${result.to}; --dry-run shows every diff):`)
+    : result.dryRun
+    ? style.accent(`Dry run: nothing was written. Template ${result.from} -> ${result.to}:`)
+    : result.applied
+      ? style.success(`✔ Upgraded the template ${result.from} -> ${result.to}`)
+      : style.muted(`Template ${result.from} -> ${result.to}: nothing was written.`);
+  const lines = [header];
+  if (changed.length === 0) lines.push(style.success('  Every template file is up to date.'));
+  for (const file of changed) {
+    const line = `  ${UPGRADE_SYMBOL[file.action]} ${file.path}`;
+    switch (file.action) {
+      case 'modified':
+        lines.push(
+          file.overwritten
+            ? style.accent(`${line} (you changed it; overwritten with --force)`)
+            : style.error(`${line} (you changed it; new version in ${file.newFile})`)
+        );
+        break;
+      case 'deleted':
+        lines.push(style.muted(`${line} (you deleted it; left deleted)`));
+        break;
+      case 'obsolete':
+        lines.push(style.muted(`${line} (no longer in the template; kept)`));
+        break;
+      default:
+        lines.push(file.action === 'update' ? style.accent(line) : line);
+    }
+  }
+  const diffs = changed.filter((file) => file.diff).map((file) => file.diff as string);
+  if (diffs.length > 0) lines.push('', ...diffs.map((diff) => style.muted(diff.trimEnd())));
+  lines.push(...renderNotes(result.notes, style));
   return `${lines.join('\n')}\n`;
 }

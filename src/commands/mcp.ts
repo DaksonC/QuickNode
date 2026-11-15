@@ -5,13 +5,15 @@ import { describeError } from '../core/error-report.js';
 import { isInside, realpathNearest } from '../core/fs.js';
 import { detectProject } from '../core/project.js';
 import type { RecipeName } from '../core/recipes.js';
-import { CRUD_PARTS, GENERATOR_TYPES, PACKAGE_MANAGERS, RECIPES, TEST_RUNNERS, UsageError } from '../spec.js';
+import { CRUD_PARTS, DATABASES, GENERATOR_TYPES, PACKAGE_MANAGERS, PRESETS, RECIPES, TEST_RUNNERS, UsageError } from '../spec.js';
 import { addRecipes } from './add.js';
 import { checkProject } from './check.js';
 import { createInputFromFlags, createProject } from './create.js';
 import { doctor } from './doctor.js';
+import { envCommand } from './env.js';
 import { generate, generateInputFromFlags } from './generate.js';
 import { buildSchema } from './schema.js';
+import { upgrade } from './upgrade.js';
 
 /**
  * Model Context Protocol server over stdio (ADR-001, D9): JSON-RPC 2.0, one
@@ -23,7 +25,7 @@ const PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const INSTRUCTIONS =
   'QuickNode CLI creates and grows Node.js APIs with clean architecture. Call qn_schema first. ' +
-  'Tools that write files (qn_create, qn_generate, qn_add) only plan the changes unless "apply" is true: ' +
+  'Tools that write files (qn_create, qn_generate, qn_add, qn_env, qn_upgrade) only plan the changes unless "apply" is true: ' +
   'show the planned files to the person before applying. Run qn_check after every change.';
 
 interface ToolContext {
@@ -161,17 +163,53 @@ export const TOOLS: Record<string, Tool> = {
       return addRecipes({ recipes, dryRun: !flag(args, 'apply'), force: flag(args, 'force') }, projectDir(args, ctx));
     }
   },
+  qn_env: {
+    description:
+      'Compare .env with .env.example: missing, extra and placeholder variables, by name only (values are never returned). With generateSecrets, plans adding the missing variables with random secrets; writes .env only when apply is true.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        generateSecrets: { type: 'boolean', default: false, description: 'Complete .env: missing variables and random secrets' },
+        ...pathProperty,
+        apply: applyProperties.apply,
+        force: { type: 'boolean', default: false, description: 'With generateSecrets, also replace secrets that already have a value' }
+      }
+    },
+    readOnly: false,
+    run: async (args, ctx) =>
+      envCommand(
+        { generateSecrets: flag(args, 'generateSecrets'), dryRun: !flag(args, 'apply'), force: flag(args, 'force') },
+        projectDir(args, ctx)
+      )
+  },
+  qn_upgrade: {
+    description:
+      'Plan the improvements of this CLI version of the template: files the person did not change are updated, changed files get a diff and a <file>.qn-new copy, package.json only gets newer versions of dependencies it already has. Show the plan to the person; apply: true writes it.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ...pathProperty,
+        apply: { type: 'boolean', default: false, description: 'Write the planned changes (the person confirmed them). Without it the tool only returns the plan.' },
+        force: { type: 'boolean', default: false, description: 'Also overwrite the files the person changed' }
+      }
+    },
+    readOnly: false,
+    run: async (args, ctx) =>
+      upgrade({ dryRun: !flag(args, 'apply'), yes: true, force: flag(args, 'force') }, { cwd: projectDir(args, ctx), version: ctx.version })
+  },
   qn_create: {
     description:
       'Create a new Node.js API with clean architecture (Express, PostgreSQL, tests, lint). Dependencies are not installed and git is not initialized: tell the person to run the install. Dry run unless apply is true.',
     inputSchema: {
       type: 'object',
-      required: ['name', 'template'],
+      required: ['name'],
       properties: {
         name: { type: 'string', description: 'Project folder and package name, created inside the server folder ("." for the server folder)' },
-        template: { type: 'string', enum: ['typescript', 'javascript'] },
+        template: { type: 'string', enum: ['typescript', 'javascript'], default: 'typescript' },
         pm: { type: 'string', enum: [...PACKAGE_MANAGERS], default: 'npm' },
         test: { type: 'string', enum: [...TEST_RUNNERS], default: 'jest' },
+        db: { type: 'string', enum: [...DATABASES], default: 'postgres' },
+        preset: { type: 'string', enum: Object.keys(PRESETS), description: 'Built-in preset; the other arguments win over it' },
         ...applyProperties
       }
     },
@@ -179,16 +217,23 @@ export const TOOLS: Record<string, Tool> = {
     run: async (args, ctx) => {
       const name = stringArg(args, 'name', true);
       insideRoot(ctx, name);
-      const template = choiceArg(args, 'template', ['typescript', 'javascript'] as const);
-      // Never --install or --git: the server runs no programs.
+      // Only given arguments become flags, so a preset fills the rest. Local preset files are not read here.
+      const optional = <T extends string>(key: string, choices: readonly T[]) =>
+        args[key] === undefined ? undefined : choiceArg(args, key, choices);
+      const template = optional('template', ['typescript', 'javascript'] as const);
       const input = createInputFromFlags([name], {
-        [template]: true,
-        pm: choiceArg(args, 'pm', PACKAGE_MANAGERS, 'npm'),
-        test: choiceArg(args, 'test', TEST_RUNNERS, 'jest'),
+        ...(template ? { [template]: true } : {}),
+        pm: optional('pm', PACKAGE_MANAGERS),
+        test: optional('test', TEST_RUNNERS),
+        db: optional('db', DATABASES),
+        preset: optional('preset', Object.keys(PRESETS)),
         yes: true,
         'dry-run': !flag(args, 'apply'),
         force: flag(args, 'force')
       });
+      // Never git init or install, even when a preset asks: the server runs no programs.
+      input.git = false;
+      input.install = false;
       return createProject(input, { cwd: ctx.root });
     }
   }

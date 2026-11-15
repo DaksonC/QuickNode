@@ -1,0 +1,11 @@
+{
+  "text": {
+    "language": "TypeScript",
+    "ext": "ts",
+    "devReload": "tsx",
+    "validation": "express-validator and class-validator (DTOs in `src/infrastructure/http/dtos/`)",
+    "dtosFolder": "    http/dtos/             request DTOs validated with class-validator",
+    "buildStep": "- Build: `npm run build` (TypeScript must compile).",
+    "startCommand": "npm run build && npm start   # production build"
+  }
+}

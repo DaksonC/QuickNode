@@ -4,8 +4,7 @@ const helmet = require('helmet');
 const { logger } = require('./infrastructure/logging/logger');
 const { setupSwagger } = require('./infrastructure/docs/swagger');
 const { errorHandler } = require('./infrastructure/middleware/error-handler');
-const sequelizeConnection = require('./infrastructure/database/connection');
-const modelsRegistry = require('./infrastructure/database/models');
+const { databaseConnection } = require('./infrastructure/database/connection');
 const { registerUserModule } = require('./infrastructure/modules/user-module');
 // qn:imports
 
@@ -31,10 +30,9 @@ app.get('/health', (req, res) => {
 // Start the server
 async function startServer() {
   try {
-    // Initialize database connection and models
-    await sequelizeConnection.initialize();
-    modelsRegistry.initialize();
-    logger.info('✅ Database connection established and models initialized');
+    // Initialize database connection
+    await databaseConnection.initialize();
+    logger.info('✅ Database connection initialized');
 
     // Feature modules (`qn generate crud <name>` adds new ones here)
     registerUserModule(app);
@@ -59,7 +57,7 @@ async function startServer() {
     const shutdown = signal => {
       logger.info(`🛑 ${signal} received, shutting down`);
       server.close(() => {
-        sequelizeConnection.close().finally(() => process.exit(0));
+        databaseConnection.close().finally(() => process.exit(0));
       });
     };
     process.once('SIGTERM', () => shutdown('SIGTERM'));

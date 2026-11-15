@@ -1,27 +1,19 @@
 require('../config/load-env');
 const { randomUUID } = require('node:crypto');
-const sequelizeConnection = require('./connection');
-const modelsRegistry = require('./models');
+const { databaseConnection } = require('./connection');
 const { RepositoryFactory } = require('./repository-factory');
 
 /**
  * Database Seeder
- * Creates initial data for development using Sequelize ORM
+ * Creates initial data for development
  */
 class DatabaseSeeder {
   static async run() {
     try {
       console.log('🌱 Starting database seeding...');
 
-      // Initialize database connection
-      await sequelizeConnection.initialize();
-
-      // Initialize models
-      modelsRegistry.initialize();
-
-      // Sync database (create tables if they don't exist)
-      await sequelizeConnection.getSequelize().sync({ force: false, alter: true });
-      console.log('Database tables synchronized');
+      // Initialize database connection (creates the tables in development)
+      await databaseConnection.initialize();
 
       // Get repository
       const userRepository = RepositoryFactory.createUserRepository();
@@ -65,7 +57,7 @@ class DatabaseSeeder {
       console.error('❌ Database seeding failed:', error);
       throw error;
     } finally {
-      await sequelizeConnection.close();
+      await databaseConnection.close();
     }
   }
 }

@@ -1,0 +1,9 @@
+{
+  "text": {
+    "dbStack": "SQLite (node:sqlite)",
+    "dbFeature": "SQLite with `node:sqlite`, built into Node.js: no driver, no Docker",
+    "dbFolders": "    database/              node:sqlite connection, repository implementations, factory",
+    "dbRequirement": "",
+    "dbReadme": "SQLite through `node:sqlite`, built into Node.js: nothing to install and no Docker. The\ndatabase is the file in `SQLITE_PATH` (default `./database.sqlite`, git-ignored), and each\nrepository creates its table when missing.\n\n```bash\nnpm run db:seed        # sample data\n```\n\nNode.js still marks `node:sqlite` as experimental and prints a warning when it loads."
+  }
+}

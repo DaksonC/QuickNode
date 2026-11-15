@@ -20,6 +20,11 @@ export const ERROR_CODES = {
   E_PATH_BLOCKED: { exitCode: EXIT_ERROR, description: 'qn create: a project path is taken by a file or folder of another type' },
   E_FILES_EXIST: { exitCode: EXIT_ERROR, description: 'qn generate / qn add: files exist with other content (use --force to overwrite)' },
   E_NOT_A_PROJECT: { exitCode: EXIT_ERROR, description: 'The command must run inside a project created with qn create' },
+  E_CONFIG_INVALID: { exitCode: EXIT_ERROR, description: 'quicknode.json is not valid JSON or has unknown keys or values' },
+  E_PRESET_INVALID: { exitCode: EXIT_ERROR, description: 'qn create --preset: unknown preset, unreadable file, or unknown keys or values' },
+  E_ENV_EXAMPLE_MISSING: { exitCode: EXIT_ERROR, description: 'qn env: the project has no .env.example to compare .env with' },
+  E_CONFIRM_REQUIRED: { exitCode: EXIT_ERROR, description: 'qn upgrade: confirmation needed and there is no terminal (pass --yes)' },
+  E_CLI_OUTDATED: { exitCode: EXIT_ERROR, description: 'qn upgrade: the project was created by a newer CLI than this one' },
   E_ABORTED: { exitCode: EXIT_ERROR, description: 'An interactive prompt was cancelled' },
   E_INTERNAL: { exitCode: EXIT_ERROR, description: 'Unexpected error (rerun with DEBUG=1 and report it)' }
 } as const;

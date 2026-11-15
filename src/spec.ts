@@ -58,6 +58,8 @@ export const DOCS_TOPICS = {
   check: 'commands/#check',
   add: 'add/',
   doctor: 'commands/#doctor',
+  env: 'commands/#env',
+  upgrade: 'commands/#upgrade',
   faq: 'faq/',
   compare: 'compare/',
   changelog: 'changelog/',
@@ -71,6 +73,24 @@ export const DOCS_LANGUAGES = ['en', 'pt'] as const;
 export const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn'] as const;
 export type PackageManager = (typeof PACKAGE_MANAGERS)[number];
 export const TEST_RUNNERS = ['jest', 'node'] as const;
+/** Databases of `qn create --db`: each one is a template add-on (templates/db/<name>). */
+export const DATABASES = ['postgres', 'sqlite', 'none'] as const;
+export type Database = (typeof DATABASES)[number];
+
+/**
+ * Presets of `qn create --preset <name>`: the same keys a local preset file
+ * accepts (see core/presets.ts). Flags given on the command line win.
+ */
+export const PRESETS = {
+  'api-minima': {
+    description: 'Smallest API: TypeScript, no database (in-memory repositories), node:test',
+    values: { template: 'typescript', db: 'none', test: 'node' }
+  },
+  'api-postgres': {
+    description: 'TypeScript, PostgreSQL in Docker and Jest (the defaults)',
+    values: { template: 'typescript', db: 'postgres', test: 'jest' }
+  }
+} as const;
 
 /** Kinds of code `qn generate` writes; crud is all the parts at once. */
 export const GENERATOR_TYPES = ['crud', 'entity', 'usecase', 'repository', 'controller'] as const;
@@ -108,18 +128,32 @@ export const COMMANDS: Record<string, CommandSpec> = {
       typescript: { type: 'boolean', short: 't', description: 'Use the TypeScript template (also -ts)' },
       javascript: { type: 'boolean', short: 'j', description: 'Use the JavaScript template (also -js)' },
       force: { type: 'boolean', short: 'f', description: 'Write into a non-empty directory, overwriting conflicting files' },
-      yes: { type: 'boolean', short: 'y', description: 'Accept defaults without prompting (name, TypeScript)' },
+      yes: { type: 'boolean', short: 'y', description: 'Accept defaults without prompting (name, TypeScript, PostgreSQL)' },
       'dry-run': { type: 'boolean', description: 'Show what would be created without writing anything' },
       install: { type: 'boolean', description: 'Run npm install after creating the project' },
       git: { type: 'boolean', description: 'Initialize a git repository' },
       'no-credits': { type: 'boolean', description: 'Leave the "Generated with QuickNode" line out of the README' },
       pm: { type: 'string', description: 'Package manager used in scripts, docs and --install (default: npm)', choices: PACKAGE_MANAGERS, default: 'npm' },
-      test: { type: 'string', description: 'Test runner (default: jest; node uses the built-in node:test)', choices: TEST_RUNNERS, default: 'jest' }
+      test: { type: 'string', description: 'Test runner (default: jest; node uses the built-in node:test)', choices: TEST_RUNNERS, default: 'jest' },
+      db: {
+        type: 'string',
+        description: 'Database: postgres (Docker), sqlite (node:sqlite, no driver) or none (in-memory repositories)',
+        choices: DATABASES,
+        default: 'postgres'
+      },
+      preset: {
+        type: 'string',
+        valueName: 'name|file.json',
+        description: `Start from a preset (${Object.keys(PRESETS).join(', ')}) or a local JSON file; flags win over it`
+      }
     },
     examples: [
       'qn create my-api',
       'qn create my-api -ts --git --install',
       'qn create my-api --pm pnpm --test node',
+      'qn create my-api --db sqlite',
+      'qn create my-api --preset api-minima',
+      'qn create my-api --preset ./team-preset.json',
       'qn create . --javascript --force',
       'qn create my-api --dry-run',
       'qn create my-api --yes --json'
@@ -179,6 +213,31 @@ export const COMMANDS: Record<string, CommandSpec> = {
     },
     examples: ['qn doctor', 'qn doctor --offline', 'qn doctor --json']
   },
+  env: {
+    name: 'env',
+    summary: 'Compare .env with .env.example and generate missing secrets (values are never printed)',
+    usage: 'qn env [options]',
+    options: {
+      'generate-secrets': {
+        type: 'boolean',
+        description: 'Write missing variables to .env, with random values for secrets and change-me placeholders'
+      },
+      'dry-run': { type: 'boolean', description: 'With --generate-secrets, show what would change without writing' },
+      force: { type: 'boolean', short: 'f', description: 'With --generate-secrets, also replace secrets that already have a value' }
+    },
+    examples: ['qn env', 'qn env --generate-secrets', 'qn env --generate-secrets --dry-run', 'qn env --json']
+  },
+  upgrade: {
+    name: 'upgrade',
+    summary: 'Apply the improvements of a newer template: updates files you did not change, diffs the rest',
+    usage: 'qn upgrade [options]',
+    options: {
+      'dry-run': { type: 'boolean', description: 'Show the plan and the diffs without writing anything' },
+      yes: { type: 'boolean', short: 'y', description: 'Apply without asking (required without a terminal)' },
+      force: { type: 'boolean', short: 'f', description: 'Also overwrite files you changed (their diff is shown first)' }
+    },
+    examples: ['qn upgrade --dry-run', 'qn upgrade', 'qn upgrade --yes --json']
+  },
   schema: {
     name: 'schema',
     summary: 'Print the full specification of commands, flags, values and error codes as JSON',
@@ -191,7 +250,7 @@ export const COMMANDS: Record<string, CommandSpec> = {
     summary: 'Run a Model Context Protocol server on stdio for AI assistants (dry run by default)',
     usage: 'qn mcp',
     options: {},
-    examples: ['qn mcp', 'npx @10565/quicknode-cli@2 mcp']
+    examples: ['qn mcp', 'npx @10565/quicknode-cli@3 mcp']
   },
   ui: {
     name: 'ui',

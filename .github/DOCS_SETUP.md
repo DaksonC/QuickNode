@@ -68,7 +68,8 @@ Sitemap: https://daksonc.github.io/QuickNode/sitemap.xml
 ## 6. npm
 
 The new `description`, `keywords` and `homepage` in `package.json` reach npm with the next
-release (`npm run release:major`, see `.github/NPM_SETUP.md`).
+release: 3.0.0 is already set in `package.json`, so run only `npm run release:tag` on `main`
+(not `release:major`, which would bump it to 4.0.0; see `.github/NPM_SETUP.md`).
 
 ## 7. After each release
 

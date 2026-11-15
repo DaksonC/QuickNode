@@ -28,11 +28,19 @@ async function setup(t) {
 
 const stagingLeftovers = async (dir) => (await fs.readdir(dir)).filter((name) => name.startsWith(STAGING_PREFIX));
 
+/** Rendered files of a small project, as qn create passes them. */
+const FILES = { '.gitignore': '.env', 'README.md': 'template readme', 'package.json': '{}', 'src/server.js': 'server' };
+
 /** plan + assert + write, as the create command does. */
-async function scaffold({ template, target, force = false, preserve, transform }) {
-  const plan = await planScaffold({ templateDir: template, targetDir: target, preserve });
+async function scaffold({ target, force = false, preserve, transform }) {
+  const plan = await planScaffold({ files: Object.keys(FILES), targetDir: target, preserve });
   assertWritable(plan, force);
-  await writeScaffold(plan, { transform });
+  await writeScaffold(plan, {
+    populate: async (dir) => {
+      for (const [file, content] of Object.entries(FILES)) await write(path.join(dir, file), content);
+      if (transform) await transform(dir);
+    }
+  });
   return plan;
 }
 
@@ -55,22 +63,22 @@ describe('listTemplateFiles', () => {
 });
 
 describe('planScaffold', () => {
-  it('plans a new directory with renamed dotfiles', async (t) => {
-    const { template, target } = await setup(t);
-    const plan = await planScaffold({ templateDir: template, targetDir: target });
+  it('plans a new directory', async (t) => {
+    const { target } = await setup(t);
+    const plan = await planScaffold({ files: Object.keys(FILES), targetDir: target });
     assert.equal(plan.targetExists, false);
-    assert.deepEqual(plan.files, ['README.md', '.gitignore', 'package.json', path.join('src', 'server.js')]);
+    assert.deepEqual(plan.files, ['.gitignore', 'README.md', 'package.json', path.join('src', 'server.js')]);
     assert.deepEqual([plan.existingEntries, plan.conflicts, plan.blocked, plan.preserved], [[], [], [], []]);
   });
 
   it('reports existing entries, conflicts and preserved files, ignoring .git and staging leftovers', async (t) => {
-    const { template, target } = await setup(t);
+    const { target } = await setup(t);
     await write(path.join(target, 'package.json'), '{}');
     await write(path.join(target, '.env'), 'MINE=1');
     await fs.mkdir(path.join(target, '.git'));
     await fs.mkdir(path.join(target, `${STAGING_PREFIX}stale`));
 
-    const plan = await planScaffold({ templateDir: template, targetDir: target, preserve: ['.env'] });
+    const plan = await planScaffold({ files: Object.keys(FILES), targetDir: target, preserve: ['.env'] });
     assert.deepEqual(plan.existingEntries, ['.env', 'package.json']);
     assert.deepEqual(plan.conflicts, ['package.json']);
     assert.deepEqual(plan.preserved, ['.env']);
@@ -78,17 +86,17 @@ describe('planScaffold', () => {
   });
 
   it('reports paths blocked by another file type', async (t) => {
-    const { template, target } = await setup(t);
+    const { target } = await setup(t);
     await write(path.join(target, 'src'), 'file where the template has a folder');
     await fs.mkdir(path.join(target, 'README.md'));
-    const plan = await planScaffold({ templateDir: template, targetDir: target });
+    const plan = await planScaffold({ files: Object.keys(FILES), targetDir: target });
     assert.deepEqual(plan.blocked, ['README.md', path.join('src', 'server.js')]);
   });
 
   it('refuses a target that is a file', async (t) => {
-    const { template, root } = await setup(t);
+    const { root } = await setup(t);
     await write(path.join(root, 'file'), 'x');
-    await assert.rejects(planScaffold({ templateDir: template, targetDir: path.join(root, 'file') }), /not a directory/);
+    await assert.rejects(planScaffold({ files: Object.keys(FILES), targetDir: path.join(root, 'file') }), /not a directory/);
   });
 });
 
@@ -114,13 +122,11 @@ describe('assertWritable', () => {
 
 describe('writeScaffold', () => {
   it('creates a new directory with umask permissions and no leftovers', async (t) => {
-    const { root, template, target } = await setup(t);
-    await scaffold({ template, target });
+    const { root, target } = await setup(t);
+    await scaffold({ target });
 
     assert.equal(await read(target, 'src', 'server.js'), 'server');
     assert.equal(await read(target, '.gitignore'), '.env');
-    assert.equal(await exists(target, 'gitignore'), false);
-    assert.equal(await exists(target, 'package-lock.json'), false);
     assert.deepEqual(await stagingLeftovers(root), []);
     if (process.platform !== 'win32') {
       const expected = (await fs.stat(path.join(target, 'src'))).mode & 0o777;
@@ -128,28 +134,27 @@ describe('writeScaffold', () => {
     }
   });
 
-  it('applies the transform before moving into place', async (t) => {
-    const { template, target } = await setup(t);
-    await scaffold({ template, target, transform: (dir) => fs.writeFile(path.join(dir, '.env'), 'SECRET=1') });
+  it('populates the staging folder before moving into place', async (t) => {
+    const { target } = await setup(t);
+    await scaffold({ target, transform: (dir) => fs.writeFile(path.join(dir, '.env'), 'SECRET=1') });
     assert.equal(await read(target, '.env'), 'SECRET=1');
   });
 
   it('writes into a directory holding only .git', async (t) => {
-    const { template, target } = await setup(t);
+    const { target } = await setup(t);
     await fs.mkdir(path.join(target, '.git'), { recursive: true });
-    await scaffold({ template, target });
+    await scaffold({ target });
     assert.equal(await read(target, 'README.md'), 'template readme');
     assert.deepEqual(await stagingLeftovers(target), []);
   });
 
   it('with force, overwrites conflicts but keeps other and preserved files', async (t) => {
-    const { template, target } = await setup(t);
+    const { target } = await setup(t);
     await write(path.join(target, 'README.md'), 'mine');
     await write(path.join(target, 'notes.txt'), 'keep');
     await write(path.join(target, '.env'), 'USER_SECRET=1');
 
     await scaffold({
-      template,
       target,
       force: true,
       preserve: ['.env'],
@@ -163,11 +168,11 @@ describe('writeScaffold', () => {
   });
 
   it('leaves nothing behind when the transform fails', async (t) => {
-    const { root, template, target } = await setup(t);
+    const { root, target } = await setup(t);
     const transform = async () => {
       throw new Error('boom');
     };
-    await assert.rejects(scaffold({ template, target, transform }), /boom/);
+    await assert.rejects(scaffold({ target, transform }), /boom/);
     assert.equal(await exists(target), false);
     assert.deepEqual(await stagingLeftovers(root), []);
   });

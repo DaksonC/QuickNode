@@ -6,8 +6,9 @@
  * recipe, then npm install, npm audit (high/critical fail), lint, test, qn check and, for
  * TypeScript, build run: generated code must pass the project's own tools.
  *
- * Variants: `typescript`, `javascript`, and `typescript-node`/`javascript-node` for
- * projects created with `--test node`.
+ * Variants: `<template>[-node][-sqlite|-none]`: `typescript`, `javascript`, `-node` for
+ * projects created with `--test node`, and `-sqlite`/`-none` for `--db sqlite|none`
+ * (the default is `--db postgres`).
  *
  * Needs network and takes minutes, so it only runs when asked:
  *   QN_E2E_TEMPLATES=all npm run test:templates          # every variant
@@ -28,7 +29,16 @@ const execFileAsync = promisify(execFile);
 const root = fileURLToPath(new URL('..', import.meta.url));
 const npmCli = process.env.npm_execpath;
 
-const TEMPLATES = ['typescript', 'javascript', 'typescript-node', 'javascript-node'];
+const TEMPLATES = [
+  'typescript',
+  'javascript',
+  'typescript-node',
+  'javascript-node',
+  'typescript-sqlite',
+  'javascript-sqlite',
+  'typescript-none',
+  'javascript-none',
+];
 const requested = process.env.QN_E2E_TEMPLATES ?? '';
 const selected = requested === 'all' ? TEMPLATES : requested.split(',').filter(Boolean);
 const unknown = selected.filter((name) => !TEMPLATES.includes(name));
@@ -81,7 +91,9 @@ describe(
     after(() => packDir && fs.rm(packDir, { recursive: true, force: true }));
 
     for (const variant of selected) {
-      const [template, runner = 'jest'] = variant.split('-');
+      const [template, ...flags] = variant.split('-');
+      const runner = flags.includes('node') ? 'node' : 'jest';
+      const db = flags.find((flag) => flag === 'sqlite' || flag === 'none') ?? 'postgres';
       it(
         `${variant}: generate, add, install, audit, lint, test, check${template === 'typescript' ? ', build' : ''}`,
         { timeout: 15 * 60_000 },
@@ -91,13 +103,18 @@ describe(
 
           const qn = (dir, ...args) =>
             execFileAsync(process.execPath, [cli, ...args], { cwd: dir, env: { ...process.env, NO_COLOR: '1' } });
-          await qn(cwd, 'create', 'e2e-app', `--${template}`, '--test', runner, '--yes');
+          await qn(cwd, 'create', 'e2e-app', `--${template}`, '--test', runner, '--db', db, '--yes');
           for (const name of ['product', 'warehouse-stock-entry']) await qn(project, 'generate', 'crud', name);
           await qn(project, 'add', ...RECIPES.filter((recipe) => recipe !== 'github-actions'));
           // npm drops .gitignore from tarballs; the template ships it as `gitignore`.
           assert.match(await read(project, '.gitignore'), /^\.env$/m);
           assert.equal(await exists(project, '.env'), true);
           assert.equal(await exists(project, 'package-lock.json'), false);
+          assert.equal(await exists(project, 'docker-compose.yml'), db === 'postgres');
+          // Right after create (and generate/add), the template has nothing new to apply.
+          const upgrade = JSON.parse((await qn(project, 'upgrade', '--dry-run', '--json')).stdout);
+          assert.deepEqual(upgrade.files.filter((file) => file.action !== 'unchanged'), []);
+          await qn(project, 'env', '--generate-secrets');
 
           await npm(project, 'install', '--no-fund', '--no-audit');
           await npm(project, 'audit', '--audit-level=high');

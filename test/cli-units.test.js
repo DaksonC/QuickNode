@@ -58,11 +58,13 @@ describe('createInputFromFlags', () => {
       force: false,
       yes: false,
       dryRun: true,
-      install: false,
+      install: undefined,
       git: true,
-      noCredits: false,
+      noCredits: undefined,
       pm: undefined,
-      testRunner: undefined
+      testRunner: undefined,
+      db: undefined,
+      preset: undefined
     });
   });
 

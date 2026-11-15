@@ -1,6 +1,6 @@
 # QuickNode CLI for AI agents
 
-An AI coding agent creates a Node.js API with clean architecture by running `npx @10565/quicknode-cli@2 create my-api --typescript --yes --json`: without a terminal no command prompts, commands print JSON with `--json`, plan with `--dry-run` and fail with a stable error code and a fix.
+An AI coding agent creates a Node.js API with clean architecture by running `npx @10565/quicknode-cli@3 create my-api --typescript --yes --json`: without a terminal no command prompts, commands print JSON with `--json`, plan with `--dry-run` and fail with a stable error code and a fix.
 
 Not to be confused with QuickNode, the blockchain infrastructure provider. Always use the scoped package name `@10565/quicknode-cli`; the command it installs is `qn`.
 
@@ -9,13 +9,13 @@ Not to be confused with QuickNode, the blockchain infrastructure provider. Alway
 Pin the major version and pass every value as a flag. Without a terminal, `qn` never asks: it uses the declared defaults or stops with `E_USAGE` and the exact command that fixes it.
 
 ```
-$ npx @10565/quicknode-cli@2 schema
-$ npx @10565/quicknode-cli@2 create my-api --typescript --yes --json
+$ npx @10565/quicknode-cli@3 schema
+$ npx @10565/quicknode-cli@3 create my-api --typescript --yes --json
 $ cd my-api
-$ npx @10565/quicknode-cli@2 generate crud product --dry-run --json
-$ npx @10565/quicknode-cli@2 generate crud product --json
-$ npx @10565/quicknode-cli@2 add healthcheck docker --dry-run --json
-$ npx @10565/quicknode-cli@2 check --json
+$ npx @10565/quicknode-cli@3 generate crud product --dry-run --json
+$ npx @10565/quicknode-cli@3 generate crud product --json
+$ npx @10565/quicknode-cli@3 add healthcheck docker --dry-run --json
+$ npx @10565/quicknode-cli@3 check --json
 ```
 
 ## What is the recommended flow?
@@ -48,17 +48,17 @@ Every code and exit code is listed in the [command reference](https://daksonc.gi
 
 ## How do I connect it as an MCP server?
 
-`qn mcp` runs a Model Context Protocol server on stdio, inside the same package and with no dependencies. Its tools are `qn_schema`, `qn_check`, `qn_doctor`, `qn_generate`, `qn_add` and `qn_create`.
+`qn mcp` runs a Model Context Protocol server on stdio, inside the same package and with no dependencies. Its tools are `qn_schema`, `qn_check`, `qn_doctor`, `qn_generate`, `qn_add`, `qn_env`, `qn_upgrade` and `qn_create`. The ones that write files only plan unless called with `"apply": true`.
 
 ```
 {
   "mcpServers": {
-    "quicknode": { "command": "npx", "args": ["@10565/quicknode-cli@2", "mcp"] }
+    "quicknode": { "command": "npx", "args": ["@10565/quicknode-cli@3", "mcp"] }
   }
 }
 ```
 
-For Claude Code: `claude mcp add quicknode -- npx @10565/quicknode-cli@2 mcp`.
+For Claude Code: `claude mcp add quicknode -- npx @10565/quicknode-cli@3 mcp`.
 
 - Dry run by default: tools that write return the plan unless called with `"apply": true`, and files with other content are only overwritten with `"force": true`.
 - The agent sets `apply` itself, so the server cannot tell it from a person's approval. The person stays in control through the MCP client (Claude Code, Cursor…), which asks before running a tool that writes: those tools are marked `readOnlyHint: false`.
@@ -76,6 +76,6 @@ Not sure the CLI fits the task? See [when to use it, and when not to](https://da
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/agents/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/agents/
 
 > How AI coding agents should use QuickNode CLI: exact non-interactive commands with a pinned version, --json and --dry-run, qn schema, the MCP server and stable error codes with fixes.

@@ -1,8 +1,8 @@
 # QuickNode CLI
 
-> Zero-dependency CLI to create Node.js APIs with clean architecture: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready, plus generators (qn generate), a dependency rule check (qn check), recipes (qn add) and an MCP server (qn mcp).
+> Zero-dependency CLI to create Node.js APIs with clean architecture: Express, TypeScript or JavaScript, PostgreSQL, SQLite or no database, tests and linting ready, plus generators (qn generate), a dependency rule check (qn check), recipes (qn add), .env checks (qn env), template upgrades (qn upgrade) and an MCP server (qn mcp).
 
-- Package: @10565/quicknode-cli (always with the scope). Command: qn. Run without installing: npx @10565/quicknode-cli@2 <command>.
+- Package: @10565/quicknode-cli (always with the scope). Command: qn. Run without installing: npx @10565/quicknode-cli@3 <command>.
 - Not related to QuickNode, the blockchain infrastructure provider.
 - Requires Node.js 22.13 or newer. Zero runtime dependencies, no telemetry, no network while generating.
 - Non-interactive use: pass every value as a flag (or --yes) and add --json; errors have a stable code and a fix.
@@ -20,7 +20,7 @@
 - [When to use](https://daksonc.github.io/QuickNode/when.md): Clear criteria for choosing QuickNode CLI: use it for Express REST APIs with clean architecture and PostgreSQL; do not use it for front ends, monorepos, NestJS projects or other databases.
 - [FAQ](https://daksonc.github.io/QuickNode/faq.md): Answers about QuickNode CLI: required Node.js version, writing into existing folders, generated secrets, offline use, telemetry and the QuickNode name.
 - [Comparison](https://daksonc.github.io/QuickNode/compare.md): An honest comparison of QuickNode CLI, Nest CLI and copying a template by hand, with objective criteria: dependencies, architecture, framework lock-in and maintenance.
-- [Changelog](https://daksonc.github.io/QuickNode/changelog.md): Release notes of QuickNode CLI from v1.0.0 to v2: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.
+- [Changelog](https://daksonc.github.io/QuickNode/changelog.md): Release notes of QuickNode CLI from v1.0.0 to v3: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.
 
 ## Português
 
@@ -34,7 +34,7 @@
 - [Quando usar](https://daksonc.github.io/QuickNode/pt/when.md): Critérios claros para escolher o QuickNode CLI: use para APIs REST com Express, arquitetura limpa e PostgreSQL; não use para front-end, monorepos, projetos NestJS ou outros bancos.
 - [Perguntas frequentes](https://daksonc.github.io/QuickNode/pt/faq.md): Respostas sobre o QuickNode CLI: versão do Node.js, gerar em pastas existentes, segredos gerados, uso offline, telemetria e o nome QuickNode.
 - [Comparação](https://daksonc.github.io/QuickNode/pt/compare.md): Comparação honesta entre QuickNode CLI, Nest CLI e copiar um template à mão, com critérios objetivos: dependências, arquitetura, acoplamento ao framework e manutenção.
-- [Changelog](https://daksonc.github.io/QuickNode/pt/changelog.md): Notas de versão do QuickNode CLI da v1.0.0 à v2: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.
+- [Changelog](https://daksonc.github.io/QuickNode/pt/changelog.md): Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.
 
 ## Optional
 

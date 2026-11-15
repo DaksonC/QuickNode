@@ -76,7 +76,7 @@ describe('create', () => {
     const cwd = await makeTmp(t);
     const { code, stdout } = await qn(cwd, 'create', '--yes');
     assert.equal(code, EXIT_OK);
-    assert.match(stdout, /Created my-quicknode-app \(TypeScript\)/);
+    assert.match(stdout, /Created my-quicknode-app \(TypeScript, PostgreSQL\)/);
     assert.match(stdout, /cd my-quicknode-app/);
     assert.equal(JSON.parse(await read(cwd, 'my-quicknode-app', 'package.json')).name, 'my-quicknode-app');
   });
@@ -165,14 +165,16 @@ describe('create', () => {
     const stderr = tty(new PassThrough());
     let prompts = '';
     stderr.on('data', (chunk) => (prompts += chunk));
-    stdin.write('Bad Name\nprompted-app\n2\n');
+    stdin.write('Bad Name\nprompted-app\n2\n3\n');
 
     const code = await main(['create'], { stdin, stdout: new PassThrough(), stderr, cwd });
     assert.equal(code, EXIT_OK);
     assert.match(prompts, /Project name/);
     assert.match(prompts, /must be lowercase/);
     assert.match(prompts, /2\) JavaScript/);
+    assert.match(prompts, /3\) None/);
     assert.equal(await exists(cwd, 'prompted-app', 'src', 'server.js'), true);
+    assert.equal(JSON.parse(await read(cwd, 'prompted-app', 'quicknode.json')).db, 'none');
   });
 
   it('--git initializes a repository', async (t) => {

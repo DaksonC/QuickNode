@@ -5,7 +5,7 @@ To start a Node.js API with clean architecture, run `npx @10565/quicknode-cli cr
 ## What do I need?
 
 - Node.js 22.13 or newer (check with `node --version`). Older versions get a clear error instead of a crash.
-- Docker with Docker Compose, for the PostgreSQL database of the generated project (or a PostgreSQL server of your own, set in `.env`).
+- Docker with Docker Compose, for the PostgreSQL database of the generated project (or a PostgreSQL server of your own, set in `.env`). Not needed with `--db sqlite` (`node:sqlite`, built into Node.js) or `--db none` (in-memory repositories).
 - Git, only if you want `--git` to initialize a repository.
 
 ## How do I create my first API?
@@ -62,6 +62,6 @@ $ npx @10565/quicknode-cli create my-api --yes --json
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/start/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/start/
 
 > Install nothing: run npx @10565/quicknode-cli create my-api, start PostgreSQL with Docker and run the API. Step-by-step guide for Node.js 22.13+.

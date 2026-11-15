@@ -1,0 +1,14 @@
+{
+  "repository": [
+    {
+      "file": "src/infrastructure/database/repository-factory.ts",
+      "marker": "imports",
+      "snippet": "import { __Name__Repository } from '../../domain/repositories/__name__-repository';\nimport { InMemory__Name__Repository } from './repositories/__name__-repository';"
+    },
+    {
+      "file": "src/infrastructure/database/repository-factory.ts",
+      "marker": "factories",
+      "snippet": "private static shared__Name__Repository?: __Name__Repository;\n\nstatic create__Name__Repository(): __Name__Repository {\n  this.shared__Name__Repository ??= InMemory__Name__Repository.create();\n  return this.shared__Name__Repository;\n}\n"
+    }
+  ]
+}

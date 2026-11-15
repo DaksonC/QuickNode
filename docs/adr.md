@@ -10,6 +10,6 @@ The original of ADR-001 is written in Portuguese; the English version is a faith
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/adr/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/adr/
 
 > The architecture decision records behind QuickNode CLI: why it has zero dependencies, how it is published and how the documentation is built.

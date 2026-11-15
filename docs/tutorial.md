@@ -118,6 +118,6 @@ It exits with code 1 on a violation, so it can run in CI (`qn add ci` adds it) a
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/tutorial/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/tutorial/
 
 > Add a Product to an Express + TypeScript API with qn generate crud: entity, repository, use cases, test, controller and route in the right layers, then fields, rules and qn check.

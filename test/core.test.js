@@ -73,6 +73,7 @@ describe('markers', () => {
   it('matches snippets line by line, ignoring indentation', () => {
     assert.equal(containsSnippet('  a\n    b\n', 'a\nb'), true);
     assert.equal(containsSnippet('a\nc\nb\n', 'a\nb'), false);
+    assert.equal(containsSnippet('a\n\n  b\n', 'a\n\nb'), true, 'blank lines inside a snippet do not matter');
   });
 });
 

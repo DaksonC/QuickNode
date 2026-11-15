@@ -29,6 +29,6 @@ Recipes follow the package manager of the project (npm, pnpm or yarn) and its te
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/add/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/add/
 
 > qn add recipes for QuickNode projects: JWT auth, health checks, rate limit, graceful shutdown, Docker, GitHub Actions and AI agent instructions, idempotent and with --dry-run.

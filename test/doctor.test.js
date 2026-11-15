@@ -29,7 +29,7 @@ describe('qn doctor', () => {
     const root = await makeProject(t, 'javascript');
     await write(path.join(root, 'package-lock.json'), '{}');
     const result = await doctor({ cwd: root, capture: fakeCapture(), nodeVersion: '22.13.0' });
-    assert.deepEqual(status(result), { node: 'ok', env: 'ok', docker: 'ok', audit: 'ok', check: 'ok' });
+    assert.deepEqual(status(result), { node: 'ok', env: 'ok', template: 'ok', docker: 'ok', audit: 'ok', check: 'ok' });
     assert.equal(result.ok, true);
   });
 
@@ -40,7 +40,7 @@ describe('qn doctor', () => {
     await write(path.join(root, 'src', 'domain', 'bad.js'), "require('express');");
     const audit = { metadata: { vulnerabilities: { low: 1, moderate: 0, high: 2, critical: 1, total: 4 } } };
     const result = await doctor({ cwd: root, capture: fakeCapture(audit), nodeVersion: '20.0.0' });
-    assert.deepEqual(status(result), { node: 'fail', env: 'fail', docker: 'ok', audit: 'fail', check: 'fail' });
+    assert.deepEqual(status(result), { node: 'fail', env: 'fail', template: 'ok', docker: 'ok', audit: 'fail', check: 'fail' });
     assert.equal(result.ok, false);
     const env = result.checks.find((check) => check.name === 'env');
     assert.match(env.message, /JWT_SECRET/);
@@ -53,7 +53,7 @@ describe('qn doctor', () => {
     const env = await fs.readFile(path.join(root, '.env'), 'utf8');
     await fs.writeFile(path.join(root, '.env'), env.replace(/^PORT=.*$/m, ''));
     const noLock = await doctor({ cwd: root, capture: fakeCapture(undefined, false), nodeVersion: '22.13.0' });
-    assert.deepEqual(status(noLock), { node: 'ok', env: 'warn', docker: 'warn', audit: 'warn', check: 'ok' });
+    assert.deepEqual(status(noLock), { node: 'ok', env: 'warn', template: 'ok', docker: 'warn', audit: 'warn', check: 'ok' });
     assert.equal(noLock.ok, true);
     assert.match(noLock.checks.find((check) => check.name === 'env').message, /PORT/);
 

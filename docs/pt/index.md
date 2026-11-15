@@ -37,6 +37,6 @@ No terminal, `qn ui` abre estas páginas e `qn help create` mostra a mesma ajuda
 
 ---
 
-Atualizado em 2026-11-15 · válido para a v2.x · https://daksonc.github.io/QuickNode/pt/
+Atualizado em 2026-11-15 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/
 
 > Crie uma API Node.js com arquitetura limpa em um comando: Express, TypeScript ou JavaScript, PostgreSQL, testes e lint prontos. Zero dependências de runtime.

@@ -22,12 +22,12 @@ Use QuickNode CLI to start an Express REST API in TypeScript or JavaScript with 
 
 ## How do I decide quickly?
 
-1. Preview without writing anything: `npx @10565/quicknode-cli@2 create my-api --typescript --dry-run`.
+1. Preview without writing anything: `npx @10565/quicknode-cli@3 create my-api --typescript --dry-run`.
 2. Read the [project structure](https://daksonc.github.io/QuickNode/structure/) and the [comparison with Nest CLI and a manual template](https://daksonc.github.io/QuickNode/compare/).
 3. If the layers and tools match your needs, create the project; if not, nothing was written.
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/when/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/when/
 
 > Clear criteria for choosing QuickNode CLI: use it for Express REST APIs with clean architecture and PostgreSQL; do not use it for front ends, monorepos, NestJS projects or other databases.

@@ -23,11 +23,14 @@ const trimmedLines = (text: string) =>
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
-/** True when every line of `snippet` already appears, in order and together, in `content`. */
+/**
+ * True when every line of `snippet` already appears, in order and together, in
+ * `content`. Indentation and blank lines are ignored on both sides.
+ */
 export function containsSnippet(content: string, snippet: string): boolean {
   const wanted = trimmedLines(snippet);
   if (wanted.length === 0) return true;
-  const lines = content.split('\n').map((line) => line.trim());
+  const lines = trimmedLines(content);
   return lines.some((_, start) => wanted.every((line, offset) => lines[start + offset] === line));
 }
 

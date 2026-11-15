@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { unifiedDiff } from './diff.js';
 import { QnError } from './errors.js';
-import { isInside, readIfExists, realpathNearest } from './fs.js';
+import { compareCodeUnits, isInside, readIfExists, realpathNearest, toPosix } from './fs.js';
 import { insertBeforeMarker, replaceRegion, type MarkerStatus } from './markers.js';
 
 /**
@@ -22,6 +22,8 @@ export interface FileChange {
   /** Content on disk before the change (undefined for new files). */
   before?: string;
   after: string;
+  /** Permissions of a new file (an existing file keeps its own). */
+  mode?: number;
 }
 
 export class ConflictError extends QnError {
@@ -37,7 +39,6 @@ export interface PlannedFile {
   diff?: string;
 }
 
-const toPosix = (file: string) => file.split(path.sep).join('/');
 
 /**
  * Collects the changes of one command before anything is written, so the same
@@ -75,14 +76,17 @@ export class ChangePlan {
     return (await this.read(relativePath)) !== undefined;
   }
 
-  /** Plans a whole file. Existing different content is a conflict unless forced. */
-  async write(relativePath: string, content: string): Promise<FileChange> {
+  /**
+   * Plans a whole file. Existing different content is a conflict unless forced
+   * (by the plan, or for this file with `overwrite`).
+   */
+  async write(relativePath: string, content: string, options: { mode?: number; overwrite?: boolean } = {}): Promise<FileChange> {
     const key = toPosix(relativePath);
     const previous = this.changes.get(key);
     const before = previous ? previous.before : await readIfExists(this.resolve(relativePath));
-    const action: ChangeAction =
-      before === undefined ? 'create' : before === content ? 'unchanged' : this.force ? 'update' : 'conflict';
-    return this.set({ path: key, action, before, after: content });
+    const force = this.force || options.overwrite === true;
+    const action: ChangeAction = before === undefined ? 'create' : before === content ? 'unchanged' : force ? 'update' : 'conflict';
+    return this.set({ path: key, action, before, after: content, ...(options.mode === undefined ? {} : { mode: options.mode }) });
   }
 
   /**
@@ -108,7 +112,7 @@ export class ChangePlan {
   }
 
   list(): FileChange[] {
-    return [...this.changes.values()].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    return [...this.changes.values()].sort((a, b) => compareCodeUnits(a.path, b.path));
   }
 
   conflicts(): string[] {
@@ -157,7 +161,7 @@ export class ChangePlan {
       await fs.mkdir(path.dirname(destination), { recursive: true });
       const temporary = `${destination}.qn-${randomBytes(4).toString('hex')}.tmp`;
       // Keep the mode of an existing file (e.g. an executable git hook).
-      const mode = change.before === undefined ? undefined : (await fs.stat(destination)).mode;
+      const mode = change.before === undefined ? change.mode : (await fs.stat(destination)).mode;
       try {
         await fs.writeFile(temporary, change.after, mode === undefined ? undefined : { mode });
         await fs.rename(temporary, destination);

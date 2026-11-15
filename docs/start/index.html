@@ -69,7 +69,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "softwareRequirements": "Node.js 22.13+",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://daksonc.github.io/QuickNode/",
       "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
@@ -159,14 +159,14 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Breadcrumb"><ol class="crumbs" role="list"><li><a href="../">Home</a></li><li aria-current="page">Getting started</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui start</p>
-    <p class="meta">Updated on <time datetime="2026-11-14">2026-11-14</time> · valid for v2.x</p>
+    <p class="meta">Updated on <time datetime="2026-11-14">2026-11-14</time> · valid for v3.x</p>
 <h1 tabindex="-1">Getting started</h1>
 <p class="answer">To start a Node.js API with clean architecture, run <code>npx @10565/quicknode-cli create my-api</code> with Node.js 22.13 or newer, then <code>npm install</code>, <code>npm run docker:up</code> and <code>npm run dev</code>.</p>
 
 <h2 id="requirements" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>What do I need?</h2>
 <ul class="list" role="list">
   <li><span class="key">Node.js 22.13 or newer</span> (check with <code>node --version</code>). Older versions get a clear error instead of a crash.</li>
-  <li><span class="key">Docker</span> with Docker Compose, for the PostgreSQL database of the generated project (or a PostgreSQL server of your own, set in <code>.env</code>).</li>
+  <li><span class="key">Docker</span> with Docker Compose, for the PostgreSQL database of the generated project (or a PostgreSQL server of your own, set in <code>.env</code>). Not needed with <code>--db sqlite</code> (<code>node:sqlite</code>, built into Node.js) or <code>--db none</code> (in-memory repositories).</li>
   <li><span class="key">Git</span>, only if you want <code>--git</code> to initialize a repository.</li>
 </ul>
 

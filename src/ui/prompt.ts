@@ -11,6 +11,8 @@ export interface Prompter {
   text(question: string, defaultValue: string, validate?: (value: string) => string | undefined): Promise<string>;
   /** Numbered choice; Enter picks the first option. */
   choose<T>(question: string, choices: Choice<T>[]): Promise<T>;
+  /** Yes/no question; Enter answers no. */
+  confirm(question: string): Promise<boolean>;
   close(): void;
 }
 
@@ -59,6 +61,15 @@ export function createPrompter(
         const index = Number(answer) - 1;
         if (Number.isInteger(index) && choices[index]) return choices[index].value;
         output.write(`  Please type a number from 1 to ${choices.length}.\n`);
+      }
+    },
+
+    async confirm(question) {
+      for (;;) {
+        const answer = (await ask(`? ${question} (y/N) `)).toLowerCase();
+        if (answer === '' || answer === 'n' || answer === 'no') return false;
+        if (answer === 'y' || answer === 'yes') return true;
+        output.write('  Please answer y or n.\n');
       }
     },
 

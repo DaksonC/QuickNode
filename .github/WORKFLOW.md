@@ -44,7 +44,7 @@ git checkout develop && npm run release:minor   # patch / minor / major / prerel
 git checkout main && npm run release:tag
 ```
 
-> ⚠️ A primeira release depois das fases do ADR-001 é `npm run release:major` (1.1.0 → 2.0.0).
+> ⚠️ O `package.json` já está em `3.0.0` (primeira release depois da 1.1.1; a 2.0.0 nunca foi publicada): a primeira release é só `npm run release:tag` na `main`, sem bump.
 
 ## 🤖 Automação (GitHub Actions)
 

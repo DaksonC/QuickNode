@@ -1,0 +1,13 @@
+{
+  "remove": [
+    "src/infrastructure/database/seeder.ts",
+    "src/infrastructure/database/seeder.js"
+  ],
+  "text": {
+    "dbStack": "in-memory repositories (no database yet)",
+    "dbFeature": "none yet: repositories keep data in memory",
+    "dbFolders": "    database/              in-memory repositories and their factory (no database yet)",
+    "dbRequirement": "",
+    "dbReadme": "No database yet (created with `--db none`): the repositories keep data in memory, so it is\nlost on restart. To add one, implement the domain repository interfaces in\n`src/infrastructure/database/repositories/` and return them from the repository factory."
+  }
+}

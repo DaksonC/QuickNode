@@ -48,6 +48,6 @@ Bugs e ideias: [issues do GitHub](https://github.com/DaksonC/QuickNode/issues). 
 
 ---
 
-Atualizado em 2026-11-14 · válido para a v2.x · https://daksonc.github.io/QuickNode/pt/faq/
+Atualizado em 2026-11-14 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/faq/
 
 > Respostas sobre o QuickNode CLI: versão do Node.js, gerar em pastas existentes, segredos gerados, uso offline, telemetria e o nome QuickNode.

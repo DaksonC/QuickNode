@@ -21,6 +21,8 @@ updates:
     directories:
       - /templates/typescript
       - /templates/javascript
+      - /templates/db/postgres/typescript
+      - /templates/db/postgres/javascript
     schedule:
       interval: weekly
       day: monday

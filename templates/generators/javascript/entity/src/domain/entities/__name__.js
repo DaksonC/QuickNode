@@ -1,6 +1,6 @@
 /**
  * __Name__ entity: business data and rules, free of frameworks.
- * Add the fields of your domain here, in the Sequelize model and in the route validation.
+ * Add the fields of your domain here, in the persistence code and in the route validation.
  */
 class __Name__ {
   constructor(id, name, createdAt = new Date(), updatedAt = new Date()) {

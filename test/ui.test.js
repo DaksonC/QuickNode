@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import { PassThrough } from 'node:stream';
@@ -15,7 +14,7 @@ import {
 } from '../dist/commands/ui.js';
 import { EXIT_OK, EXIT_USAGE, main } from '../dist/main.js';
 import { DOCS_TOPICS, parseCommandLine, UsageError } from '../dist/spec.js';
-import { exists, makeTmp, read } from './helpers.js';
+import { makeTmp, read } from './helpers.js';
 
 const DESKTOP = { DISPLAY: ':0' };
 const noFiles = () => false;
@@ -189,15 +188,6 @@ describe('credits in the generated README', () => {
     const readme = await create(t, '--no-credits');
     assert.doesNotMatch(readme, /Generated with|quicknode:credits/);
     assert.match(readme, /## 📚 Guide/);
-    assert.ok(readme.endsWith('ui structure`.\n'));
-  });
-
-  it('does nothing when the project has no README, and reports other read errors', async (t) => {
-    const { removeCredits } = await import('../dist/commands/create.js');
-    const dir = await makeTmp(t);
-    await removeCredits(dir);
-    assert.equal(await exists(dir, 'README.md'), false);
-    await fs.mkdir(path.join(dir, 'README.md'));
-    await assert.rejects(removeCredits(dir), { code: 'EISDIR' });
+    assert.ok(readme.endsWith('## 📄 License\n\nMIT\n'));
   });
 });

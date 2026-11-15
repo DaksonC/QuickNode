@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "db:seed": "tsx src/infrastructure/database/seeder.ts"
+  }
+}

@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
-import { isInside, isNotFound } from '../core/fs.js';
+import { isInside, isNotFound, toPosix } from '../core/fs.js';
 import { findImports } from '../core/imports.js';
 import { detectProject } from '../core/project.js';
 
@@ -74,7 +74,6 @@ const HTTP_SCOPES = ['@nestjs/', '@fastify/', '@koa/'];
 const ORM_SCOPES = ['@mikro-orm/'];
 
 const builtins = new Set(builtinModules);
-const toPosix = (file: string) => file.split(path.sep).join('/');
 
 /** "express/lib/router" -> "express", "@scope/pkg/sub" -> "@scope/pkg". */
 function packageName(specifier: string): string {
@@ -83,20 +82,30 @@ function packageName(specifier: string): string {
 }
 
 
-/** Why a domain file may not import `specifier`, or undefined when it may. */
+/** Absolute folders of the two layers. */
+export interface LayerDirs {
+  domain: string;
+  infrastructure: string;
+}
+
+/**
+ * Why a domain file may not import `specifier`, or undefined when it may.
+ * `dirs` is the layer folders, or (as before quicknode.json) the src folder holding both.
+ */
 export function classifyDomainImport(
   specifier: string,
   fromFile: string,
-  srcDir: string
+  dirs: LayerDirs | string
 ): { rule: Rule; message: string } | undefined {
-  const domainDir = path.join(srcDir, 'domain');
+  const { domain: domainDir, infrastructure: infrastructureDir } =
+    typeof dirs === 'string' ? { domain: path.join(dirs, 'domain'), infrastructure: path.join(dirs, 'infrastructure') } : dirs;
   if (specifier.startsWith('.') || specifier.startsWith('/')) {
     const target = path.resolve(path.dirname(fromFile), specifier);
     if (isInside(target, domainDir)) return undefined;
-    if (isInside(target, path.join(srcDir, 'infrastructure'))) {
+    if (isInside(target, infrastructureDir)) {
       return { rule: 'domain-imports-infrastructure', message: 'domain must not import infrastructure' };
     }
-    return { rule: 'domain-imports-outside', message: 'domain must only import files inside src/domain' };
+    return { rule: 'domain-imports-outside', message: 'domain must only import files inside the domain layer' };
   }
   if (specifier.startsWith('node:') || builtins.has(specifier) || builtins.has(packageName(specifier))) return undefined;
   // Path aliases such as "@/infrastructure/..." or "src/infrastructure/...".
@@ -135,15 +144,15 @@ async function listSources(dir: string): Promise<string[]> {
 
 /** Checks the dependency rule in the QuickNode project that contains `cwd`. */
 export async function checkProject(cwd: string): Promise<CheckResult> {
-  const { root } = detectProject(cwd);
-  const srcDir = path.join(root, 'src');
-  const files = await listSources(path.join(srcDir, 'domain'));
+  const { root, layers } = detectProject(cwd);
+  const dirs: LayerDirs = { domain: path.join(root, layers.domain), infrastructure: path.join(root, layers.infrastructure) };
+  const files = await listSources(dirs.domain);
   const violations: Violation[] = [];
 
   for (const file of files) {
     const source = await fs.readFile(file, 'utf8');
     for (const { specifier, line } of findImports(source)) {
-      const problem = classifyDomainImport(specifier, file, srcDir);
+      const problem = classifyDomainImport(specifier, file, dirs);
       if (problem) violations.push({ file: toPosix(path.relative(root, file)), line, specifier, ...problem });
     }
   }

@@ -1,20 +1,25 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { CONFIG_FILE, CONFIG_SCHEMA_VERSION, DEFAULT_LAYERS, serializeConfig } from '../core/config.js';
 import { createEnvFile, ENV_FILE, generatesEnvFile } from '../core/env.js';
 import { shellQuote } from '../core/errors.js';
-import { readIfExists } from '../core/fs.js';
-import { templateDir, type TemplateName } from '../core/paths.js';
+import { toPosix } from '../core/fs.js';
+import { cliVersion, type TemplateName } from '../core/paths.js';
+import { loadPreset } from '../core/presets.js';
 import { projectNameError, resolveProject } from '../core/project-name.js';
+import type { TestRunner } from '../core/project.js';
+import { hashFiles, renderProject, writeRendered, type ProjectOptions } from '../core/render.js';
 import { npmCommand, run, type RunResult } from '../core/run.js';
 import { assertWritable, planScaffold, writeScaffold } from '../core/scaffold.js';
-import type { TestRunner } from '../core/project.js';
-import { applyPackageManager, applyTestRunner, installCommand } from '../core/variants.js';
-import { UsageError, type PackageManager } from '../spec.js';
+import { installCommand } from '../core/variants.js';
+import { UsageError, type Database, type PackageManager } from '../spec.js';
 import type { Prompter } from '../ui/prompt.js';
 
 export const DEFAULT_PROJECT_NAME = 'my-quicknode-app';
 export const DEFAULT_TEMPLATE: TemplateName = 'typescript';
+export const DEFAULT_DATABASE: Database = 'postgres';
 
+/** Choices of `qn create`; undefined means "not given" (then: preset, prompt or default). */
 export interface CreateInput {
   name?: string;
   template?: TemplateName;
@@ -29,6 +34,9 @@ export interface CreateInput {
   /** Package manager written into scripts and docs, and used by --install. */
   pm?: PackageManager;
   testRunner?: TestRunner;
+  db?: Database;
+  /** Built-in preset name or path of a local JSON preset. */
+  preset?: string;
 }
 
 export interface CreateContext {
@@ -48,8 +56,11 @@ export interface CreateResult {
   targetDir: string;
   inCurrentDir: boolean;
   template: TemplateName;
+  db: Database;
   pm: PackageManager;
   testRunner: TestRunner;
+  /** Preset the choices started from, if any. */
+  preset?: string;
   /** Files of the project, relative to targetDir. */
   files: string[];
   /** Existing files that are (or would be) overwritten. */
@@ -72,17 +83,21 @@ export function createInputFromFlags(
   if (values.typescript && values.javascript) {
     throw new UsageError('Choose only one template: --typescript or --javascript.', 'create');
   }
+  // Boolean flags are "given" only when present, so a preset can still set them.
+  const given = (name: string) => (values[name] ? true : undefined);
   return {
     name: positionals[0],
     template: values.typescript ? 'typescript' : values.javascript ? 'javascript' : undefined,
     force: Boolean(values.force),
     yes: Boolean(values.yes),
     dryRun: Boolean(values['dry-run']),
-    install: Boolean(values.install),
-    git: Boolean(values.git),
-    noCredits: Boolean(values['no-credits']),
+    install: given('install'),
+    git: given('git'),
+    noCredits: given('no-credits'),
     pm: values.pm as PackageManager | undefined,
-    testRunner: values.test as TestRunner | undefined
+    testRunner: values.test as TestRunner | undefined,
+    db: values.db as Database | undefined,
+    preset: values.preset as string | undefined
   };
 }
 
@@ -101,9 +116,10 @@ async function resolveName(input: CreateInput, prompter?: Prompter): Promise<str
   );
 }
 
-async function resolveTemplate(input: CreateInput, prompter?: Prompter): Promise<TemplateName> {
+/** A preset counts as an answer: what it leaves out takes the default instead of a prompt. */
+async function resolveTemplate(input: CreateInput, usePrompts: boolean, prompter?: Prompter): Promise<TemplateName> {
   if (input.template) return input.template;
-  if (input.yes) return DEFAULT_TEMPLATE;
+  if (!usePrompts) return DEFAULT_TEMPLATE;
   if (!prompter) {
     throw new UsageError(
       'Choose a template with --typescript or --javascript (or pass --yes).',
@@ -117,51 +133,62 @@ async function resolveTemplate(input: CreateInput, prompter?: Prompter): Promise
   ]);
 }
 
-async function setPackageName(projectDir: string, name: string): Promise<void> {
-  const packageJsonPath = path.join(projectDir, 'package.json');
-  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-  packageJson.name = name;
-  await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+async function resolveDatabase(input: CreateInput, usePrompts: boolean, prompter?: Prompter): Promise<Database> {
+  if (input.db) return input.db;
+  if (!usePrompts || !prompter) return DEFAULT_DATABASE;
+  return prompter.choose<Database>('Database', [
+    { label: 'PostgreSQL (Docker)', value: 'postgres' },
+    { label: 'SQLite (node:sqlite, nothing to install)', value: 'sqlite' },
+    { label: 'None (in-memory repositories)', value: 'none' }
+  ]);
 }
 
-/** Marks the removable credit line in the templates' README.md. */
-const CREDITS_BLOCK = /\n*<!-- quicknode:credits -->[\s\S]*?<!-- \/quicknode:credits -->\n?/;
-
-/**
- * Removes the credit block from the generated README. The line lives only in
- * the README: never in code, HTTP headers or API responses (ADR-001, D8).
- */
-export async function removeCredits(projectDir: string): Promise<void> {
-  const readmePath = path.join(projectDir, 'README.md');
-  const readme = await readIfExists(readmePath);
-  if (readme === undefined) return;
-  const stripped = readme.replace(CREDITS_BLOCK, '\n');
-  if (stripped !== readme) await fs.writeFile(readmePath, stripped);
+/** Flags first, then the preset: a flag given on the command line always wins. */
+async function withPreset(input: CreateInput, cwd: string): Promise<CreateInput> {
+  if (input.preset === undefined) return input;
+  const { values } = await loadPreset(input.preset, cwd);
+  return {
+    ...input,
+    template: input.template ?? values.template,
+    db: input.db ?? values.db,
+    pm: input.pm ?? values.pm,
+    testRunner: input.testRunner ?? values.test,
+    git: input.git ?? values.git,
+    install: input.install ?? values.install,
+    noCredits: input.noCredits ?? (values.credits === undefined ? undefined : !values.credits)
+  };
 }
 
 /**
  * Creates (or, with dryRun, only plans) a project. Never prints: progress goes
  * through `ctx.progress` and the outcome is returned for the caller to render.
  */
-export async function createProject(input: CreateInput, ctx: CreateContext): Promise<CreateResult> {
+export async function createProject(rawInput: CreateInput, ctx: CreateContext): Promise<CreateResult> {
+  // The preset is validated before any prompt or file.
+  const input = await withPreset(rawInput, ctx.cwd);
   const name = await resolveName(input, ctx.prompter);
   const project = resolveProject(name, ctx.cwd);
-  const template = await resolveTemplate(input, ctx.prompter);
+  const usePrompts = !input.yes && input.preset === undefined;
+  const template = await resolveTemplate(input, usePrompts, ctx.prompter);
+  const db = await resolveDatabase(input, usePrompts, ctx.prompter);
 
+  const options: ProjectOptions = {
+    template,
+    db,
+    pm: input.pm ?? 'npm',
+    test: input.testRunner ?? 'jest',
+    credits: !input.noCredits
+  };
+  const rendered = await renderProject({ ...options, packageName: project.packageName });
   const plan = await planScaffold({
-    templateDir: templateDir(template),
+    files: [...rendered.keys(), CONFIG_FILE],
     targetDir: project.targetDir,
     preserve: [ENV_FILE]
   });
   assertWritable(plan, input.force);
 
-  const pm = input.pm ?? 'npm';
-  const testRunner = input.testRunner ?? 'jest';
-  const env: EnvStatus = plan.preserved.includes(ENV_FILE)
-    ? 'kept'
-    : generatesEnvFile(plan.files)
-      ? 'generated'
-      : 'none';
+  const env: EnvStatus = plan.preserved.includes(ENV_FILE) ? 'kept' : generatesEnvFile([...rendered.keys()]) ? 'generated' : 'none';
+  const files = [...rendered.keys(), CONFIG_FILE, ...(env === 'generated' ? [ENV_FILE] : [])].sort();
 
   const result: CreateResult = {
     dryRun: Boolean(input.dryRun),
@@ -170,25 +197,30 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
     targetDir: project.targetDir,
     inCurrentDir: project.inCurrentDir,
     template,
-    pm,
-    testRunner,
-    files: (env === 'generated' ? [...plan.files, ENV_FILE] : plan.files).filter(
-      (file) => testRunner === 'jest' || file !== 'jest.config.js'
-    ),
-    overwritten: plan.conflicts,
+    db,
+    pm: options.pm,
+    testRunner: options.test,
+    ...(input.preset === undefined ? {} : { preset: input.preset }),
+    files,
+    overwritten: plan.conflicts.map(toPosix),
     env,
-    steps: [...(input.git ? (['git init'] as const) : []), ...(input.install ? [installCommand(pm) as Step] : [])]
+    steps: [...(input.git ? (['git init'] as const) : []), ...(input.install ? [installCommand(options.pm) as Step] : [])]
   };
   if (input.dryRun) return result;
 
   ctx.progress?.(`Creating ${project.targetDir}`);
+  const config = serializeConfig({
+    schemaVersion: CONFIG_SCHEMA_VERSION,
+    templateVersion: cliVersion(),
+    ...options,
+    layers: DEFAULT_LAYERS,
+    files: hashFiles(rendered)
+  });
   await writeScaffold(plan, {
-    transform: async (stagingDir) => {
-      await setPackageName(stagingDir, project.packageName);
+    populate: async (stagingDir) => {
+      await writeRendered(stagingDir, rendered);
+      await fs.writeFile(path.join(stagingDir, CONFIG_FILE), config);
       await createEnvFile(stagingDir);
-      if (input.noCredits) await removeCredits(stagingDir);
-      await applyPackageManager(stagingDir, pm);
-      await applyTestRunner(stagingDir, template, testRunner);
     }
   });
 
@@ -197,8 +229,8 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
     result.git = await run('git', ['init', '--quiet'], project.targetDir);
   }
   if (input.install) {
-    ctx.progress?.(`Installing dependencies (${installCommand(pm)})`);
-    result.install = await installDependencies(pm, project.targetDir);
+    ctx.progress?.(`Installing dependencies (${installCommand(options.pm)})`);
+    result.install = await installDependencies(options.pm, project.targetDir);
   }
 
   return result;

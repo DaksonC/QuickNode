@@ -75,7 +75,7 @@
 <ul class="list" role="list">
   <li>Templates in a single place, resolved from the package root (not copied into dist).</li>
   <li>A files field without compiled tests or unnecessary .d.ts files; fix or remove main; take prepare out of the published package.</li>
-  <li>Size budget in CI: fail if npm pack --dry-run exceeds 300 KB unpacked.</li>
+  <li>Size budget in CI: fail if npm pack --dry-run exceeds 400 KB unpacked (300 KB until phase 5, raised for the modular templates and qn upgrade).</li>
 </ul>
 <h3 id="d5" tabindex="-1">D5 — Supply chain</h3>
 <ul class="list" role="list">
@@ -294,8 +294,8 @@
   <tbody>
     <tr><th scope="row">Direct runtime dependencies</th><td>6</td><td>0</td></tr>
     <tr><th scope="row">Packages installed by npx</th><td>56</td><td>1</td></tr>
-    <tr><th scope="row">node_modules after installing the CLI</th><td>39 MB</td><td>&lt; 300 KB</td></tr>
-    <tr><th scope="row">Published package (unpacked)</th><td>1.6 MB / 139 files</td><td>&lt; 300 KB</td></tr>
+    <tr><th scope="row">node_modules after installing the CLI</th><td>39 MB</td><td>&lt; 400 KB</td></tr>
+    <tr><th scope="row">Published package (unpacked)</th><td>1.6 MB / 139 files</td><td>&lt; 400 KB</td></tr>
     <tr><th scope="row">High + critical vulnerabilities in the generated project</th><td>TS 28 · JS 15</td><td>0</td></tr>
     <tr><th scope="row">Provenance on publishing</th><td>No</td><td>Yes</td></tr>
     <tr><th scope="row">CLI tests</th><td>1 test file</td><td>≥ 80% coverage + e2e of the templates</td></tr>

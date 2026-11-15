@@ -69,7 +69,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "softwareRequirements": "Node.js 22.13+",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://daksonc.github.io/QuickNode/",
       "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
@@ -159,7 +159,7 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Breadcrumb"><ol class="crumbs" role="list"><li><a href="../">Home</a></li><li aria-current="page">Project structure</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui structure</p>
-    <p class="meta">Updated on <time datetime="2026-11-14">2026-11-14</time> · valid for v2.x</p>
+    <p class="meta">Updated on <time datetime="2026-11-14">2026-11-14</time> · valid for v3.x</p>
 <h1 tabindex="-1">Project structure</h1>
 <p class="answer">A QuickNode project splits <code>src/</code> into two layers: <code>domain</code> holds the business rules (entities, repository interfaces, use cases) and <code>infrastructure</code> holds everything that talks to the outside world (HTTP, database, logs, docs).</p>
 
@@ -188,6 +188,7 @@
 └── server.ts                Express app: middleware, feature modules, startup and shutdown</code></pre>
 </div>
 <p>The JavaScript template has the same layers, with Sequelize models in <code>infrastructure/database/models/</code> instead of TypeORM entities.</p>
+<p>That is the default <code>--db postgres</code>. With <code>--db sqlite</code>, <code>database/</code> holds a <code>node:sqlite</code> connection (built into Node.js) and repositories that create their own tables; with <code>--db none</code>, in-memory repositories. The connection always exports <code>databaseConnection</code> with <code>initialize()</code>, <code>ping()</code> and <code>close()</code>, and <code>qn generate</code> writes the repository for the project's database.</p>
 
 <h2 id="rule" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>What is the dependency rule?</h2>
 <p>Dependencies point inwards: <code>infrastructure</code> may import <code>domain</code>, but <code>domain</code> imports only other domain files and Node.js built-in modules: never <code>infrastructure</code>, Express, the ORM or another package. A use case receives a repository <em>interface</em> in its constructor; the feature module in <code>infrastructure/modules</code> decides which implementation it gets.</p>
@@ -220,8 +221,9 @@
 
 <h2 id="files" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Which files sit at the project root?</h2>
 <ul class="list" role="list">
-  <li><code>.env</code>: generated with random <code>DB_PASSWORD</code> and <code>JWT_SECRET</code>, git-ignored, permission 600. <code>.env.example</code> documents every variable.</li>
-  <li><code>docker-compose.yml</code>: PostgreSQL 17 and Adminer, both bound to 127.0.0.1.</li>
+  <li><code>quicknode.json</code>: how the project was created (template, database, package manager, test runner, layer folders, template version) and the hash of each generated file, which <code>qn upgrade</code> uses to tell your changes apart. Commit it.</li>
+  <li><code>.env</code>: generated with random secrets (<code>JWT_SECRET</code>, and <code>DB_PASSWORD</code> with PostgreSQL), git-ignored, permission 600. <code>.env.example</code> documents every variable; <code>qn env</code> compares both without printing values.</li>
+  <li><code>docker-compose.yml</code> (PostgreSQL only): PostgreSQL 17 and Adminer, both bound to 127.0.0.1.</li>
   <li><code>eslint.config.mjs</code>, <code>.prettierrc.json</code>, <code>jest.config.js</code>, <code>commitlint.config.js</code> and <code>.husky/</code>: quality tools.</li>
   <li><code>AGENTS.md</code> and its copy <code>CLAUDE.md</code>: the layers, the dependency rule and the commands to run, for AI coding assistants.</li>
 </ul>

@@ -30,6 +30,8 @@ src/
 
 The JavaScript template has the same layers, with Sequelize models in `infrastructure/database/models/` instead of TypeORM entities.
 
+That is the default `--db postgres`. With `--db sqlite`, `database/` holds a `node:sqlite` connection (built into Node.js) and repositories that create their own tables; with `--db none`, in-memory repositories. The connection always exports `databaseConnection` with `initialize()`, `ping()` and `close()`, and `qn generate` writes the repository for the project's database.
+
 ## What is the dependency rule?
 
 Dependencies point inwards: `infrastructure` may import `domain`, but `domain` imports only other domain files and Node.js built-in modules: never `infrastructure`, Express, the ORM or another package. A use case receives a repository *interface* in its constructor; the feature module in `infrastructure/modules` decides which implementation it gets.
@@ -59,8 +61,9 @@ Comments such as `// qn:modules` and `// qn:entities` mark where `qn generate` a
 
 ## Which files sit at the project root?
 
-- `.env`: generated with random `DB_PASSWORD` and `JWT_SECRET`, git-ignored, permission 600. `.env.example` documents every variable.
-- `docker-compose.yml`: PostgreSQL 17 and Adminer, both bound to 127.0.0.1.
+- `quicknode.json`: how the project was created (template, database, package manager, test runner, layer folders, template version) and the hash of each generated file, which `qn upgrade` uses to tell your changes apart. Commit it.
+- `.env`: generated with random secrets (`JWT_SECRET`, and `DB_PASSWORD` with PostgreSQL), git-ignored, permission 600. `.env.example` documents every variable; `qn env` compares both without printing values.
+- `docker-compose.yml` (PostgreSQL only): PostgreSQL 17 and Adminer, both bound to 127.0.0.1.
 - `eslint.config.mjs`, `.prettierrc.json`, `jest.config.js`, `commitlint.config.js` and `.husky/`: quality tools.
 - `AGENTS.md` and its copy `CLAUDE.md`: the layers, the dependency rule and the commands to run, for AI coding assistants.
 
@@ -70,6 +73,6 @@ Next: [add a new entity and use case](https://daksonc.github.io/QuickNode/tutori
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/structure/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/structure/
 
 > What each folder of a QuickNode project does: domain entities, repository interfaces and use cases, and the infrastructure layer with Express, TypeORM or Sequelize.

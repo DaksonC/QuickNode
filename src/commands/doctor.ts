@@ -1,6 +1,8 @@
 import path from 'node:path';
-import { ENV_EXAMPLE_FILE, ENV_FILE } from '../core/env.js';
+import { compareVersions, CONFIG_FILE } from '../core/config.js';
+import { compareEnv, ENV_EXAMPLE_FILE, ENV_FILE } from '../core/env.js';
 import { readIfExists } from '../core/fs.js';
+import { cliVersion } from '../core/paths.js';
 import { detectProject, type QuickNodeProject } from '../core/project.js';
 import { capture, npmCommand, type CaptureResult } from '../core/run.js';
 import { checkProject } from './check.js';
@@ -8,7 +10,7 @@ import { checkProject } from './check.js';
 export type CheckStatus = 'ok' | 'warn' | 'fail' | 'skip';
 
 export interface DoctorCheck {
-  name: 'node' | 'env' | 'docker' | 'audit' | 'check';
+  name: 'node' | 'env' | 'docker' | 'audit' | 'check' | 'template';
   status: CheckStatus;
   message: string;
 }
@@ -28,6 +30,8 @@ export interface DoctorContext {
   capture?: typeof capture;
   /** False skips the checks that run programs (Docker, npm audit), e.g. from the MCP server. */
   runPrograms?: boolean;
+  /** Version of the CLI (tests replace it). */
+  cliVersion?: string;
 }
 
 const parseVersion = (version: string) => version.replace(/^v/, '').split('.').map(Number);
@@ -55,17 +59,6 @@ function checkNode(project: QuickNodeProject, version: string): DoctorCheck {
     : { name: 'node', status: 'fail', message: `Node.js ${version} does not satisfy ${range}: install a newer Node.js` };
 }
 
-/** KEY=value pairs of a dotenv file (comments and blank lines ignored). */
-function parseEnv(content: string): Map<string, string> {
-  const entries = new Map<string, string>();
-  for (const line of content.split(/\r?\n/)) {
-    const match = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/.exec(line);
-    if (match) entries.set(match[1], match[2].trim().replace(/^(['"])(.*)\1$/, '$2'));
-  }
-  return entries;
-}
-
-
 /** Compares .env with .env.example by variable names; values are never shown. */
 async function checkEnv(root: string): Promise<DoctorCheck> {
   const env = await readIfExists(path.join(root, ENV_FILE));
@@ -74,21 +67,38 @@ async function checkEnv(root: string): Promise<DoctorCheck> {
     return {
       name: 'env',
       status: 'fail',
-      message: `${ENV_FILE} is missing: copy ${ENV_EXAMPLE_FILE} to ${ENV_FILE} and replace every "change-me"`
+      message: `${ENV_FILE} is missing: run "qn env --generate-secrets" to create it from ${ENV_EXAMPLE_FILE}`
     };
   }
-  const values = parseEnv(env);
-  const placeholders = [...values].filter(([, value]) => value === 'change-me').map(([key]) => key);
+  if (example === undefined) return { name: 'env', status: 'warn', message: `No ${ENV_EXAMPLE_FILE} to compare ${ENV_FILE} with` };
+  const { missing, placeholders } = compareEnv(env, example);
   if (placeholders.length > 0) {
-    return { name: 'env', status: 'fail', message: `${ENV_FILE} still has placeholder values: ${placeholders.join(', ')}` };
+    return {
+      name: 'env',
+      status: 'fail',
+      message: `${ENV_FILE} still has placeholder values: ${placeholders.join(', ')} (qn env --generate-secrets fills secrets)`
+    };
   }
-  const missing = example === undefined ? [] : [...parseEnv(example).keys()].filter((key) => !values.has(key));
   return missing.length > 0
-    ? { name: 'env', status: 'warn', message: `${ENV_FILE} lacks variables from ${ENV_EXAMPLE_FILE}: ${missing.join(', ')}` }
+    ? { name: 'env', status: 'warn', message: `${ENV_FILE} lacks variables from ${ENV_EXAMPLE_FILE}: ${missing.join(', ')} (qn env)` }
     : { name: 'env', status: 'ok', message: `${ENV_FILE} has every variable of ${ENV_EXAMPLE_FILE}` };
 }
 
-async function checkDocker(run: typeof capture, root: string): Promise<DoctorCheck> {
+/** Whether the template has improvements the project could take with qn upgrade. */
+function checkTemplate(project: QuickNodeProject, version: string): DoctorCheck {
+  if (!project.config) {
+    return { name: 'template', status: 'warn', message: `No ${CONFIG_FILE} (created before v3): "qn upgrade --dry-run" shows what would change and creates it` };
+  }
+  const recorded = project.config.templateVersion;
+  if (recorded === 'unknown' || compareVersions(recorded, version) < 0) {
+    return { name: 'template', status: 'warn', message: `Template ${recorded}, CLI ${version}: run "qn upgrade --dry-run"` };
+  }
+  return { name: 'template', status: 'ok', message: `Template ${recorded} (${project.language}, ${project.db})` };
+}
+
+async function checkDocker(run: typeof capture, project: QuickNodeProject): Promise<DoctorCheck> {
+  if (project.db !== 'postgres') return { name: 'docker', status: 'skip', message: `Not needed (database: ${project.db})` };
+  const root = project.root;
   const docker = await run('docker', ['--version'], root, 15_000);
   if (docker.code !== 0) {
     return { name: 'docker', status: 'warn', message: 'Docker not found: it runs the database (npm run docker:up)' };
@@ -156,9 +166,10 @@ export async function doctor(ctx: DoctorContext): Promise<DoctorResult> {
   const checks = [
     checkNode(project, ctx.nodeVersion ?? process.versions.node),
     await checkEnv(project.root),
+    checkTemplate(project, ctx.cliVersion ?? cliVersion()),
     ...(ctx.runPrograms === false
       ? (['docker', 'audit'] as const).map((name) => ({ name, status: 'skip' as const, message: 'Skipped (no programs are run here)' }))
-      : [await checkDocker(run, project.root), await checkAudit(project, run, Boolean(ctx.offline))]),
+      : [await checkDocker(run, project), await checkAudit(project, run, Boolean(ctx.offline))]),
     await checkDependencyRule(project.root)
   ];
   return { ok: checks.every((check) => check.status !== 'fail'), root: project.root, checks };

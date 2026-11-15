@@ -7,7 +7,7 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <title>Changelog do QuickNode CLI: o que mudou em cada versão</title>
-  <meta name="description" content="Notas de versão do QuickNode CLI da v1.0.0 à v2: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.">
+  <meta name="description" content="Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.">
   <link rel="canonical" href="https://daksonc.github.io/QuickNode/pt/changelog/">
   <link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/changelog/">
   <link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/changelog/">
@@ -16,7 +16,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="QuickNode CLI">
   <meta property="og:title" content="Changelog do QuickNode CLI: o que mudou em cada versão">
-  <meta property="og:description" content="Notas de versão do QuickNode CLI da v1.0.0 à v2: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.">
+  <meta property="og:description" content="Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.">
   <meta property="og:url" content="https://daksonc.github.io/QuickNode/pt/changelog/">
   <meta property="og:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
   <meta property="og:image:width" content="1200">
@@ -26,7 +26,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Changelog do QuickNode CLI: o que mudou em cada versão">
-  <meta name="twitter:description" content="Notas de versão do QuickNode CLI da v1.0.0 à v2: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.">
+  <meta name="twitter:description" content="Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.">
   <meta name="twitter:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
   <meta name="twitter:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
 
@@ -46,7 +46,7 @@
       "@type": "TechArticle",
       "headline": "Changelog",
       "name": "Changelog do QuickNode CLI: o que mudou em cada versão",
-      "description": "Notas de versão do QuickNode CLI da v1.0.0 à v2: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.",
+      "description": "Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.",
       "url": "https://daksonc.github.io/QuickNode/pt/changelog/",
       "inLanguage": "pt-BR",
       "dateModified": "2026-11-15",
@@ -69,7 +69,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "softwareRequirements": "Node.js 22.13+",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://daksonc.github.io/QuickNode/",
       "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
@@ -159,12 +159,32 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Trilha de navegação"><ol class="crumbs" role="list"><li><a href="../">Início</a></li><li aria-current="page">Changelog</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui changelog</p>
-    <p class="meta">Atualizado em <time datetime="2026-11-15">2026-11-15</time> · válido para a v2.x</p>
+    <p class="meta">Atualizado em <time datetime="2026-11-15">2026-11-15</time> · válido para a v3.x</p>
 <h1 tabindex="-1">Changelog</h1>
-<p class="answer">A versão 2.0.0 reescreve o QuickNode CLI sem dependências de runtime, torna o <code>qn create</code> seguro por padrão, publica com provenance e traz o <code>qn generate</code>, o <code>qn check</code>, o <code>qn add</code>, o <code>qn doctor</code>, o <code>qn ui</code> e este site; ela exige Node.js 22.13+.</p>
+<p class="answer">A versão 3.0.0 registra como cada projeto foi criado no <code>quicknode.json</code>, traz <code>--db postgres|sqlite|none</code> e presets no <code>qn create</code>, e os comandos <code>qn env</code> e <code>qn upgrade</code>; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um <code>qn create</code> seguro. Exige Node.js 22.13+.</p>
 <p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="https://github.com/DaksonC/QuickNode/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
 
-<h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// em breve</span></h2>
+<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// em breve</span></h2>
+<h3>Mudanças incompatíveis</h3>
+<ul class="list" role="list">
+  <li>O código de banco gerado tem o mesmo formato em todos os bancos: <code>src/infrastructure/database/connection</code> exporta <code>databaseConnection</code> com <code>initialize()</code>, <code>ping()</code> e <code>close()</code>. Nos projetos JavaScript ele substitui o export padrão <code>sequelizeConnection</code>, e os models são carregados pelo <code>initialize()</code>.</li>
+  <li>A conexão é só PostgreSQL: saem o <code>DB_TYPE</code> e os ramos de MySQL e SQLite que funcionavam pela metade (use <code>--db sqlite</code>). O <code>@types/sqlite3</code> saiu do template TypeScript.</li>
+  <li>Os comandos escritos nos projetos novos e na documentação usam <code>npx @10565/quicknode-cli@3</code>.</li>
+  <li>O orçamento de tamanho do pacote publicado passa a 400 KB (era 300 KB), registrado na D4 do ADR-001.</li>
+  <li>O <code>qn create</code> pergunta o banco no terminal (<code>--yes</code> e <code>--preset</code> pulam a pergunta).</li>
+</ul>
+<h3>Adicionado</h3>
+<ul class="list" role="list">
+  <li><code>quicknode.json</code> nos projetos novos: template, banco, gerenciador de pacotes, executor de testes, pastas das camadas, versão do template e o hash de cada arquivo gerado. O <code>qn generate</code>, o <code>qn add</code>, o <code>qn check</code>, o <code>qn doctor</code> e o <code>qn upgrade</code> leem esse arquivo; projetos sem ele continuam detectados pelo layout.</li>
+  <li><code>qn create --db postgres|sqlite|none</code>: templates feitos de uma base mínima mais um add-on de banco. O SQLite usa o <code>node:sqlite</code>, nativo do Node.js (sem driver, sem Docker); o <code>none</code> usa repositórios em memória. O <code>qn generate</code> escreve o repositório do banco do projeto.</li>
+  <li><code>qn create --preset api-minima|api-postgres</code> ou <code>--preset ./arquivo.json</code>, validado antes de gravar qualquer coisa; as flags vencem o preset.</li>
+  <li><code>qn env</code>: compara o <code>.env</code> com o <code>.env.example</code> pelos nomes e, com <code>--generate-secrets</code>, adiciona o que falta com segredos aleatórios (<code>crypto.randomBytes</code>). Nunca imprime valores.</li>
+  <li><code>qn upgrade</code>: aplica um template mais novo. Arquivos que você não alterou são atualizados, os alterados recebem um diff e uma cópia <code>.qn-new</code>, e o <code>package.json</code> só recebe versões mais novas das dependências que já tem; primeiro <code>--dry-run</code>, depois confirmação (ou <code>--yes</code>) para aplicar.</li>
+  <li>Códigos de erro <code>E_CONFIG_INVALID</code>, <code>E_PRESET_INVALID</code>, <code>E_ENV_EXAMPLE_MISSING</code>, <code>E_CONFIRM_REQUIRED</code> e <code>E_CLI_OUTDATED</code>; ferramentas MCP <code>qn_env</code> e <code>qn_upgrade</code> (simulação, a menos que <code>"apply": true</code>).</li>
+  <li>O <code>qn doctor</code> pula o Docker quando o projeto não usa PostgreSQL e avisa quando o <code>qn upgrade</code> tem novidade.</li>
+</ul>
+
+<h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// não publicada: estas mudanças saem na 3.0.0</span></h2>
 <h3>Mudanças incompatíveis</h3>
 <ul class="list" role="list">
   <li>Exige Node.js 22.13 ou mais novo, na CLI e nos projetos gerados.</li>

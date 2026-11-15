@@ -37,6 +37,6 @@ From a terminal, `qn ui` opens these pages and `qn help create` shows the same h
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/
 
 > Create a Node.js API with clean architecture in one command: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready. Zero runtime dependencies.

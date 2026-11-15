@@ -30,6 +30,8 @@ src/
 
 O template JavaScript tem as mesmas camadas, com models do Sequelize em `infrastructure/database/models/` no lugar das entidades do TypeORM.
 
+Esse é o padrão `--db postgres`. Com `--db sqlite`, o `database/` tem uma conexão `node:sqlite` (nativo do Node.js) e repositórios que criam as próprias tabelas; com `--db none`, repositórios em memória. A conexão sempre exporta `databaseConnection` com `initialize()`, `ping()` e `close()`, e o `qn generate` escreve o repositório do banco do projeto.
+
 ## Qual é a regra de dependência?
 
 As dependências apontam para dentro: `infrastructure` pode importar `domain`, mas `domain` importa só outros arquivos do domínio e módulos nativos do Node.js: nunca `infrastructure`, Express, o ORM ou outro pacote. Um caso de uso recebe uma *interface* de repositório no construtor; quem decide a implementação é o módulo da funcionalidade em `infrastructure/modules`.
@@ -59,8 +61,9 @@ Comentários como `// qn:modules` e `// qn:entities` marcam onde o `qn generate`
 
 ## Quais arquivos ficam na raiz?
 
-- `.env`: gerado com `DB_PASSWORD` e `JWT_SECRET` aleatórios, ignorado pelo git, permissão 600. O `.env.example` documenta cada variável.
-- `docker-compose.yml`: PostgreSQL 17 e Adminer, ambos presos a 127.0.0.1.
+- `quicknode.json`: como o projeto foi criado (template, banco, gerenciador de pacotes, executor de testes, pastas das camadas, versão do template) e o hash de cada arquivo gerado, que o `qn upgrade` usa para separar as suas alterações. Faça commit dele.
+- `.env`: gerado com segredos aleatórios (`JWT_SECRET`, e `DB_PASSWORD` com PostgreSQL), ignorado pelo git, permissão 600. O `.env.example` documenta cada variável; o `qn env` compara os dois sem imprimir valores.
+- `docker-compose.yml` (só PostgreSQL): PostgreSQL 17 e Adminer, ambos presos a 127.0.0.1.
 - `eslint.config.mjs`, `.prettierrc.json`, `jest.config.js`, `commitlint.config.js` e `.husky/`: ferramentas de qualidade.
 - `AGENTS.md` e a cópia `CLAUDE.md`: as camadas, a regra de dependência e os comandos a rodar, para assistentes de código com IA.
 
@@ -70,6 +73,6 @@ Próximo passo: [crie uma entidade e um caso de uso](https://daksonc.github.io/Q
 
 ---
 
-Atualizado em 2026-11-14 · válido para a v2.x · https://daksonc.github.io/QuickNode/pt/structure/
+Atualizado em 2026-11-14 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/structure/
 
 > O papel de cada pasta de um projeto QuickNode: entidades, interfaces de repositório e casos de uso no domínio, e a infraestrutura com Express, TypeORM ou Sequelize.

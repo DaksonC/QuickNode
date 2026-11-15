@@ -59,18 +59,18 @@ jobs:
       - name: 🛡️ Audit CLI dependencies
         run: npm audit --omit=dev --audit-level=high
 
-      - name: 📏 Package size budget (300 KB unpacked)
+      - name: 📏 Package size budget (400 KB unpacked, ADR-001 D4)
         run: |
           SIZE=$(npm pack --dry-run --json | node -e 'console.log(JSON.parse(require("fs").readFileSync(0))[0].unpackedSize)')
           echo "Unpacked size: $SIZE bytes"
-          test "$SIZE" -le 307200
+          test "$SIZE" -le 409600
 
   generated-project:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        template: [typescript, javascript, typescript-node, javascript-node]
+        template: [typescript, javascript, typescript-node, javascript-node, typescript-sqlite, javascript-sqlite, typescript-none, javascript-none]
 
     steps:
       - name: 📦 Checkout code
@@ -91,3 +91,5 @@ jobs:
         run: npm run test:templates
         env:
           QN_E2E_TEMPLATES: ${{ matrix.template }}
+          # ubuntu-latest has Docker: PostgreSQL variants also start the API against a real database.
+          QN_E2E_DOCKER: '1'

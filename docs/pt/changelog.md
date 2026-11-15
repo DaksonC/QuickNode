@@ -1,10 +1,30 @@
 # Changelog
 
-A versão 2.0.0 reescreve o QuickNode CLI sem dependências de runtime, torna o `qn create` seguro por padrão, publica com provenance e traz o `qn generate`, o `qn check`, o `qn add`, o `qn doctor`, o `qn ui` e este site; ela exige Node.js 22.13+.
+A versão 3.0.0 registra como cada projeto foi criado no `quicknode.json`, traz `--db postgres|sqlite|none` e presets no `qn create`, e os comandos `qn env` e `qn upgrade`; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um `qn create` seguro. Exige Node.js 22.13+.
 
 As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/). As notas de versão com a procedência do build ficam nas [Releases do GitHub](https://github.com/DaksonC/QuickNode/releases).
 
-## 2.0.0 // em breve
+## 3.0.0 // em breve
+
+### Mudanças incompatíveis
+
+- O código de banco gerado tem o mesmo formato em todos os bancos: `src/infrastructure/database/connection` exporta `databaseConnection` com `initialize()`, `ping()` e `close()`. Nos projetos JavaScript ele substitui o export padrão `sequelizeConnection`, e os models são carregados pelo `initialize()`.
+- A conexão é só PostgreSQL: saem o `DB_TYPE` e os ramos de MySQL e SQLite que funcionavam pela metade (use `--db sqlite`). O `@types/sqlite3` saiu do template TypeScript.
+- Os comandos escritos nos projetos novos e na documentação usam `npx @10565/quicknode-cli@3`.
+- O orçamento de tamanho do pacote publicado passa a 400 KB (era 300 KB), registrado na D4 do ADR-001.
+- O `qn create` pergunta o banco no terminal (`--yes` e `--preset` pulam a pergunta).
+
+### Adicionado
+
+- `quicknode.json` nos projetos novos: template, banco, gerenciador de pacotes, executor de testes, pastas das camadas, versão do template e o hash de cada arquivo gerado. O `qn generate`, o `qn add`, o `qn check`, o `qn doctor` e o `qn upgrade` leem esse arquivo; projetos sem ele continuam detectados pelo layout.
+- `qn create --db postgres|sqlite|none`: templates feitos de uma base mínima mais um add-on de banco. O SQLite usa o `node:sqlite`, nativo do Node.js (sem driver, sem Docker); o `none` usa repositórios em memória. O `qn generate` escreve o repositório do banco do projeto.
+- `qn create --preset api-minima|api-postgres` ou `--preset ./arquivo.json`, validado antes de gravar qualquer coisa; as flags vencem o preset.
+- `qn env`: compara o `.env` com o `.env.example` pelos nomes e, com `--generate-secrets`, adiciona o que falta com segredos aleatórios (`crypto.randomBytes`). Nunca imprime valores.
+- `qn upgrade`: aplica um template mais novo. Arquivos que você não alterou são atualizados, os alterados recebem um diff e uma cópia `.qn-new`, e o `package.json` só recebe versões mais novas das dependências que já tem; primeiro `--dry-run`, depois confirmação (ou `--yes`) para aplicar.
+- Códigos de erro `E_CONFIG_INVALID`, `E_PRESET_INVALID`, `E_ENV_EXAMPLE_MISSING`, `E_CONFIRM_REQUIRED` e `E_CLI_OUTDATED`; ferramentas MCP `qn_env` e `qn_upgrade` (simulação, a menos que `"apply": true`).
+- O `qn doctor` pula o Docker quando o projeto não usa PostgreSQL e avisa quando o `qn upgrade` tem novidade.
+
+## 2.0.0 // não publicada: estas mudanças saem na 3.0.0
 
 ### Mudanças incompatíveis
 
@@ -56,6 +76,6 @@ As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/).
 
 ---
 
-Atualizado em 2026-11-15 · válido para a v2.x · https://daksonc.github.io/QuickNode/pt/changelog/
+Atualizado em 2026-11-15 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/changelog/
 
-> Notas de versão do QuickNode CLI da v1.0.0 à v2: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.
+> Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.

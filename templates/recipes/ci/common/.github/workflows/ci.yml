@@ -25,6 +25,6 @@ __corepackStep__
       - run: __pm__ test
 __buildStep__
       - name: Dependency rule (qn check)
-        run: npx --yes @10565/quicknode-cli@2 check
+        run: npx --yes @10565/quicknode-cli@3 check
       - name: Vulnerabilities (high and critical)
         run: __audit__

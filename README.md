@@ -28,7 +28,8 @@ npx @10565/quicknode-cli create my-api
 - **Recipes**: `qn add auth|healthcheck|rate-limit|graceful-shutdown|docker|ci|agents|...`, idempotent, with `--dry-run` diffs
 - **Ready for AI agents**: `AGENTS.md`/`CLAUDE.md` in every project; every command works without prompts and with `--json`
 - **Pre-configured Dependencies**: All essential tools ready to use
-- **SQL Databases**: PostgreSQL by default (via Docker), plus MySQL and SQLite — TypeORM (TypeScript) or Sequelize (JavaScript)
+- **Databases**: `--db postgres` (Docker; TypeORM or Sequelize), `--db sqlite` (built-in `node:sqlite`, no driver) or `--db none` (in-memory)
+- **Lifecycle**: `quicknode.json` records each project; `qn upgrade` applies newer templates, `qn env` checks `.env`
 - **API Documentation**: Swagger/OpenAPI 3.0 integration
 - **Security & Validation**: Helmet, express-validator, and class-validator
 - **Testing Setup**: Jest with extended matchers and coverage
@@ -94,13 +95,15 @@ qn create my-app --dry-run
 | `-t`, `--typescript` (`-ts`) | Use the TypeScript template |
 | `-j`, `--javascript` (`-js`) | Use the JavaScript template |
 | `-f`, `--force` | Write into a non-empty directory, overwriting conflicting files |
-| `-y`, `--yes` | Accept defaults without prompting (name `my-quicknode-app`, TypeScript) |
+| `-y`, `--yes` | Accept defaults without prompting (name `my-quicknode-app`, TypeScript, PostgreSQL) |
 | `--dry-run` | Show what would be created without writing anything |
 | `--install` | Run `npm install` after creating the project |
 | `--git` | Initialize a git repository (enables the Husky hooks on install) |
 | `--no-credits` | Leave the "Generated with QuickNode" line out of the generated README |
 | `--pm <npm\|pnpm\|yarn>` | Package manager used in scripts, docs, hooks and `--install` (default: npm) |
 | `--test <jest\|node>` | Test runner (default: Jest; `node` uses the built-in `node:test`) |
+| `--db <postgres\|sqlite\|none>` | Database add-on (default: postgres) |
+| `--preset <name\|file.json>` | `api-minima`, `api-postgres` or a local JSON preset; flags win |
 | `--json` | Print a JSON result (or error) to stdout; no prompts or colors |
 
 Run `qn help create` (or `qn create --help`) for the full reference.
@@ -122,6 +125,8 @@ qn add docker ci                     # recipes: agents, auth, ci (github-actions
 qn add auth --dry-run                #   graceful-shutdown, healthcheck, husky, rate-limit, swagger, tests
 
 qn doctor                            # Node.js, .env, Docker, npm audit and qn check (--offline skips the audit)
+qn env --generate-secrets            # complete .env from .env.example; values are never printed
+qn upgrade --dry-run                 # newer template: updates files you did not change, diffs the rest
 ```
 
 Generators and recipes insert code before marker comments of the template (`// qn:modules`,
@@ -202,17 +207,9 @@ npm run dev         # API on :3000, docs at /api-docs, health at /health
 
 ## 📊 Database Setup
 
-### PostgreSQL (default)
-
-1. Start the database: `npm run docker:up` (credentials come from `.env`)
-2. Seed sample data (optional): `npm run db:seed`
-3. Tables are synchronized automatically when `NODE_ENV=development`
-
-### MySQL / SQLite
-
-Set `DB_TYPE=mysql` or `DB_TYPE=sqlite` in `.env` and adjust the `DB_*` variables. The JavaScript
-template needs only the driver (`npm install mysql2` or `sqlite3`); in the TypeScript template
-these repositories are not implemented yet.
+- **postgres** (default): `npm run docker:up` (credentials from `.env`), `npm run db:seed`; tables sync when `NODE_ENV=development`.
+- **sqlite**: `node:sqlite`, built into Node.js; the file is `SQLITE_PATH`, tables are created on first use.
+- **none**: in-memory repositories; swap them in `repository-factory` when you pick a database.
 
 ## 🤖 For AI agents
 
@@ -221,8 +218,8 @@ Every command runs without prompts when there is no terminal, prints JSON with `
 (`{"code": "E_DIR_NOT_EMPTY", "message": "...", "fix": "qn create my-api --force"}`).
 
 ```bash
-npx @10565/quicknode-cli@2 schema                       # every command, flag, value and error code
-claude mcp add quicknode -- npx @10565/quicknode-cli@2 mcp   # MCP server: dry run unless "apply": true
+npx @10565/quicknode-cli@3 schema                       # every command, flag, value and error code
+claude mcp add quicknode -- npx @10565/quicknode-cli@3 mcp   # MCP server: dry run unless "apply": true
 ```
 
 Generated projects include `AGENTS.md`/`CLAUDE.md` and `docs/adr/`. See the
@@ -261,7 +258,9 @@ All endpoints include:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## ⬆️ Migrating from v1 to v2
+## ⬆️ Migrating from v1 to v3
+
+v3.0.0 is the first release after v1.1.1 (2.0.0 was never published).
 
 - **Node.js 22.13+** is required, for both the CLI and the generated projects.
 - `-ts` / `-js` still work; the new short forms are `-t` / `-j`.
@@ -271,6 +270,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Generated projects load `.env` with `process.loadEnvFile()` (no `dotenv`), use
   `node --watch` instead of nodemon (JavaScript), ESLint 10 flat config and Husky 9.
 - The banner and donation link are shown only in `qn --help`.
+- New projects get `quicknode.json` (commit it) and a `databaseConnection` with `initialize()`,
+  `ping()` and `close()`; `DB_TYPE` is gone (choose with `qn create --db postgres|sqlite|none`).
+- Projects created before v3 keep working; `qn upgrade --dry-run` shows what a v3 template would
+  change and creates `quicknode.json`.
 
 ## 🙏 Acknowledgments
 

@@ -56,10 +56,9 @@ git checkout develop && npm run release:minor   # ou release:patch / release:maj
 git checkout main && npm run release:tag
 ```
 
-> ⚠️ **Primeira release da v2:** o `package.json` ainda está em `1.1.0`, mas o código já é a
-> v2 (Node 22.13+, quebra de compatibilidade). A primeira release depois do merge das fases
-> do ADR-001 precisa ser `npm run release:major` (→ `2.0.0`); `minor`/`patch` publicariam a
-> quebra como `1.x` para quem usa `^1.1.0`.
+> ⚠️ **Primeira release depois do ADR-001:** o `package.json` já está em `3.0.0` (a 2.0.0 nunca
+> foi publicada; as mudanças dela saem na 3.0.0). Não rode `release:major` de novo, ou a versão
+> vira 4.0.0: depois do merge `develop` → `main`, basta `npm run release:tag` na `main`.
 
 O push da tag dispara o workflow, que:
 

@@ -97,7 +97,8 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
       }
       case 'generate': {
         const result = await generate(generateInputFromFlags(positionals, values), io.cwd);
-        return finish({ ok: !result.files.some((file) => file.action === 'conflict'), ...result }, renderGenerate(result, out), EXIT_OK);
+        // A dry run that would hit conflicts reports ok: false and exit 1, like the real run.
+        return finish({ ok: !result.files.some((file) => file.action === 'conflict'), ...result }, renderGenerate(result, out));
       }
       case 'check': {
         if (positionals.length > 0) throw new UsageError('qn check takes no arguments.', 'check');
@@ -106,7 +107,7 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
       }
       case 'add': {
         const result = await addRecipes(addInputFromFlags(positionals, values), io.cwd);
-        return finish({ ok: true, ...result }, renderAdd(result, out));
+        return finish({ ok: !result.files.some((file) => file.action === 'conflict'), ...result }, renderAdd(result, out));
       }
       case 'doctor': {
         if (positionals.length > 0) throw new UsageError('qn doctor takes no arguments.', 'doctor');

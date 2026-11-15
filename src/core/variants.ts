@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { PackageManager } from '../spec.js';
+import { readIfExists } from './fs.js';
 import type { TemplateName } from './paths.js';
 import type { PackageJson, TestRunner } from './project.js';
 import { adaptTestFile } from './source-format.js';
@@ -29,15 +30,6 @@ export const installCommand = (pm: PackageManager) => `${pm} install`;
 
 /** Command line that runs a package.json script with `pm`. */
 export const runScript = (pm: PackageManager, script: string) => (script === 'test' ? `${pm} test` : `${pm} run ${script}`);
-
-async function readIfExists(file: string): Promise<string | undefined> {
-  try {
-    return await fs.readFile(file, 'utf8');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
-    throw error;
-  }
-}
 
 /** Adapts the scripts, docs and git hooks of a staged project to `pm`. */
 export async function applyPackageManager(projectDir: string, pm: PackageManager): Promise<void> {

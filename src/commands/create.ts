@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createEnvFile, ENV_FILE, generatesEnvFile } from '../core/env.js';
+import { readIfExists } from '../core/fs.js';
 import { templateDir, type TemplateName } from '../core/paths.js';
 import { projectNameError, resolveProject } from '../core/project-name.js';
 import { npmCommand, run, type RunResult } from '../core/run.js';
@@ -119,13 +120,8 @@ const CREDITS_BLOCK = /\n*<!-- quicknode:credits -->[\s\S]*?<!-- \/quicknode:cre
  */
 export async function removeCredits(projectDir: string): Promise<void> {
   const readmePath = path.join(projectDir, 'README.md');
-  let readme: string;
-  try {
-    readme = await fs.readFile(readmePath, 'utf8');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-    throw error;
-  }
+  const readme = await readIfExists(readmePath);
+  if (readme === undefined) return;
   const stripped = readme.replace(CREDITS_BLOCK, '\n');
   if (stripped !== readme) await fs.writeFile(readmePath, stripped);
 }

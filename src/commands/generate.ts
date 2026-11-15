@@ -1,8 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { ChangePlan, type ChangeAction } from '../core/changes.js';
-import { unifiedDiff } from '../core/diff.js';
-import { insertBeforeMarker, type MarkerStatus } from '../core/markers.js';
+import { ChangePlan, type PlannedFile } from '../core/changes.js';
+import type { MarkerStatus } from '../core/markers.js';
 import { generatorDir, type TemplateName } from '../core/paths.js';
 import { detectProject } from '../core/project.js';
 import { listTemplateFiles } from '../core/scaffold.js';
@@ -58,7 +57,7 @@ export interface GenerateResult {
   names: FeatureNames;
   root: string;
   language: TemplateName;
-  files: { path: string; action: ChangeAction; diff?: string }[];
+  files: PlannedFile[];
   wiring: WiringResult[];
   /** Manual steps and missing pieces, for the user to act on. */
   notes: string[];
@@ -162,22 +161,29 @@ interface WiringEntry {
   snippet: string;
 }
 
-/** Files each unit relies on, to warn when they are neither present nor generated. */
-function requirements(unit: Unit, names: FeatureNames, ext: string): Record<string, string> {
-  const entity = `src/domain/entities/${names.name}.${ext}`;
-  const repository = `src/domain/repositories/${names.name}-repository.${ext}`;
-  const useCases = `src/domain/use-cases/${names.name}-use-cases.${ext}`;
-  switch (unit) {
+/** wiring.json of a generator folder: marker edits per unit. */
+type WiringFile = Partial<Record<Unit, WiringEntry[]>>;
+
+/** Parts each unit relies on, to warn when they are neither present nor generated. */
+const REQUIRES: Record<Unit, Part[]> = {
+  entity: [],
+  repository: ['entity'],
+  usecase: ['entity', 'repository'],
+  test: ['entity', 'repository', 'usecase'],
+  controller: ['usecase', 'repository']
+};
+
+/** The domain file that shows a part exists. */
+function partFile(part: Part, names: FeatureNames, ext: string): string | undefined {
+  switch (part) {
     case 'entity':
-      return {};
+      return `src/domain/entities/${names.name}.${ext}`;
     case 'repository':
-      return { [entity]: 'entity' };
+      return `src/domain/repositories/${names.name}-repository.${ext}`;
     case 'usecase':
-      return { [entity]: 'entity', [repository]: 'repository' };
-    case 'test':
-      return { [entity]: 'entity', [repository]: 'repository', [useCases]: 'usecase' };
+      return `src/domain/use-cases/${names.name}-use-cases.${ext}`;
     case 'controller':
-      return { [useCases]: 'usecase', [repository]: 'repository' };
+      return undefined;
   }
 }
 
@@ -193,7 +199,7 @@ export async function generate(input: GenerateInput, cwd: string): Promise<Gener
   const plan = new ChangePlan(project.root, input.force);
   const wiring: WiringResult[] = [];
 
-  const allWiring = JSON.parse(await fs.readFile(path.join(sourceDir, 'wiring.json'), 'utf8')) as Record<string, WiringEntry[]>;
+  const allWiring = JSON.parse(await fs.readFile(path.join(sourceDir, 'wiring.json'), 'utf8')) as WiringFile;
 
   for (const unit of units) {
     const unitDir = path.join(sourceDir, unit);
@@ -205,13 +211,7 @@ export async function generate(input: GenerateInput, cwd: string): Promise<Gener
 
     for (const entry of allWiring[unit] ?? []) {
       const snippet = formatImports(fillPlaceholders(entry.snippet, names));
-      const current = await plan.read(entry.file);
-      let status: WiringResult['status'] = 'file-missing';
-      if (current !== undefined) {
-        const result = insertBeforeMarker(current, entry.marker, snippet);
-        status = result.status;
-        if (result.status === 'inserted') await plan.edit(entry.file, () => result.content);
-      }
+      const status = await plan.wire(entry.file, { marker: entry.marker }, snippet);
       wiring.push({ file: entry.file, marker: entry.marker, status });
       if (status === 'missing' || status === 'file-missing') {
         const where = status === 'missing' ? `the "// qn:${entry.marker}" marker was not found` : 'the file was not found';
@@ -220,19 +220,19 @@ export async function generate(input: GenerateInput, cwd: string): Promise<Gener
     }
   }
 
+  // One note per missing part, naming the first unit that needs it.
+  const missing = new Map<Part, Unit>();
   for (const unit of units) {
-    for (const [file, needed] of Object.entries(requirements(unit, names, project.ext))) {
-      if (units.includes(needed as Unit) || (await plan.exists(file))) continue;
-      const note = `${unit} needs ${file}: run "qn generate ${needed} ${names.name}".`;
-      if (!plan.notes.includes(note)) plan.notes.push(note);
+    for (const part of REQUIRES[unit]) {
+      if (!units.includes(part) && !missing.has(part)) missing.set(part, unit);
     }
   }
+  for (const [part, unit] of missing) {
+    const file = partFile(part, names, project.ext);
+    if (file && !(await plan.exists(file))) plan.notes.push(`${unit} needs ${file}: run "qn generate ${part} ${names.name}".`);
+  }
 
-  const files = plan.list().map((change) => ({
-    path: change.path,
-    action: change.action,
-    ...(input.dryRun && change.action === 'update' ? { diff: unifiedDiff(change.path, change.before, change.after) } : {})
-  }));
+  const files = plan.summary(input.dryRun);
 
   if (!input.dryRun) await plan.apply();
 

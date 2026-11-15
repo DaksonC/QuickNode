@@ -10,7 +10,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src",
-    "check": "qn check",
+    "check": "npx @10565/quicknode-cli@2 check",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write src",
     "docker:up": "docker-compose up -d",

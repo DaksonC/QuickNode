@@ -1,6 +1,9 @@
 import { randomBytes } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { unifiedDiff } from './diff.js';
+import { readIfExists } from './fs.js';
+import { insertBeforeMarker, replaceRegion, type MarkerStatus } from './markers.js';
 
 /**
  * What a command would do to one file of a project:
@@ -29,13 +32,11 @@ export class ConflictError extends Error {
   }
 }
 
-async function readOrUndefined(file: string): Promise<string | undefined> {
-  try {
-    return await fs.readFile(file, 'utf8');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
-    throw error;
-  }
+/** A planned file as commands report it; `diff` only on dry runs. */
+export interface PlannedFile {
+  path: string;
+  action: ChangeAction;
+  diff?: string;
 }
 
 const toPosix = (file: string) => file.split(path.sep).join('/');
@@ -69,7 +70,7 @@ export class ChangePlan {
     const key = toPosix(relativePath);
     const planned = this.changes.get(key);
     if (planned) return planned.action === 'conflict' ? planned.before : planned.after;
-    return readOrUndefined(this.resolve(relativePath));
+    return readIfExists(this.resolve(relativePath));
   }
 
   async exists(relativePath: string): Promise<boolean> {
@@ -80,7 +81,7 @@ export class ChangePlan {
   async write(relativePath: string, content: string): Promise<FileChange> {
     const key = toPosix(relativePath);
     const previous = this.changes.get(key);
-    const before = previous ? previous.before : await readOrUndefined(this.resolve(relativePath));
+    const before = previous ? previous.before : await readIfExists(this.resolve(relativePath));
     const action: ChangeAction =
       before === undefined ? 'create' : before === content ? 'unchanged' : this.force ? 'update' : 'conflict';
     return this.set({ path: key, action, before, after: content });
@@ -118,9 +119,31 @@ export class ChangePlan {
       .map((change) => change.path);
   }
 
-  /** True when applying the plan would write at least one file. */
-  hasWrites(): boolean {
-    return this.list().some((change) => change.action === 'create' || change.action === 'update');
+  /** The planned files, with a unified diff of each new or changed one when `withDiffs`. */
+  summary(withDiffs: boolean): PlannedFile[] {
+    return this.list().map(({ path: file, action, before, after }) => ({
+      path: file,
+      action,
+      ...(withDiffs && (action === 'create' || action === 'update') ? { diff: unifiedDiff(file, before, after) } : {})
+    }));
+  }
+
+  /**
+   * Wires a snippet into an existing file through its markers: inserted before
+   * `// qn:<marker>`, or replacing a `// qn:<region>:start ... end` block.
+   * Returns what happened, for the caller to explain a missing marker.
+   */
+  async wire(
+    file: string,
+    target: { marker: string } | { region: string },
+    snippet: string
+  ): Promise<MarkerStatus | 'file-missing'> {
+    const current = await this.read(file);
+    if (current === undefined) return 'file-missing';
+    const result =
+      'marker' in target ? insertBeforeMarker(current, target.marker, snippet) : replaceRegion(current, target.region, snippet);
+    if (result.status === 'inserted') await this.edit(file, () => result.content);
+    return result.status;
   }
 
   /**

@@ -1,6 +1,6 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ENV_EXAMPLE_FILE, ENV_FILE } from '../core/env.js';
+import { readIfExists } from '../core/fs.js';
 import { detectProject, type QuickNodeProject } from '../core/project.js';
 import { capture, npmCommand, type CaptureResult } from '../core/run.js';
 import { checkProject } from './check.js';
@@ -56,14 +56,13 @@ function checkNode(project: QuickNodeProject, version: string): DoctorCheck {
 /** KEY=value pairs of a dotenv file (comments and blank lines ignored). */
 function parseEnv(content: string): Map<string, string> {
   const entries = new Map<string, string>();
-  for (const line of content.split('\n')) {
+  for (const line of content.split(/\r?\n/)) {
     const match = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/.exec(line);
     if (match) entries.set(match[1], match[2].trim().replace(/^(['"])(.*)\1$/, '$2'));
   }
   return entries;
 }
 
-const readIfExists = (file: string) => fs.readFile(file, 'utf8').catch(() => undefined);
 
 /** Compares .env with .env.example by variable names; values are never shown. */
 async function checkEnv(root: string): Promise<DoctorCheck> {
@@ -141,7 +140,7 @@ async function checkAudit(project: QuickNodeProject, run: typeof capture, offlin
     : { name: 'audit', status: 'ok', message: 'No known vulnerabilities' };
 }
 
-async function checkRule(root: string): Promise<DoctorCheck> {
+async function checkDependencyRule(root: string): Promise<DoctorCheck> {
   const result = await checkProject(root);
   return result.ok
     ? { name: 'check', status: 'ok', message: `Dependency rule respected (${result.filesChecked} domain files)` }
@@ -157,7 +156,7 @@ export async function doctor(ctx: DoctorContext): Promise<DoctorResult> {
     await checkEnv(project.root),
     await checkDocker(run, project.root),
     await checkAudit(project, run, Boolean(ctx.offline)),
-    await checkRule(project.root)
+    await checkDependencyRule(project.root)
   ];
   return { ok: checks.every((check) => check.status !== 'fail'), root: project.root, checks };
 }

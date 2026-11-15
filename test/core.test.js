@@ -39,7 +39,7 @@ describe('ChangePlan', () => {
     const plan = new ChangePlan(root, true);
     await plan.write('other.txt', 'theirs');
     await plan.write('dir/new.txt', 'new');
-    assert.equal(plan.hasWrites(), true);
+    assert.deepEqual(plan.summary(false).map((file) => file.action), ['create', 'update']);
     await plan.apply();
     assert.equal(await read(root, 'other.txt'), 'theirs');
     assert.equal(await read(root, 'dir', 'new.txt'), 'new');

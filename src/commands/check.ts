@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
+import { isNotFound } from '../core/fs.js';
 import { findImports } from '../core/imports.js';
 import { detectProject } from '../core/project.js';
 
@@ -124,7 +125,7 @@ async function listSources(dir: string): Promise<string[]> {
   try {
     entries = await fs.readdir(dir, { withFileTypes: true });
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    if (isNotFound(error)) return [];
     throw error;
   }
   const files: string[] = [];

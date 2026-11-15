@@ -65,7 +65,7 @@ export const RECIPE_DEFINITIONS: Record<Exclude<RecipeName, 'github-actions'>, R
   agents: {
     summary: 'AGENTS.md (and a copy in CLAUDE.md) for AI coding assistants',
     templateFiles: () => ['AGENTS.md', 'CLAUDE.md'],
-    scripts: () => ({ check: 'qn check' }),
+    scripts: () => ({ check: 'npx @10565/quicknode-cli@2 check' }),
     notes: () => ['AI assistants read AGENTS.md (Copilot, Codex, Cursor) or CLAUDE.md (Claude Code); keep both equal.']
   },
   auth: {

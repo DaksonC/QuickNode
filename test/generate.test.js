@@ -189,6 +189,9 @@ describe('qn generate (CLI)', () => {
     const root = await makeProject(t, 'javascript');
     await runQn(root, 'g', 'entity', 'product');
     await fs.writeFile(path.join(root, 'src', 'domain', 'entities', 'product.js'), 'mine');
+    const dry = await runQn(root, 'g', 'entity', 'product', '--dry-run', '--json');
+    assert.equal(dry.code, 1);
+    assert.equal(JSON.parse(dry.stdout).ok, false);
     const conflict = await runQn(root, 'g', 'entity', 'product');
     assert.equal(conflict.code, 1);
     assert.match(conflict.stderr, /--force/);

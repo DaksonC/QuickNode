@@ -71,3 +71,15 @@ describe('qn doctor', () => {
     assert.equal(status(result).env, 'fail');
   });
 });
+
+describe('qn doctor with CRLF files', () => {
+  it('reads a .env with Windows line endings', async (t) => {
+    const root = await makeProject(t, 'javascript');
+    const env = await fs.readFile(path.join(root, '.env'), 'utf8');
+    await fs.writeFile(path.join(root, '.env'), `${env.replace(/^JWT_SECRET=.*$/m, 'JWT_SECRET=change-me')}`.replace(/\n/g, '\r\n'));
+    const result = await doctor({ cwd: root, capture: fakeCapture(), nodeVersion: '22.13.0', offline: true });
+    const check = result.checks.find((item) => item.name === 'env');
+    assert.equal(check.status, 'fail');
+    assert.match(check.message, /JWT_SECRET/);
+  });
+});

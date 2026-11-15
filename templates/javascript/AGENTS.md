@@ -18,7 +18,7 @@ src/
     controllers/           HTTP handlers: call use cases, map errors to status codes
     routes/                Express routers (with OpenAPI comments)
     database/              Sequelize connection, repository implementations, factory
-      database/models/     Sequelize models (persistence model)
+      models/              Sequelize models (persistence model)
     modules/               wiring of each feature: repository -> use cases -> controller -> routes
   server.js                Express app: middleware, modules, startup and shutdown
   __tests__/               tests (use cases are tested with in-memory repositories)
@@ -31,10 +31,9 @@ Node.js built-in modules (`node:*`). It must not import `src/infrastructure`, Ex
 database drivers or any other package. Infrastructure implements the domain interfaces and
 depends on the domain, never the other way around.
 
-Check it with `npm run check`, which runs `qn check` (install the CLI once with
-`npm i -g @10565/quicknode-cli`, or run `npx @10565/quicknode-cli check`). It exits with a non-zero code and lists each
-violation with file and line. Fix violations by moving the code to infrastructure and depending
-on an interface from the domain.
+Check it with `npm run check` (`qn check`, run through npx: no global install needed). It
+exits with a non-zero code and lists each violation with file and line. Fix violations by
+moving the code to infrastructure and depending on an interface from the domain.
 
 ## Adding features
 

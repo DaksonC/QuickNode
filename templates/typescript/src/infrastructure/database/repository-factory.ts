@@ -1,5 +1,6 @@
 import { databaseConnection } from './connection';
 import { UserRepository } from '../../domain/repositories/user-repository';
+// qn:imports
 
 /**
  * Repository Factory for TypeScript
@@ -35,4 +36,6 @@ export class RepositoryFactory {
         throw new Error(`Unsupported database type: ${dbType}`);
     }
   }
+
+  // qn:factories
 }

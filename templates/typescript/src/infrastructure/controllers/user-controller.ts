@@ -8,7 +8,7 @@ import {
   UpdateUserUseCase,
   DeleteUserUseCase,
 } from '../../domain/use-cases/user-use-cases.js';
-import { CreateUserDto, UpdateUserDto } from '../../domain/entities/user.js';
+import { CreateUserDto, UpdateUserDto } from '../http/dtos/user-dtos.js';
 import { AppError } from '../middleware/error-handler.js';
 
 export class UserController {

@@ -31,8 +31,10 @@ src/
 │   │   ├── entities/      # TypeORM entities
 │   │   └── repositories/  # Repository implementations
 │   ├── docs/             # API documentation setup
+│   ├── http/dtos/        # Request DTOs (class-validator)
 │   ├── logging/          # Logging configuration
 │   ├── middleware/       # Express middleware
+│   ├── modules/          # Wiring of each feature (repository -> use cases -> controller -> routes)
 │   └── routes/           # Route definitions
 └── server.ts             # Application entry point
 ```
@@ -163,6 +165,7 @@ Once the server is running, visit:
 - `npm start` - Start production server.
 - `npm test` - Run all tests.
 - `npm run lint` - Lint all TypeScript files.
+- `npm run check` - Check the dependency rule of the clean architecture (`qn check`).
 - `npm run format` - Format code with Prettier.
 - `npm run docker:up` - Start Docker containers (e.g., database).
 - `npm run docker:down` - Stop Docker containers.
@@ -203,12 +206,17 @@ This project follows Clean Architecture principles:
 
 ### Adding New Features
 
-1. **Create Domain Entity**: Define your business entity in `src/domain/entities/`
-2. **Create Repository Interface**: Define repository interface in `src/domain/repositories/`
-3. **Create Use Cases**: Define business logic in `src/domain/use-cases/`
-4. **Implement Repository**: Create concrete repository in `src/infrastructure/database/repositories/`
-5. **Create Controller**: Handle HTTP requests in `src/infrastructure/controllers/`
-6. **Define Routes**: Set up routing in `src/infrastructure/routes/`
+Generate a feature with every layer already wired, then add its fields:
+
+```bash
+npx @10565/quicknode-cli generate crud product --dry-run   # preview
+npx @10565/quicknode-cli generate crud product             # entity, repository, use cases + test, controller, route
+npx @10565/quicknode-cli add docker ci                     # recipes: auth, healthcheck, rate-limit, docker, ci...
+npm run check                                              # dependency rule (qn check)
+```
+
+`AGENTS.md` (copied in `CLAUDE.md`) explains the layers and these commands to AI coding assistants.
+The generator inserts code before marker comments such as `// qn:modules`: keep them.
 
 ## 🔒 Security Features
 

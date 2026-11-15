@@ -1,5 +1,6 @@
 const SequelizeUserRepository = require('./repositories/user-repository');
 const modelsRegistry = require('./models');
+// qn:imports
 
 /**
  * Repository Factory
@@ -28,6 +29,8 @@ class RepositoryFactory {
         throw new Error(`Unsupported database type: ${dbType}`);
     }
   }
+
+  // qn:factories
 }
 
 module.exports = { RepositoryFactory };

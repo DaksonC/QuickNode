@@ -1,60 +1,35 @@
+const assert = require('node:assert/strict');
 const User = require('../domain/entities/user');
 
 describe('User Entity', () => {
   describe('constructor', () => {
-    it('should create a user with valid data', () => {
-      // Arrange
-      const userData = {
-        id: '1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        age: 30,
-      };
+    it('creates a user with valid data', () => {
+      const user = new User('1', 'John Doe', 'john@example.com', 30);
 
-      // Act
-      const user = new User(userData.id, userData.name, userData.email, userData.age);
-
-      // Assert
-      expect(user.id).toBe(userData.id);
-      expect(user.name).toBe(userData.name);
-      expect(user.email).toBe(userData.email);
-      expect(user.age).toBe(userData.age);
+      assert.equal(user.id, '1');
+      assert.equal(user.name, 'John Doe');
+      assert.equal(user.email, 'john@example.com');
+      assert.equal(user.age, 30);
     });
 
-    it('should create a user without id', () => {
-      // Arrange
-      const userData = {
-        name: 'Jane Doe',
-        email: 'jane@example.com',
-        age: 25,
-      };
+    it('creates a user without id', () => {
+      const user = new User(null, 'Jane Doe', 'jane@example.com', 25);
 
-      // Act
-      const user = new User(null, userData.name, userData.email, userData.age);
-
-      // Assert
-      expect(user.id).toBeNull();
-      expect(user.name).toBe(userData.name);
-      expect(user.email).toBe(userData.email);
-      expect(user.age).toBe(userData.age);
+      assert.equal(user.id, null);
+      assert.equal(user.name, 'Jane Doe');
     });
   });
 
   describe('methods', () => {
-    it('should update user name', () => {
-      // Arrange
+    it('updates the name in a new instance', () => {
       const user = new User('1', 'John Doe', 'john@example.com', 30);
-      const newName = 'John Smith';
 
-      // Act
-      const updatedUser = user.updateName(newName);
+      const updated = user.updateName('John Smith');
 
-      // Assert
-      expect(updatedUser.name).toBe(newName);
-      expect(updatedUser.id).toBe(user.id);
-      expect(updatedUser.email).toBe(user.email);
-      expect(updatedUser.age).toBe(user.age);
-      expect(updatedUser).not.toBe(user); // Should be a new instance
+      assert.equal(updated.name, 'John Smith');
+      assert.equal(updated.id, user.id);
+      assert.equal(updated.email, user.email);
+      assert.notEqual(updated, user);
     });
   });
 });

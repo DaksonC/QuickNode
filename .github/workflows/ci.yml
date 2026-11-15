@@ -91,3 +91,5 @@ jobs:
         run: npm run test:templates
         env:
           QN_E2E_TEMPLATES: ${{ matrix.template }}
+          # ubuntu-latest has Docker: PostgreSQL variants also start the API against a real database.
+          QN_E2E_DOCKER: '1'

@@ -60,6 +60,10 @@ export function docsUrl(topic?: DocsTopic, lang: DocsLanguage = 'en'): string {
   return `${DOCS_URL}${lang === 'pt' ? 'pt/' : ''}${topic ? DOCS_TOPICS[topic] : ''}`;
 }
 
+/** Linux inside WSL: links open in the Windows browser through explorer.exe (WSL interop). */
+export const isWsl = (env: NodeJS.ProcessEnv, platform: NodeJS.Platform) =>
+  platform === 'linux' && Boolean(env.WSL_DISTRO_NAME || env.WSL_INTEROP);
+
 /**
  * Reasons not to launch a browser: CI, a remote (SSH) session, a container,
  * or nobody watching the terminal. In those cases the printed link is enough.
@@ -73,7 +77,7 @@ export function canOpenBrowser(
   if (!interactive) return false;
   if (env.CI && env.CI !== 'false' && env.CI !== '0') return false;
   if (env.SSH_CONNECTION || env.SSH_CLIENT || env.SSH_TTY) return false;
-  if (platform === 'darwin' || platform === 'win32') return true;
+  if (platform === 'darwin' || platform === 'win32' || isWsl(env, platform)) return true;
   if (fileExists('/.dockerenv') || fileExists('/run/.containerenv')) return false;
   // Other systems use xdg-open: without a graphical session it would only start a text browser.
   return Boolean(env.DISPLAY || env.WAYLAND_DISPLAY);
@@ -81,12 +85,13 @@ export function canOpenBrowser(
 
 /**
  * System program that opens a link, called with the URL as a separate
- * argument and no shell. Windows uses explorer.exe, never `cmd /c start`,
- * which would interpret characters such as "&".
+ * argument and no shell. Windows (and WSL, whose xdg-open usually finds no
+ * browser) uses explorer.exe, never `cmd /c start`, which would interpret
+ * characters such as "&".
  */
-export function openerCommand(platform: NodeJS.Platform): string | undefined {
+export function openerCommand(platform: NodeJS.Platform, env: NodeJS.ProcessEnv = {}): string | undefined {
   if (platform === 'darwin') return 'open';
-  if (platform === 'win32') return 'explorer.exe';
+  if (platform === 'win32' || isWsl(env, platform)) return 'explorer.exe';
   if (platform === 'linux' || platform === 'freebsd' || platform === 'openbsd') return 'xdg-open';
   return undefined;
 }
@@ -113,7 +118,7 @@ export function launchDetached(command: string, args: string[]): Promise<boolean
 /** Resolves the documentation link and, when it makes sense, opens it. */
 export async function openDocs(input: UiInput, ctx: UiContext): Promise<UiResult> {
   const url = docsUrl(input.topic, input.lang ?? languageFromEnv(ctx.env));
-  const command = openerCommand(ctx.platform);
+  const command = openerCommand(ctx.platform, ctx.env);
   if (input.print || !command || !canOpenBrowser(ctx.env, ctx.platform, ctx.interactive, ctx.fileExists)) {
     return { url, opened: false };
   }

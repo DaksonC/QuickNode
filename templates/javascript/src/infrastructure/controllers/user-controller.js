@@ -4,7 +4,19 @@ const {
   UpdateUserUseCase,
   DeleteUserUseCase,
   ListUsersUseCase,
+  UserConflictError,
+  UserNotFoundError,
+  UserValidationError,
 } = require('../../domain/use-cases/user-use-cases');
+const { AppError } = require('../middleware/error-handler');
+
+/** Maps domain errors to HTTP errors; anything else stays a 500. */
+function toHttpError(error) {
+  if (error instanceof UserNotFoundError) return new AppError(error.message, 404);
+  if (error instanceof UserConflictError) return new AppError(error.message, 409);
+  if (error instanceof UserValidationError) return new AppError(error.message, 400);
+  return error;
+}
 
 /**
  * User Controller
@@ -38,7 +50,7 @@ class UserController {
         message: 'User created successfully',
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 
@@ -56,7 +68,7 @@ class UserController {
         data: user,
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 
@@ -76,7 +88,7 @@ class UserController {
         message: 'User updated successfully',
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 
@@ -94,7 +106,7 @@ class UserController {
         message: result.message,
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 
@@ -121,7 +133,7 @@ class UserController {
         },
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 }

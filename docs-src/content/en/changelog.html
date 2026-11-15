@@ -22,6 +22,14 @@
   <li><code>qn doctor</code> skips Docker when the project has no PostgreSQL and says when <code>qn upgrade</code> has something new.</li>
 </ul>
 
+<h3>Fixed</h3>
+<ul class="list" role="list">
+  <li>The TypeScript template crashed on start with <code>NODE_ENV=development</code>: <code>pino-pretty</code> was missing from its dependencies.</li>
+  <li>JavaScript template: a missing user answered 500 instead of 404 (and a duplicate email 500 instead of 409); domain errors are now typed and mapped to HTTP codes.</li>
+  <li><code>qn ui</code> on WSL said it opened the browser but nothing opened; it now uses the Windows browser through <code>explorer.exe</code>.</li>
+  <li>Running <code>qn generate</code> twice could insert the same wiring again when the snippet had blank lines.</li>
+</ul>
+
 <h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// not published: these changes ship in 3.0.0</span></h2>
 <h3>Breaking changes</h3>
 <ul class="list" role="list">

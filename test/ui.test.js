@@ -63,6 +63,8 @@ describe('when to open a browser', () => {
     assert.equal(canOpenBrowser({}, 'linux', true, noFiles), false);
     assert.equal(canOpenBrowser({ WAYLAND_DISPLAY: 'wayland-0' }, 'linux', true, noFiles), true);
     assert.equal(canOpenBrowser({}, 'freebsd', true, noFiles), false);
+    assert.equal(canOpenBrowser({ WSL_DISTRO_NAME: 'Ubuntu' }, 'linux', true, noFiles), true, 'WSL needs no DISPLAY');
+    assert.equal(canOpenBrowser({ WSL_DISTRO_NAME: 'Ubuntu', SSH_TTY: '/dev/pts/1' }, 'linux', true, noFiles), false);
     assert.equal(canOpenBrowser(DESKTOP, 'freebsd', true, noFiles), true);
   });
 
@@ -70,6 +72,7 @@ describe('when to open a browser', () => {
     assert.equal(openerCommand('darwin'), 'open');
     assert.equal(openerCommand('win32'), 'explorer.exe');
     assert.equal(openerCommand('linux'), 'xdg-open');
+    assert.equal(openerCommand('linux', { WSL_DISTRO_NAME: 'Ubuntu-24.04' }), 'explorer.exe', 'WSL opens the Windows browser');
     assert.equal(openerCommand('aix'), undefined);
   });
 

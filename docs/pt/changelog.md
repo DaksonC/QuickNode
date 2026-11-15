@@ -24,6 +24,13 @@ As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/).
 - Códigos de erro `E_CONFIG_INVALID`, `E_PRESET_INVALID`, `E_ENV_EXAMPLE_MISSING`, `E_CONFIRM_REQUIRED` e `E_CLI_OUTDATED`; ferramentas MCP `qn_env` e `qn_upgrade` (simulação, a menos que `"apply": true`).
 - O `qn doctor` pula o Docker quando o projeto não usa PostgreSQL e avisa quando o `qn upgrade` tem novidade.
 
+### Corrigido
+
+- O template TypeScript caía ao iniciar com `NODE_ENV=development`: faltava o `pino-pretty` nas dependências.
+- Template JavaScript: um usuário inexistente respondia 500 em vez de 404 (e um email repetido, 500 em vez de 409); os erros de domínio agora têm tipo e viram códigos HTTP.
+- No WSL, o `qn ui` dizia que abria o navegador, mas nada abria; agora usa o navegador do Windows pelo `explorer.exe`.
+- Rodar o `qn generate` duas vezes podia inserir a mesma ligação de novo quando o trecho tinha linhas em branco.
+
 ## 2.0.0 // não publicada: estas mudanças saem na 3.0.0
 
 ### Mudanças incompatíveis

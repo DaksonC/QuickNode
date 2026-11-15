@@ -22,6 +22,14 @@
   <li>O <code>qn doctor</code> pula o Docker quando o projeto não usa PostgreSQL e avisa quando o <code>qn upgrade</code> tem novidade.</li>
 </ul>
 
+<h3>Corrigido</h3>
+<ul class="list" role="list">
+  <li>O template TypeScript caía ao iniciar com <code>NODE_ENV=development</code>: faltava o <code>pino-pretty</code> nas dependências.</li>
+  <li>Template JavaScript: um usuário inexistente respondia 500 em vez de 404 (e um email repetido, 500 em vez de 409); os erros de domínio agora têm tipo e viram códigos HTTP.</li>
+  <li>No WSL, o <code>qn ui</code> dizia que abria o navegador, mas nada abria; agora usa o navegador do Windows pelo <code>explorer.exe</code>.</li>
+  <li>Rodar o <code>qn generate</code> duas vezes podia inserir a mesma ligação de novo quando o trecho tinha linhas em branco.</li>
+</ul>
+
 <h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// não publicada: estas mudanças saem na 3.0.0</span></h2>
 <h3>Mudanças incompatíveis</h3>
 <ul class="list" role="list">

@@ -1,6 +1,6 @@
 # Changelog
 
-A versão 3.0.0 registra como cada projeto foi criado no `quicknode.json`, traz `--db postgres|sqlite|none` e presets no `qn create`, e os comandos `qn env` e `qn upgrade`; a versão 2.0.0 reescreveu o QuickNode CLI sem dependências de runtime e com um `qn create` seguro. As duas exigem Node.js 22.13+.
+A versão 3.0.0 registra como cada projeto foi criado no `quicknode.json`, traz `--db postgres|sqlite|none` e presets no `qn create`, e os comandos `qn env` e `qn upgrade`; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um `qn create` seguro. Exige Node.js 22.13+.
 
 As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/). As notas de versão com a procedência do build ficam nas [Releases do GitHub](https://github.com/DaksonC/QuickNode/releases).
 
@@ -24,7 +24,7 @@ As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/).
 - Códigos de erro `E_CONFIG_INVALID`, `E_PRESET_INVALID`, `E_ENV_EXAMPLE_MISSING`, `E_CONFIRM_REQUIRED` e `E_CLI_OUTDATED`; ferramentas MCP `qn_env` e `qn_upgrade` (simulação, a menos que `"apply": true`).
 - O `qn doctor` pula o Docker quando o projeto não usa PostgreSQL e avisa quando o `qn upgrade` tem novidade.
 
-## 2.0.0 // em breve
+## 2.0.0 // não publicada: estas mudanças saem na 3.0.0
 
 ### Mudanças incompatíveis
 
@@ -78,4 +78,4 @@ As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/).
 
 Atualizado em 2026-11-15 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/changelog/
 
-> Notas de versão do QuickNode CLI da v1.0.0 à v2: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.
+> Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.

@@ -258,7 +258,9 @@ All endpoints include:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## ⬆️ Migrating from v1 to v2
+## ⬆️ Migrating from v1 to v3
+
+v3.0.0 is the first release after v1.1.1 (2.0.0 was never published).
 
 - **Node.js 22.13+** is required, for both the CLI and the generated projects.
 - `-ts` / `-js` still work; the new short forms are `-t` / `-j`.
@@ -268,6 +270,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Generated projects load `.env` with `process.loadEnvFile()` (no `dotenv`), use
   `node --watch` instead of nodemon (JavaScript), ESLint 10 flat config and Husky 9.
 - The banner and donation link are shown only in `qn --help`.
+- New projects get `quicknode.json` (commit it) and a `databaseConnection` with `initialize()`,
+  `ping()` and `close()`; `DB_TYPE` is gone (choose with `qn create --db postgres|sqlite|none`).
+- Projects created before v3 keep working; `qn upgrade --dry-run` shows what a v3 template would
+  change and creates `quicknode.json`.
 
 ## 🙏 Acknowledgments
 

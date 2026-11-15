@@ -14,9 +14,9 @@ export const SITE = {
   name: 'QuickNode CLI',
   packageName: '@10565/quicknode-cli',
   /**
-   * Version the documentation describes. Set by hand because the docs ship
-   * before the release: the release with phase 5 of ADR-001 is 3.0.0, while
-   * package.json still says 1.x. A test fails if the package gets ahead of it.
+   * Version the documentation describes. Set by hand because the docs can ship
+   * before a release; a test fails if package.json gets ahead of it. 3.0.0 is
+   * the first release after 1.1.1 (2.0.0 was never published).
    */
   version: '3.0.0',
   appliesTo: 'v3.x',
@@ -256,13 +256,13 @@ export const PAGES = [
     en: {
       title: 'QuickNode CLI changelog: what changed in each version',
       description:
-        'Release notes of QuickNode CLI from v1.0.0 to v2: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.',
+        'Release notes of QuickNode CLI from v1.0.0 to v3: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.',
       crumb: 'Changelog'
     },
     pt: {
       title: 'Changelog do QuickNode CLI: o que mudou em cada versão',
       description:
-        'Notas de versão do QuickNode CLI da v1.0.0 à v2: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.',
+        'Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.',
       crumb: 'Changelog'
     }
   },

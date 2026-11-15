@@ -16,6 +16,7 @@
     "docs:build": "npm run build && node scripts/build-docs.mjs",
     "docs:check": "npm run build && node scripts/build-docs.mjs --check",
     "docs:serve": "node scripts/serve-docs.mjs",
+    "eval:agents": "npm run build && node scripts/eval-agents.mjs",
     "verify": "npm run lint && npm run test:coverage && npm audit signatures && npm audit --omit=dev --audit-level=high",
     "lint": "eslint src test scripts docs-src",
     "lint:fix": "eslint src test scripts docs-src --fix",

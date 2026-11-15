@@ -15,7 +15,8 @@
   <li><code>qn check</code>: fails when <code>src/domain</code> imports infrastructure, Express, an ORM or another package; readable output or <code>--json</code>, exit code 1 for CI.</li>
   <li><code>qn add &lt;recipe&gt;</code>: auth (JWT with <code>node:crypto</code>), healthcheck, rate-limit, graceful-shutdown, docker, ci, agents, eslint, husky, swagger and tests, idempotent, with <code>--dry-run</code> showing the diff.</li>
   <li><code>qn doctor</code>: checks Node.js, <code>.env</code>, Docker, <code>npm audit</code> and the dependency rule.</li>
-  <li><code>AGENTS.md</code> and <code>CLAUDE.md</code> in new projects, for AI coding assistants; <code>npm run check</code> script.</li>
+  <li><code>AGENTS.md</code> and <code>CLAUDE.md</code> in new projects, for AI coding assistants; <code>npm run check</code> script; <code>docs/adr/</code> with a template for architecture decisions.</li>
+  <li>For AI agents: <code>qn schema</code> (also <code>qn --help --json</code>) with the full specification; stable error codes (<code>E_USAGE</code>, <code>E_DIR_NOT_EMPTY</code>…) with a <code>fix</code>; <code>schemaVersion</code> in every JSON output; <code>qn mcp</code>, an MCP server on stdio that plans by default; <code>llms.txt</code>, <code>llms-full.txt</code> and every page in Markdown.</li>
   <li><code>--dry-run</code>, <code>--yes</code>, <code>--force</code>, <code>--json</code>, <code>--git</code>, <code>--install</code>, <code>--no-credits</code>, <code>--pm npm|pnpm|yarn</code> and <code>--test jest|node</code> on <code>qn create</code>.</li>
   <li><code>qn ui [topic]</code> (alias <code>qn docs</code>) opens this documentation; <code>qn help &lt;command&gt;</code> with examples.</li>
   <li>Random <code>DB_PASSWORD</code> and <code>JWT_SECRET</code> in a git-ignored <code>.env</code>.</li>

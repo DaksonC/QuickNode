@@ -144,7 +144,7 @@ describe('qn ui', () => {
     assert.equal(printed.out, `${DOCS_URL}pt/\n`);
     assert.deepEqual(printed.opened, []);
     const json = JSON.parse((await qn(['ui', 'faq', '--json'], { stdout: { isTTY: true } })).out);
-    assert.deepEqual(json, { ok: true, url: `${DOCS_URL}faq/`, opened: false });
+    assert.deepEqual(json, { schemaVersion: 1, ok: true, url: `${DOCS_URL}faq/`, opened: false });
   });
 
   it('rejects unknown topics and languages', async () => {

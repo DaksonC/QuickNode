@@ -15,7 +15,8 @@
   <li><code>qn check</code>: falha quando <code>src/domain</code> importa infrastructure, Express, um ORM ou outro pacote; saída legível ou <code>--json</code>, código de saída 1 para o CI.</li>
   <li><code>qn add &lt;receita&gt;</code>: auth (JWT com <code>node:crypto</code>), healthcheck, rate-limit, graceful-shutdown, docker, ci, agents, eslint, husky, swagger e tests, idempotentes, com <code>--dry-run</code> mostrando o diff.</li>
   <li><code>qn doctor</code>: verifica Node.js, <code>.env</code>, Docker, <code>npm audit</code> e a regra de dependência.</li>
-  <li><code>AGENTS.md</code> e <code>CLAUDE.md</code> nos projetos novos, para assistentes de código com IA; script <code>npm run check</code>.</li>
+  <li><code>AGENTS.md</code> e <code>CLAUDE.md</code> nos projetos novos, para assistentes de código com IA; script <code>npm run check</code>; <code>docs/adr/</code> com um modelo para as decisões de arquitetura.</li>
+  <li>Para agentes de IA: <code>qn schema</code> (também <code>qn --help --json</code>) com a especificação completa; códigos de erro estáveis (<code>E_USAGE</code>, <code>E_DIR_NOT_EMPTY</code>…) com <code>fix</code>; <code>schemaVersion</code> em toda saída JSON; <code>qn mcp</code>, um servidor MCP no stdio que só planeja por padrão; <code>llms.txt</code>, <code>llms-full.txt</code> e cada página em Markdown.</li>
   <li><code>--dry-run</code>, <code>--yes</code>, <code>--force</code>, <code>--json</code>, <code>--git</code>, <code>--install</code>, <code>--no-credits</code>, <code>--pm npm|pnpm|yarn</code> e <code>--test jest|node</code> no <code>qn create</code>.</li>
   <li><code>qn ui [tópico]</code> (apelido <code>qn docs</code>) abre esta documentação; <code>qn help &lt;comando&gt;</code> com exemplos.</li>
   <li><code>DB_PASSWORD</code> e <code>JWT_SECRET</code> aleatórios num <code>.env</code> ignorado pelo git.</li>

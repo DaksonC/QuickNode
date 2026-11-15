@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <title>Quando usar o QuickNode CLI, e quando não usar</title>
+  <meta name="description" content="Critérios claros para escolher o QuickNode CLI: use para APIs REST com Express, arquitetura limpa e PostgreSQL; não use para front-end, monorepos, projetos NestJS ou outros bancos.">
+  <link rel="canonical" href="https://daksonc.github.io/QuickNode/pt/when/">
+  <link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/when/">
+  <link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/when/">
+  <link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/when/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="QuickNode CLI">
+  <meta property="og:title" content="Quando usar o QuickNode CLI, e quando não usar">
+  <meta property="og:description" content="Critérios claros para escolher o QuickNode CLI: use para APIs REST com Express, arquitetura limpa e PostgreSQL; não use para front-end, monorepos, projetos NestJS ou outros bancos.">
+  <meta property="og:url" content="https://daksonc.github.io/QuickNode/pt/when/">
+  <meta property="og:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Quando usar o QuickNode CLI, e quando não usar">
+  <meta name="twitter:description" content="Critérios claros para escolher o QuickNode CLI: use para APIs REST com Express, arquitetura limpa e PostgreSQL; não use para front-end, monorepos, projetos NestJS ou outros bancos.">
+  <meta name="twitter:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta name="twitter:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
+
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../../assets/fonts/VT323-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <link rel="stylesheet" href="../../assets/css/docs.css">
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/qn-data.js" defer></script>
+  <script src="../../assets/js/docs.js" defer></script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "Quando usar",
+      "name": "Quando usar o QuickNode CLI, e quando não usar",
+      "description": "Critérios claros para escolher o QuickNode CLI: use para APIs REST com Express, arquitetura limpa e PostgreSQL; não use para front-end, monorepos, projetos NestJS ou outros bancos.",
+      "url": "https://daksonc.github.io/QuickNode/pt/when/",
+      "inLanguage": "pt-BR",
+      "dateModified": "2026-11-15",
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      },
+      "about": {
+        "@id": "https://daksonc.github.io/QuickNode/#software"
+      },
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://daksonc.github.io/QuickNode/#software",
+      "name": "QuickNode CLI",
+      "alternateName": "@10565/quicknode-cli",
+      "description": "CLI sem dependências para criar APIs Node.js com arquitetura limpa",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Windows, macOS, Linux",
+      "softwareRequirements": "Node.js 22.13+",
+      "softwareVersion": "2.0.0",
+      "license": "https://opensource.org/licenses/MIT",
+      "url": "https://daksonc.github.io/QuickNode/",
+      "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "installUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "sameAs": [
+        "https://www.npmjs.com/package/@10565/quicknode-cli",
+        "https://github.com/DaksonC/QuickNode"
+      ],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Início",
+          "item": "https://daksonc.github.io/QuickNode/pt/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Quando usar",
+          "item": "https://daksonc.github.io/QuickNode/pt/when/"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+</head>
+<body id="top">
+  <a class="skip" href="#main">Pular para o conteúdo</a>
+
+  <header class="wrap site-header">
+    <p class="title"><a href="../" class="home"><span aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Documentação do QuickNode CLI, início</span></a></p>
+    <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="header-panel">[MENU]</button>
+
+    <div class="panel" id="header-panel">
+      <div class="controls">
+        <ul class="lang" role="list" aria-label="Idioma">
+          <li><a href="../../when/" hreflang="en" lang="en">[EN]<span class="sr-only"> English</span></a></li>
+          <li><a href="./" hreflang="pt-BR" lang="pt-BR" aria-current="page">[PT]<span class="sr-only"> Português</span></a></li>
+        </ul>
+        <button type="button" id="fx-toggle" hidden>[FX: <span id="fx-state">ON</span>]<span class="sr-only"> efeitos visuais e animação</span></button>
+        <button type="button" id="theme-toggle" hidden>[<span id="theme-state">LIGHT</span>]<span class="sr-only" id="theme-hint"> mudar para o tema claro</span></button>
+      </div>
+
+      <nav class="menu" aria-label="Documentação">
+        <ul>
+          <li><a href="../start/">[start]</a></li>
+          <li><a href="../commands/">[commands]</a></li>
+          <li><a href="../structure/">[structure]</a></li>
+          <li><a href="../tutorial/">[tutorial]</a></li>
+          <li><a href="../add/">[add]</a></li>
+          <li><a href="../agents/">[agents]</a></li>
+          <li><a href="../when/" aria-current="page">[when]</a></li>
+          <li><a href="../faq/">[faq]</a></li>
+          <li><a href="../compare/">[compare]</a></li>
+          <li><a href="../changelog/">[changelog]</a></li>
+          <li><a href="../adr/">[adr]</a></li>
+        </ul>
+      </nav>
+
+      <section class="cli-wrap" id="cli-wrap" aria-label="Linha de comando opcional. Digite help para listar os comandos." hidden>
+        <form class="cli" id="cli">
+          <label for="cli-input"><span class="prompt" aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Linha de comando opcional. Digite help para listar os comandos.</span></label>
+          <input id="cli-input" name="command" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="digite help">
+        </form>
+        <div class="cli-output" id="cli-output" role="log" aria-live="polite" aria-label="Saída dos comandos"></div>
+      </section>
+    </div>
+
+    <span class="sr-only" role="status" id="status"></span>
+  </header>
+
+  <main id="main" class="wrap" tabindex="-1">
+    <nav aria-label="Trilha de navegação"><ol class="crumbs" role="list"><li><a href="../">Início</a></li><li aria-current="page">Quando usar</li></ol></nav>
+    <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui when</p>
+    <p class="meta">Atualizado em <time datetime="2026-11-15">2026-11-15</time> · válido para a v2.x</p>
+<h1 tabindex="-1">Quando usar o QuickNode CLI, e quando não usar</h1>
+<p class="answer">Use o QuickNode CLI para começar uma API REST com Express em TypeScript ou JavaScript com arquitetura limpa, PostgreSQL, testes e lint, e para manter essa arquitetura enquanto ela cresce; não use para front-end, monorepos, projetos NestJS ou bancos que não sejam SQL.</p>
+
+<h2 id="use" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quando ele serve bem?</h2>
+<ul class="list" role="list">
+  <li>Uma API HTTP nova em Node.js 22.13+ com Express, em TypeScript (TypeORM) ou JavaScript (Sequelize).</li>
+  <li>Você quer as camadas de domínio e infraestrutura desde o primeiro dia, e uma verificação (<code>qn check</code>) que as mantém separadas no CI.</li>
+  <li>Você adiciona funcionalidades com frequência e quer cada uma na camada certa: o <code>qn generate crud</code> escreve e liga tudo.</li>
+  <li>PostgreSQL (com Docker Compose), ou MySQL e SQLite pelo mesmo ORM.</li>
+  <li>Uma cadeia de suprimentos pequena importa: a CLI tem zero dependências de runtime e funciona offline.</li>
+  <li>Um agente de IA faz parte do trabalho: todo comando roda sem perguntas, com <code>--json</code>, <code>qn schema</code> e um servidor MCP.</li>
+</ul>
+
+<h2 id="dont" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quando escolher outra coisa?</h2>
+<ul class="list" role="list">
+  <li>Front-end, frameworks full-stack ou sites estáticos: o QuickNode só cria APIs de back-end.</li>
+  <li>Monorepos com vários serviços num repositório: cada projeto QuickNode é um único pacote.</li>
+  <li>Você quer módulos, decorators e o container de DI do NestJS: use o <a href="https://docs.nestjs.com/cli/overview" rel="noopener noreferrer">Nest CLI</a>.</li>
+  <li>Fastify, Koa ou outro framework HTTP, Prisma ou MongoDB: hoje não são suportados.</li>
+  <li>GraphQL ou gRPC como interface principal: os templates são REST com OpenAPI.</li>
+  <li>Você precisa de uma comunidade grande e madura e de garantias de suporte de longo prazo: é um projeto novo, com um mantenedor.</li>
+</ul>
+
+<h2 id="unsure" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como decido rápido?</h2>
+<ol>
+  <li>Veja sem gravar nada: <code>npx @10565/quicknode-cli@2 create my-api --typescript --dry-run</code>.</li>
+  <li>Leia a <a href="../structure/">estrutura do projeto</a> e a <a href="../compare/">comparação com o Nest CLI e um template manual</a>.</li>
+  <li>Se as camadas e ferramentas atendem, crie o projeto; se não, nada foi gravado.</li>
+</ol>
+    <nav class="pager" aria-label="Mais páginas"><ul class="list" role="list"><li><a href="../agents/" rel="prev"><span class="dim">Anterior:</span> Para agentes de IA</a></li><li><a href="../faq/" rel="next"><span class="dim">Próxima:</span> Perguntas frequentes</a></li></ul></nav>
+  </main>
+
+  <footer class="wrap">
+    <p>© 2026 <a href="https://daksonc.github.io/">Dakson Chaves Cruz</a>. MIT License. HTML, CSS e JavaScript puros: sem frameworks, sem rastreadores, sem recursos de terceiros.</p>
+    <ul class="list" role="list">
+      <li><a href="https://github.com/DaksonC/QuickNode" rel="noopener noreferrer">Código-fonte no GitHub</a></li>
+      <li><a href="https://www.npmjs.com/package/@10565/quicknode-cli" rel="noopener noreferrer">Pacote no npm: <code>@10565/quicknode-cli</code></a></li>
+    </ul>
+    <p class="dim"><a href="../../assets/fonts/OFL.txt">VT323</a>: SIL Open Font License.</p>
+  </footer>
+
+  <a class="to-top" id="to-top" href="#top"><span aria-hidden="true">[^]</span> topo</a>
+</body>
+</html>

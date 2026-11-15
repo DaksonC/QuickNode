@@ -26,6 +26,8 @@ export interface DoctorContext {
   nodeVersion?: string;
   /** Runs a program and captures stdout (tests replace it). */
   capture?: typeof capture;
+  /** False skips the checks that run programs (Docker, npm audit), e.g. from the MCP server. */
+  runPrograms?: boolean;
 }
 
 const parseVersion = (version: string) => version.replace(/^v/, '').split('.').map(Number);
@@ -154,8 +156,9 @@ export async function doctor(ctx: DoctorContext): Promise<DoctorResult> {
   const checks = [
     checkNode(project, ctx.nodeVersion ?? process.versions.node),
     await checkEnv(project.root),
-    await checkDocker(run, project.root),
-    await checkAudit(project, run, Boolean(ctx.offline)),
+    ...(ctx.runPrograms === false
+      ? (['docker', 'audit'] as const).map((name) => ({ name, status: 'skip' as const, message: 'Skipped (no programs are run here)' }))
+      : [await checkDocker(run, project.root), await checkAudit(project, run, Boolean(ctx.offline))]),
     await checkDependencyRule(project.root)
   ];
   return { ok: checks.every((check) => check.status !== 'fail'), root: project.root, checks };

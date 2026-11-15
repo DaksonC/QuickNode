@@ -1,4 +1,5 @@
 import { parseArgs, type ParseArgsConfig } from 'node:util';
+import { QnError } from './core/errors.js';
 
 /**
  * Single source of truth for commands and flags: used by the parser, by
@@ -12,6 +13,8 @@ export interface OptionSpec {
   choices?: readonly string[];
   /** Placeholder shown in help for free-form string values. */
   valueName?: string;
+  /** Value used when the option is not given (documentation only). */
+  default?: string;
 }
 
 export interface ArgumentSpec {
@@ -21,6 +24,8 @@ export interface ArgumentSpec {
   choices?: readonly string[];
   /** Accepts several values (last argument only). */
   variadic?: boolean;
+  /** Must be given (a missing optional argument may be prompted for or defaulted). */
+  required?: boolean;
 }
 
 export interface CommandSpec {
@@ -47,6 +52,9 @@ export const DOCS_TOPICS = {
   structure: 'structure/',
   tutorial: 'tutorial/',
   generate: 'commands/#generate',
+  agents: 'agents/',
+  when: 'when/',
+  errors: 'commands/#errors',
   check: 'commands/#check',
   add: 'add/',
   doctor: 'commands/#doctor',
@@ -105,8 +113,8 @@ export const COMMANDS: Record<string, CommandSpec> = {
       install: { type: 'boolean', description: 'Run npm install after creating the project' },
       git: { type: 'boolean', description: 'Initialize a git repository' },
       'no-credits': { type: 'boolean', description: 'Leave the "Generated with QuickNode" line out of the README' },
-      pm: { type: 'string', description: 'Package manager used in scripts, docs and --install (default: npm)', choices: PACKAGE_MANAGERS },
-      test: { type: 'string', description: 'Test runner (default: jest; node uses the built-in node:test)', choices: TEST_RUNNERS }
+      pm: { type: 'string', description: 'Package manager used in scripts, docs and --install (default: npm)', choices: PACKAGE_MANAGERS, default: 'npm' },
+      test: { type: 'string', description: 'Test runner (default: jest; node uses the built-in node:test)', choices: TEST_RUNNERS, default: 'jest' }
     },
     examples: [
       'qn create my-api',
@@ -123,8 +131,8 @@ export const COMMANDS: Record<string, CommandSpec> = {
     summary: 'Generate a feature in the clean architecture layers, already wired',
     usage: 'qn generate <type> <name> [options]',
     arguments: [
-      { name: 'type', description: 'What to generate (crud = all the parts)', choices: GENERATOR_TYPES },
-      { name: 'name', description: 'Feature name, e.g. product or order-item' }
+      { name: 'type', description: 'What to generate (crud = all the parts)', choices: GENERATOR_TYPES, required: true },
+      { name: 'name', description: 'Feature name, e.g. product or order-item', required: true }
     ],
     options: {
       only: {
@@ -155,7 +163,7 @@ export const COMMANDS: Record<string, CommandSpec> = {
     name: 'add',
     summary: 'Add a tool to an existing project (idempotent)',
     usage: 'qn add <recipe...> [options]',
-    arguments: [{ name: 'recipe', description: 'Recipes to apply', choices: RECIPES, variadic: true }],
+    arguments: [{ name: 'recipe', description: 'Recipes to apply', choices: RECIPES, variadic: true, required: true }],
     options: {
       'dry-run': { type: 'boolean', description: 'Show the diff without writing anything' },
       force: { type: 'boolean', short: 'f', description: 'Overwrite existing files with different content' }
@@ -170,6 +178,20 @@ export const COMMANDS: Record<string, CommandSpec> = {
       offline: { type: 'boolean', description: 'Skip npm audit (no network)' }
     },
     examples: ['qn doctor', 'qn doctor --offline', 'qn doctor --json']
+  },
+  schema: {
+    name: 'schema',
+    summary: 'Print the full specification of commands, flags, values and error codes as JSON',
+    usage: 'qn schema',
+    options: {},
+    examples: ['qn schema', 'qn --help --json', 'qn help generate --json']
+  },
+  mcp: {
+    name: 'mcp',
+    summary: 'Run a Model Context Protocol server on stdio for AI assistants (dry run by default)',
+    usage: 'qn mcp',
+    options: {},
+    examples: ['qn mcp', 'npx @10565/quicknode-cli@2 mcp']
   },
   ui: {
     name: 'ui',
@@ -202,15 +224,13 @@ export function wantsJson(argv: string[]): boolean {
   return (end === -1 ? argv : argv.slice(0, end)).includes('--json');
 }
 
-export class UsageError extends Error {
-  readonly code = 'USAGE';
-
+export class UsageError extends QnError {
   constructor(
     message: string,
-    readonly command?: string
+    readonly command?: string,
+    fix = `qn ${command ? `${command} ` : ''}--help`
   ) {
-    super(message);
-    this.name = 'UsageError';
+    super('E_USAGE', message, fix);
   }
 }
 

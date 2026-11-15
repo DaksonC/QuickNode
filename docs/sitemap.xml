@@ -2,14 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://daksonc.github.io/QuickNode/</loc>
-    <lastmod>2026-11-14</lastmod>
+    <lastmod>2026-11-15</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/"/>
   </url>
   <url>
     <loc>https://daksonc.github.io/QuickNode/pt/</loc>
-    <lastmod>2026-11-14</lastmod>
+    <lastmod>2026-11-15</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/"/>
@@ -30,14 +30,14 @@
   </url>
   <url>
     <loc>https://daksonc.github.io/QuickNode/commands/</loc>
-    <lastmod>2026-11-14</lastmod>
+    <lastmod>2026-11-15</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/commands/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/commands/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/commands/"/>
   </url>
   <url>
     <loc>https://daksonc.github.io/QuickNode/pt/commands/</loc>
-    <lastmod>2026-11-14</lastmod>
+    <lastmod>2026-11-15</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/commands/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/commands/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/commands/"/>
@@ -85,6 +85,34 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/add/"/>
   </url>
   <url>
+    <loc>https://daksonc.github.io/QuickNode/agents/</loc>
+    <lastmod>2026-11-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/agents/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/agents/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/agents/"/>
+  </url>
+  <url>
+    <loc>https://daksonc.github.io/QuickNode/pt/agents/</loc>
+    <lastmod>2026-11-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/agents/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/agents/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/agents/"/>
+  </url>
+  <url>
+    <loc>https://daksonc.github.io/QuickNode/when/</loc>
+    <lastmod>2026-11-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/when/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/when/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/when/"/>
+  </url>
+  <url>
+    <loc>https://daksonc.github.io/QuickNode/pt/when/</loc>
+    <lastmod>2026-11-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/when/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/when/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/when/"/>
+  </url>
+  <url>
     <loc>https://daksonc.github.io/QuickNode/faq/</loc>
     <lastmod>2026-11-14</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/faq/"/>
@@ -114,14 +142,14 @@
   </url>
   <url>
     <loc>https://daksonc.github.io/QuickNode/changelog/</loc>
-    <lastmod>2026-11-14</lastmod>
+    <lastmod>2026-11-15</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/changelog/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/changelog/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/changelog/"/>
   </url>
   <url>
     <loc>https://daksonc.github.io/QuickNode/pt/changelog/</loc>
-    <lastmod>2026-11-14</lastmod>
+    <lastmod>2026-11-15</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/changelog/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/changelog/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/changelog/"/>

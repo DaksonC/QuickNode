@@ -184,7 +184,7 @@ describe('qn generate (CLI)', () => {
   it('fails clearly outside a project and on conflicts', async (t) => {
     const outside = await runQn(await makeTmp(t), 'g', 'crud', 'product', '--json');
     assert.equal(outside.code, 1);
-    assert.equal(JSON.parse(outside.stdout).error.code, 'NOT_QUICKNODE_PROJECT');
+    assert.equal(JSON.parse(outside.stdout).error.code, 'E_NOT_A_PROJECT');
 
     const root = await makeProject(t, 'javascript');
     await runQn(root, 'g', 'entity', 'product');

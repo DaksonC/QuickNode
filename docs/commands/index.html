@@ -7,7 +7,7 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <title>Command reference: qn create, generate, check, add, doctor and every flag</title>
-  <meta name="description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, ui, --dry-run, --json and exit codes.">
+  <meta name="description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.">
   <link rel="canonical" href="https://daksonc.github.io/QuickNode/commands/">
   <link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/commands/">
   <link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/commands/">
@@ -16,7 +16,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="QuickNode CLI">
   <meta property="og:title" content="Command reference: qn create, generate, check, add, doctor and every flag">
-  <meta property="og:description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, ui, --dry-run, --json and exit codes.">
+  <meta property="og:description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.">
   <meta property="og:url" content="https://daksonc.github.io/QuickNode/commands/">
   <meta property="og:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
   <meta property="og:image:width" content="1200">
@@ -26,7 +26,7 @@
   <meta property="og:locale:alternate" content="pt_BR">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Command reference: qn create, generate, check, add, doctor and every flag">
-  <meta name="twitter:description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, ui, --dry-run, --json and exit codes.">
+  <meta name="twitter:description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.">
   <meta name="twitter:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
   <meta name="twitter:image:alt" content="Black terminal screen with green text: QuickNode CLI, create Node.js APIs with clean architecture.">
 
@@ -46,10 +46,10 @@
       "@type": "TechArticle",
       "headline": "Commands",
       "name": "Command reference: qn create, generate, check, add, doctor and every flag",
-      "description": "Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, ui, --dry-run, --json and exit codes.",
+      "description": "Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.",
       "url": "https://daksonc.github.io/QuickNode/commands/",
       "inLanguage": "en",
-      "dateModified": "2026-11-14",
+      "dateModified": "2026-11-15",
       "author": {
         "@type": "Person",
         "name": "Dakson Chaves Cruz",
@@ -135,6 +135,8 @@
           <li><a href="../structure/">[structure]</a></li>
           <li><a href="../tutorial/">[tutorial]</a></li>
           <li><a href="../add/">[add]</a></li>
+          <li><a href="../agents/">[agents]</a></li>
+          <li><a href="../when/">[when]</a></li>
           <li><a href="../faq/">[faq]</a></li>
           <li><a href="../compare/">[compare]</a></li>
           <li><a href="../changelog/">[changelog]</a></li>
@@ -157,9 +159,9 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Breadcrumb"><ol class="crumbs" role="list"><li><a href="../">Home</a></li><li aria-current="page">Commands</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui commands</p>
-    <p class="meta">Updated on <time datetime="2026-11-14">2026-11-14</time> · valid for v2.x</p>
+    <p class="meta">Updated on <time datetime="2026-11-15">2026-11-15</time> · valid for v2.x</p>
 <h1 tabindex="-1">Command reference</h1>
-<p class="answer">QuickNode CLI has two commands, <code>qn create</code> to generate a project and <code>qn ui</code> (alias <code>qn docs</code>) to open this documentation; run <code>qn help &lt;command&gt;</code> for the same reference offline.</p>
+<p class="answer">QuickNode CLI creates a project with <code>qn create</code>, grows it with <code>qn generate</code> and <code>qn add</code>, checks it with <code>qn check</code> and <code>qn doctor</code>, describes itself with <code>qn schema</code>, serves AI assistants with <code>qn mcp</code> and opens this documentation with <code>qn ui</code>; run <code>qn help &lt;command&gt;</code> for the same reference offline.</p>
 <p class="dim">This page is generated from the definition the CLI parses (<code>src/spec.ts</code>), so it always matches the installed version.</p>
 <section aria-labelledby="create">
 <h2 id="create" tabindex="-1">qn create</h2>
@@ -407,6 +409,62 @@ Examples:
 Docs: https://daksonc.github.io/QuickNode/</code></pre>
 </details>
 </section>
+<section aria-labelledby="schema">
+<h2 id="schema" tabindex="-1">qn schema</h2>
+<p>Print the full specification of commands, flags, values and error codes as JSON.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn schema</code></pre>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn schema
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn --help --json
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn help generate --json</code></pre>
+<details>
+<summary>Same text as <code>qn help schema</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help schema
+qn schema
+
+Print the full specification of commands, flags, values and error codes as JSON
+
+Options:
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn schema
+  qn --help --json
+  qn help generate --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="mcp">
+<h2 id="mcp" tabindex="-1">qn mcp</h2>
+<p>Run a Model Context Protocol server on stdio for AI assistants (dry run by default).</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn mcp</code></pre>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn mcp
+<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@2 mcp</code></pre>
+<details>
+<summary>Same text as <code>qn help mcp</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help mcp
+qn mcp
+
+Run a Model Context Protocol server on stdio for AI assistants (dry run by default)
+
+Options:
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn mcp
+  npx @10565/quicknode-cli@2 mcp
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
 <section aria-labelledby="ui">
 <h2 id="ui" tabindex="-1">qn ui</h2>
 <p>Open the documentation in the browser.</p>
@@ -416,7 +474,7 @@ Docs: https://daksonc.github.io/QuickNode/</code></pre>
 <h3>Argument</h3>
 <dl class="opts">
   <dt><code>[topic]</code></dt>
-  <dd>Page to open <span class="dim">(accepted values: <code>start</code>, <code>commands</code>, <code>create</code>, <code>ui</code>, <code>structure</code>, <code>tutorial</code>, <code>generate</code>, <code>check</code>, <code>add</code>, <code>doctor</code>, <code>faq</code>, <code>compare</code>, <code>changelog</code>, <code>adr</code>)</span></dd>
+  <dd>Page to open <span class="dim">(accepted values: <code>start</code>, <code>commands</code>, <code>create</code>, <code>ui</code>, <code>structure</code>, <code>tutorial</code>, <code>generate</code>, <code>agents</code>, <code>when</code>, <code>errors</code>, <code>check</code>, <code>add</code>, <code>doctor</code>, <code>faq</code>, <code>compare</code>, <code>changelog</code>, <code>adr</code>)</span></dd>
 </dl>
 <h3>Options</h3>
 <dl class="opts">
@@ -438,7 +496,7 @@ qn ui [topic] [options]
 Open the documentation in the browser (alias: qn docs)
 
 Arguments:
-  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, check, add, doctor, faq, compare, changelog, adr)
+  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, agents, when, errors, check, add, doctor, faq, compare, changelog, adr)
 
 Options:
   -p, --print         Only print the link, do not open the browser
@@ -477,6 +535,36 @@ Docs: https://daksonc.github.io/QuickNode/</code></pre>
   <dd>the command failed (for example, the target folder is not empty, or qn check found violations)</dd>
   <dt><code>2</code></dt>
   <dd>invalid usage: unknown command, flag or value</dd>
+</dl>
+</section>
+<section aria-labelledby="errors">
+<h2 id="errors" tabindex="-1">Error codes</h2>
+<p>Every error has a stable code, a short message and, when known, a fix. With --json it goes to stdout as below; without it, to stderr with a "Fix:" line. Codes never change within a major version.</p>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --json
+{
+  &quot;schemaVersion&quot;: 1,
+  &quot;ok&quot;: false,
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;E_USAGE&quot;,
+    &quot;message&quot;: &quot;Choose a template with --typescript or --javascript (or pass --yes).&quot;,
+    &quot;fix&quot;: &quot;qn create my-api --typescript&quot;
+  }
+}</code></pre>
+<dl class="opts">
+  <dt id="E_USAGE"><code>E_USAGE</code> <span class="dim">(exit 2)</span></dt>
+  <dd>Invalid usage: unknown command, flag or value, or a missing argument</dd>
+  <dt id="E_DIR_NOT_EMPTY"><code>E_DIR_NOT_EMPTY</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn create: the target folder is not empty (use --force to write into it)</dd>
+  <dt id="E_PATH_BLOCKED"><code>E_PATH_BLOCKED</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn create: a project path is taken by a file or folder of another type</dd>
+  <dt id="E_FILES_EXIST"><code>E_FILES_EXIST</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn generate / qn add: files exist with other content (use --force to overwrite)</dd>
+  <dt id="E_NOT_A_PROJECT"><code>E_NOT_A_PROJECT</code> <span class="dim">(exit 1)</span></dt>
+  <dd>The command must run inside a project created with qn create</dd>
+  <dt id="E_ABORTED"><code>E_ABORTED</code> <span class="dim">(exit 1)</span></dt>
+  <dd>An interactive prompt was cancelled</dd>
+  <dt id="E_INTERNAL"><code>E_INTERNAL</code> <span class="dim">(exit 1)</span></dt>
+  <dd>Unexpected error (rerun with DEBUG=1 and report it)</dd>
 </dl>
 </section>
     <nav class="pager" aria-label="More pages"><ul class="list" role="list"><li><a href="../start/" rel="prev"><span class="dim">Previous:</span> Getting started</a></li><li><a href="../structure/" rel="next"><span class="dim">Next:</span> Project structure</a></li></ul></nav>

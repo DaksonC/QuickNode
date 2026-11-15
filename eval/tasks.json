@@ -1,0 +1,56 @@
+{
+  "$comment": "Real tasks an AI agent should complete with QuickNode CLI without help (ADR-001, D9). Run with: npm run eval:agents. `setup` runs qn commands in the work folder before the agent starts; `project` is the project folder the checks look at.",
+  "tasks": [
+    {
+      "id": "create-crud",
+      "prompt": "Create a Node.js API in TypeScript called shop-api with PostgreSQL and a CRUD of products, following clean architecture.",
+      "project": "shop-api",
+      "expect": {
+        "files": ["shop-api/package.json", "shop-api/src/domain/entities/product.ts", "shop-api/src/infrastructure/modules/product-module.ts"],
+        "contains": { "shop-api/src/server.ts": "registerProductModule(app)" }
+      }
+    },
+    {
+      "id": "add-auth",
+      "setup": [["create", "shop-api", "--typescript", "--yes"], ["generate", "crud", "product", "--json"]],
+      "cwd": "shop-api",
+      "prompt": "Add JWT authentication to this API and protect the route that creates products.",
+      "project": "shop-api",
+      "expect": {
+        "files": ["shop-api/src/infrastructure/auth/jwt.ts", "shop-api/src/infrastructure/middleware/auth.ts"],
+        "contains": { "shop-api/src/infrastructure/routes/product-routes.ts": "authenticate(" }
+      }
+    },
+    {
+      "id": "ops-recipes",
+      "setup": [["create", "orders", "--javascript", "--yes"]],
+      "cwd": "orders",
+      "prompt": "Prepare this API for production: health and readiness endpoints, a Docker image that does not run as root, and graceful shutdown.",
+      "project": "orders",
+      "expect": {
+        "files": ["orders/Dockerfile", "orders/src/infrastructure/routes/health-routes.js", "orders/src/infrastructure/http/graceful-shutdown.js"],
+        "contains": { "orders/Dockerfile": "USER node" }
+      }
+    },
+    {
+      "id": "js-node-test",
+      "prompt": "Create a JavaScript API named inventory that uses the built-in Node.js test runner instead of Jest, with pnpm, and add an order-item feature with its tests.",
+      "project": "inventory",
+      "expect": {
+        "files": ["inventory/src/domain/use-cases/order-item-use-cases.js", "inventory/src/__tests__/order-item-use-cases.test.js"],
+        "contains": { "inventory/package.json": "node --test", "inventory/.husky/pre-commit": "pnpm run lint" }
+      }
+    },
+    {
+      "id": "fix-violation",
+      "setup": [["create", "billing", "--typescript", "--yes"], ["generate", "crud", "invoice", "--json"]],
+      "inject": {
+        "billing/src/domain/use-cases/invoice-use-cases.ts": "import { databaseConnection } from '../../infrastructure/database/connection';\nvoid databaseConnection;\n"
+      },
+      "cwd": "billing",
+      "prompt": "The CI says the architecture check fails. Find the problem and fix it without breaking the feature.",
+      "project": "billing",
+      "expect": { "files": ["billing/src/domain/use-cases/invoice-use-cases.ts"] }
+    }
+  ]
+}

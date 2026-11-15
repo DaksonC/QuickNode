@@ -41,15 +41,15 @@ moving the code to infrastructure and depending on an interface from the domain.
 Prefer the generator over writing the structure by hand: it creates every layer, already wired.
 
 ```bash
-npx @10565/quicknode-cli generate crud product --dry-run   # see what would change
-npx @10565/quicknode-cli generate crud product             # entity, repository, use cases, controller, route, test
-npx @10565/quicknode-cli g usecase product --no-test       # a single part: entity, repository, usecase, controller
+npx @10565/quicknode-cli@2 generate crud product --dry-run   # see what would change
+npx @10565/quicknode-cli@2 generate crud product             # entity, repository, use cases, controller, route, test
+npx @10565/quicknode-cli@2 g usecase product --no-test       # a single part: entity, repository, usecase, controller
 ```
 
 Generated code is a starting point: add the fields of the entity to the domain entity, the
 persistence model and the validation (DTOs with class-validator in `src/infrastructure/http/dtos/`).
 
-Tools are added with `npx @10565/quicknode-cli add <recipe>` (for example `docker`, `auth`,
+Tools are added with `npx @10565/quicknode-cli@2 add <recipe>` (for example `docker`, `auth`,
 `healthcheck`, `rate-limit`, `ci`); `--dry-run` shows the diff first.
 
 The generator and the recipes insert code before marker comments such as `// qn:imports`,
@@ -63,6 +63,12 @@ The generator and the recipes insert code before marker comments such as `// qn:
 - Build: `npm run build` (TypeScript must compile).
 
 All of them must pass before a commit. The pre-commit hook runs the lint.
+
+## Decisions
+
+Architecture decisions are recorded in `docs/adr/` (one Markdown file per decision). Read them
+before changing how the project is organized; when a change needs a new decision, add a record
+from `docs/adr/0000-template.md` in the same change.
 
 ## Conventions
 

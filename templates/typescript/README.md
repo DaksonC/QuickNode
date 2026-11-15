@@ -157,21 +157,6 @@ Once the server is running, visit:
 - **Swagger UI**: http://localhost:3000/api-docs
 - **Health Check**: http://localhost:3000/health
 
-## 🔧 Available Scripts
-
-- `npm run dev` - Start development server with hot reload.
-- `npm run dev:docker` - Start database and development server together.
-- `npm run build` - Build TypeScript to JavaScript.
-- `npm start` - Start production server.
-- `npm test` - Run all tests.
-- `npm run lint` - Lint all TypeScript files.
-- `npm run check` - Check the dependency rule of the clean architecture (`qn check`).
-- `npm run format` - Format code with Prettier.
-- `npm run docker:up` - Start Docker containers (e.g., database).
-- `npm run docker:down` - Stop Docker containers.
-- `npm run db:seed` - Populate the database with seed data.
-- `npm run db:setup` - A utility script to start and seed the database.
-
 ## 🎯 Usage Examples
 
 ### Creating a User
@@ -209,9 +194,9 @@ This project follows Clean Architecture principles:
 Generate a feature with every layer already wired, then add its fields:
 
 ```bash
-npx @10565/quicknode-cli generate crud product --dry-run   # preview
-npx @10565/quicknode-cli generate crud product             # entity, repository, use cases + test, controller, route
-npx @10565/quicknode-cli add docker ci                     # recipes: auth, healthcheck, rate-limit, docker, ci...
+npx @10565/quicknode-cli@2 generate crud product --dry-run   # preview
+npx @10565/quicknode-cli@2 generate crud product             # entity, repository, use cases + test, controller, route
+npx @10565/quicknode-cli@2 add docker ci                     # recipes: auth, healthcheck, rate-limit, docker, ci...
 npm run check                                              # dependency rule (qn check)
 ```
 
@@ -225,43 +210,9 @@ The generator inserts code before marker comments such as `// qn:modules`: keep 
 - **Environment Variables**: Sensitive data stored in environment variables
 - **Error Handling**: Centralized error handling without exposing sensitive information
 
-## 🧪 Testing Strategy
-
-- **Unit Tests**: Test individual functions and classes
-- **Integration Tests**: Test the interaction between different parts
-- **Test Coverage**: Aim for high test coverage
-- **Mocking**: Mock external dependencies
-
-## 📝 Commit Convention
-
-This project uses conventional commits:
-
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, etc.)
-- `refactor`: Code refactoring
-- `test`: Adding or updating tests
-- `chore`: Maintenance tasks
-
-Example: `feat: add user authentication`
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and linting
-5. Commit with conventional commit format
-6. Create a pull request
-
 ## 📄 License
 
 This project is licensed under the MIT License.
-
-## 🙏 Acknowledgments
-
-Built with modern Node.js best practices and clean architecture principles.
 
 ## 📚 Guide
 

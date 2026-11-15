@@ -2,7 +2,8 @@ import { randomBytes } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { unifiedDiff } from './diff.js';
-import { readIfExists } from './fs.js';
+import { QnError } from './errors.js';
+import { isInside, readIfExists, realpathNearest } from './fs.js';
 import { insertBeforeMarker, replaceRegion, type MarkerStatus } from './markers.js';
 
 /**
@@ -23,12 +24,9 @@ export interface FileChange {
   after: string;
 }
 
-export class ConflictError extends Error {
-  readonly code = 'FILES_EXIST';
-
+export class ConflictError extends QnError {
   constructor(readonly paths: string[]) {
-    super('Some files already exist with different content. Use --force to overwrite them.');
-    this.name = 'ConflictError';
+    super('E_FILES_EXIST', 'Some files already exist with different content. Use --force to overwrite them.');
   }
 }
 
@@ -58,8 +56,8 @@ export class ChangePlan {
 
   private resolve(relativePath: string): string {
     const absolute = path.resolve(this.root, relativePath);
-    const relative = path.relative(this.root, absolute);
-    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    // Also with links resolved: a symlink inside the project must not lead writes outside it.
+    if (!isInside(absolute, this.root) || !isInside(realpathNearest(absolute), realpathNearest(this.root))) {
       throw new Error(`Refusing to write outside the project: ${relativePath}`);
     }
     return absolute;

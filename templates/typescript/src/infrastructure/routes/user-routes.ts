@@ -8,7 +8,7 @@ const validate = (req: Request, res: Response, next: NextFunction) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({
       error: 'Validation failed',
-      details: errors.array()
+      details: errors.array(),
     });
   }
   next();
@@ -88,10 +88,9 @@ export function createUserRoutes(userController: UserController): Router {
    *       404:
    *         description: The user was not found
    */
-  router.get('/:id', 
-    [
-      param('id').notEmpty().withMessage('User ID is required')
-    ],
+  router.get(
+    '/:id',
+    [param('id').notEmpty().withMessage('User ID is required')],
     validate,
     (req: Request, res: Response, next: NextFunction) => {
       userController.getUserById(req, res, next);
@@ -135,10 +134,7 @@ export function createUserRoutes(userController: UserController): Router {
         .withMessage('Name is required')
         .isLength({ min: 2, max: 100 })
         .withMessage('Name must be between 2 and 100 characters'),
-      body('email')
-        .isEmail()
-        .withMessage('Please provide a valid email')
-        .normalizeEmail(),
+      body('email').isEmail().withMessage('Please provide a valid email').normalizeEmail(),
     ],
     validate,
     (req: Request, res: Response, next: NextFunction) => {
@@ -175,11 +171,15 @@ export function createUserRoutes(userController: UserController): Router {
    *       404:
    *         description: The user was not found
    */
-  router.put('/:id',
+  router.put(
+    '/:id',
     [
       param('id').notEmpty().withMessage('User ID is required'),
       body('email').optional().isEmail().withMessage('Valid email is required'),
-      body('name').optional().isLength({ min: 2 }).withMessage('Name must be at least 2 characters')
+      body('name')
+        .optional()
+        .isLength({ min: 2 })
+        .withMessage('Name must be at least 2 characters'),
     ],
     validate,
     (req: Request, res: Response, next: NextFunction) => {
@@ -204,10 +204,9 @@ export function createUserRoutes(userController: UserController): Router {
    *       404:
    *         description: The user was not found
    */
-  router.delete('/:id',
-    [
-      param('id').notEmpty().withMessage('User ID is required')
-    ],
+  router.delete(
+    '/:id',
+    [param('id').notEmpty().withMessage('User ID is required')],
     validate,
     (req: Request, res: Response, next: NextFunction) => {
       userController.deleteUser(req, res, next);

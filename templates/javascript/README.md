@@ -49,15 +49,16 @@ src/
 npm install
 ```
 
-2. Copy environment variables:
+2. Review the environment variables in `.env`:
+
+`qn create` already generated a `.env` (git-ignored) from `.env.example`, with a random
+`DB_PASSWORD` and `JWT_SECRET`. Never commit it. If you cloned the project instead,
+create it yourself and replace every `change-me` value:
 ```bash
 cp .env.example .env
 ```
 
-3. Update environment variables in `.env`:
-   - Set `DB_TYPE` to your preferred database (postgresql, mysql, sqlite)
-   - Configure database connection settings
-   - Update other environment variables as needed
+3. Adjust the remaining settings as needed (`DB_TYPE`, `PORT`, `LOG_LEVEL`...).
 
 4. Set up Git hooks (optional, but recommended for contributors):
 ```bash
@@ -96,7 +97,7 @@ npm run dev:docker
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` and configure:
+`qn create` generates `.env` with random secrets. Otherwise copy `.env.example` to `.env` and replace every `change-me` value:
 
 ```bash
 # Database Configuration (Sequelize ORM)
@@ -104,7 +105,7 @@ DB_TYPE=postgresql
 DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
-DB_PASSWORD=password
+DB_PASSWORD=change-me
 DB_NAME=quicknode_db
 
 # For alternative databases:

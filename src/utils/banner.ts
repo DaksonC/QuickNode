@@ -1,19 +1,15 @@
 import figlet from 'figlet';
 import chalk from 'chalk';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-// Get the directory of the current module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { packageRoot } from '../core/paths.js';
 
 /**
  * Get the version from package.json dynamically
  */
 export function getVersion(): string {
   try {
-    const packagePath = join(__dirname, '../../package.json');
+    const packagePath = join(packageRoot(), 'package.json');
     const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
     return packageJson.version;
   } catch {

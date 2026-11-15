@@ -14,7 +14,7 @@ class DatabaseConnection {
    */
   async initialize(): Promise<void> {
     const dbType = process.env.DB_TYPE || 'postgresql';
-    
+
     switch (dbType.toLowerCase()) {
       case 'postgresql':
       case 'postgres':
@@ -28,7 +28,9 @@ class DatabaseConnection {
         break;
       case 'mongodb':
       case 'mongo':
-        throw new Error('MongoDB is not supported with TypeORM. Use native MongoDB driver or Mongoose.');
+        throw new Error(
+          'MongoDB is not supported with TypeORM. Use native MongoDB driver or Mongoose.'
+        );
       default:
         throw new Error(`Unsupported database type: ${dbType}`);
     }
@@ -43,7 +45,7 @@ class DatabaseConnection {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432'),
       username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
+      password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME || 'quicknode_db',
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',
@@ -72,7 +74,7 @@ class DatabaseConnection {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '3306'),
       username: process.env.DB_USERNAME || 'root',
-      password: process.env.DB_PASSWORD || 'password',
+      password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME || 'quicknode_db',
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',

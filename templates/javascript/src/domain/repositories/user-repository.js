@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars -- abstract contract: parameters document the expected signature */
 /**
  * Abstract User Repository Interface
  * This interface defines the contract for all user repository implementations

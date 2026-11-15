@@ -6,7 +6,7 @@ import {
   GetUserUseCase,
   GetAllUsersUseCase,
   UpdateUserUseCase,
-  DeleteUserUseCase
+  DeleteUserUseCase,
 } from '../../domain/use-cases/user-use-cases.js';
 import { CreateUserDto, UpdateUserDto } from '../../domain/entities/user.js';
 import { AppError } from '../middleware/error-handler.js';
@@ -26,16 +26,15 @@ export class UserController {
       const errors = await validate(dto);
 
       if (errors.length > 0) {
-        const errorMessages = errors.map(error => 
-          Object.values(error.constraints || {}).join(', ')
-        ).join('; ');
+        const errorMessages = errors
+          .map(error => Object.values(error.constraints || {}).join(', '))
+          .join('; ');
         throw new AppError(`Validation failed: ${errorMessages}`, 400);
       }
 
       const user = await this.createUserUseCase.execute({
         email: dto.email,
         name: dto.name,
-        password: dto.password
       });
 
       res.status(201).json({
@@ -44,8 +43,8 @@ export class UserController {
           id: user.id,
           email: user.email,
           name: user.name,
-          createdAt: user.createdAt
-        }
+          createdAt: user.createdAt,
+        },
       });
     } catch (error) {
       next(error);
@@ -68,8 +67,8 @@ export class UserController {
           email: user.email,
           name: user.name,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
-        }
+          updatedAt: user.updatedAt,
+        },
       });
     } catch (error) {
       next(error);
@@ -87,8 +86,8 @@ export class UserController {
           email: user.email,
           name: user.name,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
-        }))
+          updatedAt: user.updatedAt,
+        })),
       });
     } catch (error) {
       next(error);
@@ -102,9 +101,9 @@ export class UserController {
       const errors = await validate(dto);
 
       if (errors.length > 0) {
-        const errorMessages = errors.map(error => 
-          Object.values(error.constraints || {}).join(', ')
-        ).join('; ');
+        const errorMessages = errors
+          .map(error => Object.values(error.constraints || {}).join(', '))
+          .join('; ');
         throw new AppError(`Validation failed: ${errorMessages}`, 400);
       }
 
@@ -121,8 +120,8 @@ export class UserController {
           email: user.email,
           name: user.name,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
-        }
+          updatedAt: user.updatedAt,
+        },
       });
     } catch (error) {
       next(error);

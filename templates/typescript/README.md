@@ -7,15 +7,15 @@ A complete Node.js TypeScript API template with clean architecture, pre-configur
 - **Clean Architecture**: Domain-driven design with clear separation of concerns
 - **TypeScript**: Full TypeScript support with strict configuration
 - **Express.js**: Fast and minimalist web framework
-- **Database Support**: Both PostgreSQL (TypeORM) and MongoDB (Mongoose) ready
+- **Database Support**: PostgreSQL (default, via Docker), MySQL and SQLite with TypeORM
 - **API Documentation**: Swagger/OpenAPI 3.0 with swagger-ui-express
 - **Validation**: Request validation with express-validator and class-validator
 - **Security**: Helmet for security headers
 - **Logging**: Structured logging with Pino
 - **Testing**: Jest with TypeScript support and jest-extended
-- **Code Quality**: ESLint, Prettier, and pre-commit hooks with Husky
+- **Code Quality**: ESLint, Prettier, and optional pre-commit hooks with Husky
 - **Git Hooks**: Conventional commits with commitlint
-- **Development**: Hot reload with ts-node-dev
+- **Development**: Hot reload with tsx
 
 ## 📁 Project Structure
 
@@ -29,7 +29,6 @@ src/
 │   ├── controllers/       # HTTP controllers
 │   ├── database/          # Database configuration and implementations
 │   │   ├── entities/      # TypeORM entities
-│   │   ├── models/        # Mongoose models
 │   │   └── repositories/  # Repository implementations
 │   ├── docs/             # API documentation setup
 │   ├── logging/          # Logging configuration
@@ -45,24 +44,16 @@ src/
 npm install
 ```
 
-2. Copy environment variables:
+2. Review the environment variables in `.env`:
+
+`qn create` already generated a `.env` (git-ignored) from `.env.example`, with a random
+`DB_PASSWORD` and `JWT_SECRET`. Never commit it. If you cloned the project instead,
+create it yourself and replace every `change-me` value:
 ```bash
 cp .env.example .env
 ```
 
-3. Update environment variables in `.env`:
-```env
-# Database Configuration
-DATABASE_URL=postgresql://username:password@localhost:5432/quicknode_db
-MONGO_URL=mongodb://localhost:27017/quicknode_db
-
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-
-# JWT Secret (generate a secure secret for production)
-JWT_SECRET=your-super-secure-jwt-secret-key
-```
+3. Adjust the remaining settings as needed (`DB_TYPE`, `PORT`, `LOG_LEVEL`...).
 
 4. Set up Git hooks (optional, but recommended for contributors):
 ```bash
@@ -183,8 +174,7 @@ curl -X POST http://localhost:3000/api/v1/users \\
   -H "Content-Type: application/json" \\
   -d '{
     "email": "user@example.com",
-    "name": "John Doe",
-    "password": "password123"
+    "name": "John Doe"
   }'
 ```
 

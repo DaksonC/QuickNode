@@ -11,12 +11,12 @@
 - **TypeScript & JavaScript Support**: Choose between TypeScript or JavaScript templates
 - **Clean Architecture**: Domain-driven design with clear separation of concerns
 - **Pre-configured Dependencies**: All essential tools ready to use
-- **Multiple Database Support**: PostgreSQL (TypeORM) and MongoDB (Mongoose)
+- **SQL Databases**: PostgreSQL by default (via Docker), plus MySQL and SQLite — TypeORM (TypeScript) or Sequelize (JavaScript)
 - **API Documentation**: Swagger/OpenAPI 3.0 integration
 - **Security & Validation**: Helmet, express-validator, and class-validator
 - **Testing Setup**: Jest with extended matchers and coverage
-- **Code Quality**: ESLint, Prettier, and Husky pre-commit hooks
-- **Development Tools**: Hot reload with ts-node-dev/nodemon
+- **Code Quality**: ESLint, Prettier, and optional Husky pre-commit hooks
+- **Development Tools**: Hot reload with tsx (TypeScript) / nodemon (JavaScript)
 - **Logging**: Structured logging with Pino
 
 ## 📦 Installation
@@ -53,12 +53,28 @@ qn create
 ### Command Options
 
 ```bash
-# Use TypeScript template (default)
+# Use TypeScript template (without a flag, the CLI asks)
 qn create my-app --typescript
 
 # Use JavaScript template
 qn create my-app --javascript
+
+# Write into a non-empty directory, overwriting conflicting files
+qn create . --force
 ```
+
+### Safety
+
+- **Never overwrites silently.** If the target directory is not empty (a `.git` folder is
+  ignored), `qn create` stops and lists the files that would be overwritten. Use `--force`
+  to write anyway; files that are not part of the template are kept, and an existing `.env`
+  is never replaced.
+- **Validated names.** The project name must be a valid npm package name (lowercase, no
+  path separators or `..`), so the project is always created inside the current directory.
+- **No half-written projects.** The project is generated in a temporary folder and moved into
+  place only when everything succeeded.
+- **No default secrets.** A git-ignored `.env` is generated with a random `DB_PASSWORD` and
+  `JWT_SECRET`; `docker-compose.yml` reads them from there and only listens on `127.0.0.1`.
 
 ## 🏗️ What's Included
 
@@ -70,14 +86,14 @@ qn create my-app --javascript
 - **Express-validator**: Request validation
 - **Pino**: Structured logging
 - **Swagger**: API documentation
-- **TypeORM**: PostgreSQL ORM (TypeScript template)
-- **Mongoose**: MongoDB ODM
+- **TypeORM**: SQL ORM (TypeScript template)
+- **Sequelize**: SQL ORM (JavaScript template)
 - **Class-transformer & Class-validator**: DTO validation (TypeScript)
 
 ### Development Dependencies
 
 - **TypeScript**: Type checking (TypeScript template)
-- **ts-node-dev**: Development server with hot reload (TypeScript)
+- **tsx**: Development server with hot reload (TypeScript)
 - **Nodemon**: Development server with hot reload (JavaScript)
 - **Jest**: Testing framework
 - **Jest-extended**: Additional Jest matchers
@@ -114,7 +130,7 @@ src/
 │   ├── controllers/       # HTTP controllers
 │   ├── database/          # Database configuration
 │   │   ├── entities/      # TypeORM entities (TypeScript)
-│   │   ├── models/        # Mongoose models
+│   │   ├── models/        # Sequelize models (JavaScript)
 │   │   └── repositories/  # Repository implementations
 │   ├── docs/             # API documentation setup
 │   ├── logging/          # Logging configuration
@@ -137,17 +153,12 @@ After creating your project:
    npm install
    ```
 
-3. **Copy environment variables**:
-   ```bash
-   cp .env.example .env
-   ```
+3. **Review `.env`**: it was generated with random secrets and is git-ignored. Adjust
+   `DB_TYPE`, `PORT` and other settings if needed (see `.env.example`).
 
-4. **Update environment variables** in `.env`:
-   ```env
-   DATABASE_URL=postgresql://username:password@localhost:5432/your_db
-   MONGO_URL=mongodb://localhost:27017/your_db
-   PORT=3000
-   JWT_SECRET=your-secret-key
+4. **Start the database** (PostgreSQL via Docker):
+   ```bash
+   npm run docker:up
    ```
 
 5. **Start development server**:
@@ -162,18 +173,15 @@ After creating your project:
 
 ## 📊 Database Setup
 
-### PostgreSQL (TypeScript template)
+### PostgreSQL (default)
 
-1. Install PostgreSQL
-2. Create a database
-3. Update `DATABASE_URL` in `.env`
-4. Run migrations: `npm run db:migrate` (TypeScript only)
+1. Start the database: `npm run docker:up` (credentials come from `.env`)
+2. Seed sample data (optional): `npm run db:seed`
+3. Tables are synchronized automatically when `NODE_ENV=development`
 
-### MongoDB
+### MySQL / SQLite
 
-1. Install MongoDB
-2. Update `MONGO_URL` in `.env`
-3. Connection is automatic
+Set `DB_TYPE=mysql` or `DB_TYPE=sqlite` in `.env` and adjust the `DB_*` variables.
 
 ## 🧪 Testing
 
@@ -205,7 +213,7 @@ npm run format        # Format code
 
 ### Git Hooks
 
-Pre-commit hooks automatically:
+Husky hooks are opt-in: run `git init && npx husky install` in the project. Once enabled, they:
 - Lint and fix code
 - Format code
 - Validate commit messages (conventional commits)

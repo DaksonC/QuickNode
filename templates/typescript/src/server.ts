@@ -13,7 +13,7 @@ import {
   DeleteUserUseCase,
   GetAllUsersUseCase,
   GetUserUseCase,
-  UpdateUserUseCase
+  UpdateUserUseCase,
 } from './domain/use-cases/user-use-cases';
 import { UserController } from './infrastructure/controllers/user-controller';
 

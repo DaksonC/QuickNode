@@ -6,13 +6,16 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
-    
+
     steps:
       - name: 📦 Checkout code
         uses: actions/checkout@v4
@@ -26,24 +29,57 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci
 
-      - name: 🧪 Run tests
-        run: npm test
-
       - name: 🔍 Run linting
         run: npm run lint
 
-      - name: 🏗️ Build project
-        run: npm run build
+      - name: 🧪 Build and run tests
+        run: npm test
 
-      - name: 🧾 Test CLI functionality
+      - name: 🛡️ Audit CLI dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: 📏 Package size budget (300 KB unpacked)
         run: |
-          chmod +x dist/cli.js
-          node dist/cli.js create test-project --typescript
-          ls -la test-project/
-          
-      - name: 📊 Test generated project
+          SIZE=$(npm pack --dry-run --json | node -e 'console.log(JSON.parse(require("fs").readFileSync(0))[0].unpackedSize)')
+          echo "Unpacked size: $SIZE bytes"
+          test "$SIZE" -le 307200
+
+  generated-project:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [typescript, javascript]
+
+    steps:
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: 🏗️ Build CLI
         run: |
-          cd test-project
-          git init
-          npm install
-          npm run build || npm run lint || true
+          npm ci
+          npm run build
+
+      - name: 🧾 Generate ${{ matrix.template }} project
+        run: |
+          mkdir -p "$RUNNER_TEMP/gen"
+          cd "$RUNNER_TEMP/gen"
+          node "$GITHUB_WORKSPACE/dist/cli.js" create test-project --${{ matrix.template }}
+          test -f test-project/.gitignore
+          test -f test-project/.env
+          test ! -e test-project/package-lock.json
+
+      - name: 📊 Install, lint, test and build generated project
+        working-directory: ${{ runner.temp }}/gen/test-project
+        run: |
+          npm install --no-fund
+          npm audit --audit-level=high
+          npm run lint
+          npm test
+          if [ "${{ matrix.template }}" = "typescript" ]; then npm run build; fi

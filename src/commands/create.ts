@@ -5,7 +5,9 @@ import { templateDir, type TemplateName } from '../core/paths.js';
 import { projectNameError, resolveProject } from '../core/project-name.js';
 import { npmCommand, run, type RunResult } from '../core/run.js';
 import { assertWritable, planScaffold, writeScaffold } from '../core/scaffold.js';
-import { UsageError } from '../spec.js';
+import type { TestRunner } from '../core/project.js';
+import { applyPackageManager, applyTestRunner, installCommand } from '../core/variants.js';
+import { UsageError, type PackageManager } from '../spec.js';
 import type { Prompter } from '../ui/prompt.js';
 
 export const DEFAULT_PROJECT_NAME = 'my-quicknode-app';
@@ -22,6 +24,9 @@ export interface CreateInput {
   git?: boolean;
   /** Leave the "Generated with QuickNode" line out of the README. */
   noCredits?: boolean;
+  /** Package manager written into scripts and docs, and used by --install. */
+  pm?: PackageManager;
+  testRunner?: TestRunner;
 }
 
 export interface CreateContext {
@@ -41,6 +46,8 @@ export interface CreateResult {
   targetDir: string;
   inCurrentDir: boolean;
   template: TemplateName;
+  pm: PackageManager;
+  testRunner: TestRunner;
   /** Files of the project, relative to targetDir. */
   files: string[];
   /** Existing files that are (or would be) overwritten. */
@@ -52,7 +59,7 @@ export interface CreateResult {
   install?: RunResult;
 }
 
-export type Step = 'git init' | 'npm install';
+export type Step = 'git init' | `${PackageManager} install`;
 
 /** Converts parsed flags into a CreateInput, rejecting contradictions early. */
 export function createInputFromFlags(
@@ -71,7 +78,9 @@ export function createInputFromFlags(
     dryRun: Boolean(values['dry-run']),
     install: Boolean(values.install),
     git: Boolean(values.git),
-    noCredits: Boolean(values['no-credits'])
+    noCredits: Boolean(values['no-credits']),
+    pm: values.pm as PackageManager | undefined,
+    testRunner: values.test as TestRunner | undefined
   };
 }
 
@@ -137,6 +146,8 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
   });
   assertWritable(plan, input.force);
 
+  const pm = input.pm ?? 'npm';
+  const testRunner = input.testRunner ?? 'jest';
   const env: EnvStatus = plan.preserved.includes(ENV_FILE)
     ? 'kept'
     : generatesEnvFile(plan.files)
@@ -150,10 +161,14 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
     targetDir: project.targetDir,
     inCurrentDir: project.inCurrentDir,
     template,
-    files: env === 'generated' ? [...plan.files, ENV_FILE] : plan.files,
+    pm,
+    testRunner,
+    files: (env === 'generated' ? [...plan.files, ENV_FILE] : plan.files).filter(
+      (file) => testRunner === 'jest' || file !== 'jest.config.js'
+    ),
     overwritten: plan.conflicts,
     env,
-    steps: [...(input.git ? (['git init'] as const) : []), ...(input.install ? (['npm install'] as const) : [])]
+    steps: [...(input.git ? (['git init'] as const) : []), ...(input.install ? [installCommand(pm) as Step] : [])]
   };
   if (input.dryRun) return result;
 
@@ -163,6 +178,8 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
       await setPackageName(stagingDir, project.packageName);
       await createEnvFile(stagingDir);
       if (input.noCredits) await removeCredits(stagingDir);
+      await applyPackageManager(stagingDir, pm);
+      await applyTestRunner(stagingDir, template, testRunner);
     }
   });
 
@@ -171,12 +188,22 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
     result.git = await run('git', ['init', '--quiet'], project.targetDir);
   }
   if (input.install) {
-    ctx.progress?.('Installing dependencies (npm install)');
-    const npm = npmCommand(['install']);
-    result.install = npm
-      ? await run(npm[0], npm[1], project.targetDir)
-      : { ok: false, error: 'npm was not found; run "npm install" manually' };
+    ctx.progress?.(`Installing dependencies (${installCommand(pm)})`);
+    result.install = await installDependencies(pm, project.targetDir);
   }
 
   return result;
+}
+
+/** Runs `<pm> install` without a shell. */
+async function installDependencies(pm: PackageManager, cwd: string): Promise<RunResult> {
+  if (pm === 'npm') {
+    const npm = npmCommand(['install']);
+    return npm ? run(npm[0], npm[1], cwd) : { ok: false, error: 'npm was not found; run "npm install" manually' };
+  }
+  // pnpm and yarn are found on PATH; Windows ships them as .cmd shims that
+  // cannot be spawned without a shell, so there the user runs them.
+  if (process.platform === 'win32') return { ok: false, error: `run "${installCommand(pm)}" manually` };
+  const result = await run(pm, ['install'], cwd);
+  return result.ok ? result : { ...result, error: `${result.error}; run "${installCommand(pm)}" manually` };
 }

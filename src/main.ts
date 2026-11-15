@@ -1,8 +1,13 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { PassThrough } from 'node:stream';
+import { addInputFromFlags, addRecipes } from './commands/add.js';
+import { checkProject } from './commands/check.js';
 import { createInputFromFlags, createProject, type CreateResult } from './commands/create.js';
+import { doctor } from './commands/doctor.js';
+import { generate, generateInputFromFlags } from './commands/generate.js';
 import { DOCS_URL, openDocs, uiInputFromFlags, type UiContext } from './commands/ui.js';
+import { ConflictError } from './core/changes.js';
 import { packageRoot } from './core/paths.js';
 import { PathBlockedError, TargetNotEmptyError } from './core/scaffold.js';
 import {
@@ -17,6 +22,7 @@ import {
 } from './spec.js';
 import { renderBanner } from './ui/banner.js';
 import { createPrompter, PromptAbortedError } from './ui/prompt.js';
+import { renderAdd, renderCheck, renderCreate, renderDoctor, renderGenerate } from './ui/render.js';
 import { createStyle, type Style } from './ui/style.js';
 
 export { DOCS_URL };
@@ -69,21 +75,47 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
       return EXIT_OK;
     }
 
-    if (parsed.command === 'ui') {
-      const result = await openDocs(uiInputFromFlags(parsed.positionals, parsed.values), {
-        env: io.env ?? process.env,
-        platform: io.platform ?? process.platform,
-        interactive: !json && Boolean(io.stdout.isTTY),
-        open: io.open,
-        fileExists: io.fileExists
-      });
-      if (json) writeJson({ ok: true, ...result });
-      else io.stdout.write(`${result.url}\n`);
-      if (result.opened && !json) io.stderr.write(`${err.muted('› Opening the documentation in your browser')}\n`);
-      return EXIT_OK;
+    const { positionals, values } = parsed;
+    /** Prints a command result as JSON or as text and returns the exit code. */
+    const finish = (value: { ok: boolean }, text: string, code = value.ok ? EXIT_OK : EXIT_ERROR) => {
+      if (json) writeJson(value);
+      else io.stdout.write(text);
+      return code;
+    };
+
+    switch (parsed.command) {
+      case 'ui': {
+        const result = await openDocs(uiInputFromFlags(positionals, values), {
+          env: io.env ?? process.env,
+          platform: io.platform ?? process.platform,
+          interactive: !json && Boolean(io.stdout.isTTY),
+          open: io.open,
+          fileExists: io.fileExists
+        });
+        if (result.opened && !json) io.stderr.write(`${err.muted('› Opening the documentation in your browser')}\n`);
+        return finish({ ok: true, ...result }, `${result.url}\n`);
+      }
+      case 'generate': {
+        const result = await generate(generateInputFromFlags(positionals, values), io.cwd);
+        return finish({ ok: !result.files.some((file) => file.action === 'conflict'), ...result }, renderGenerate(result, out), EXIT_OK);
+      }
+      case 'check': {
+        if (positionals.length > 0) throw new UsageError('qn check takes no arguments.', 'check');
+        const result = await checkProject(io.cwd);
+        return finish(result, renderCheck(result, out));
+      }
+      case 'add': {
+        const result = await addRecipes(addInputFromFlags(positionals, values), io.cwd);
+        return finish({ ok: true, ...result }, renderAdd(result, out));
+      }
+      case 'doctor': {
+        if (positionals.length > 0) throw new UsageError('qn doctor takes no arguments.', 'doctor');
+        const result = await doctor({ cwd: io.cwd, offline: Boolean(values.offline) });
+        return finish(result, renderDoctor(result, out));
+      }
     }
 
-    const input = createInputFromFlags(parsed.positionals, parsed.values);
+    const input = createInputFromFlags(positionals, values);
     const interactive = !json && !input.yes && Boolean(io.stdin.isTTY && io.stderr.isTTY);
     const prompter = interactive ? createPrompter(io.stdin, io.stderr) : undefined;
 
@@ -99,9 +131,7 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
     }
 
     const stepsOk = result.git?.ok !== false && result.install?.ok !== false;
-    if (json) writeJson({ ok: stepsOk, ...result });
-    else io.stdout.write(renderCreate(result, out));
-    return stepsOk ? EXIT_OK : EXIT_ERROR;
+    return finish({ ok: stepsOk, ...result }, renderCreate(result, out, DOCS_URL));
   } catch (error) {
     if (json) {
       writeJson({ ok: false, error: serializeError(error) });
@@ -117,7 +147,7 @@ function serializeError(error: unknown): Record<string, unknown> {
   const { code = 'ERROR' } = error as { code?: string };
   const details: Record<string, unknown> = {};
   if (error instanceof TargetNotEmptyError) Object.assign(details, { conflicts: error.conflicts, entries: error.entries });
-  if (error instanceof PathBlockedError) Object.assign(details, { paths: error.paths });
+  if (error instanceof PathBlockedError || error instanceof ConflictError) Object.assign(details, { paths: error.paths });
   return { code, message: error.message, ...details };
 }
 
@@ -135,7 +165,7 @@ function renderError(error: unknown, style: Style): string {
     const hasConflicts = error.conflicts.length > 0;
     lines.push(hasConflicts ? 'Files that would be overwritten:' : 'Existing entries:');
     lines.push(...listFiles(hasConflicts ? error.conflicts : error.entries));
-  } else if (error instanceof PathBlockedError) {
+  } else if (error instanceof PathBlockedError || error instanceof ConflictError) {
     lines.push(...listFiles(error.paths));
   } else if (error instanceof UsageError) {
     lines.push(style.muted(`Run "qn ${error.command ? `${error.command} ` : ''}--help" for usage.`));
@@ -145,60 +175,28 @@ function renderError(error: unknown, style: Style): string {
   return `${lines.join('\n')}\n`;
 }
 
-const TEMPLATE_LABEL = { typescript: 'TypeScript', javascript: 'JavaScript' } as const;
-
-function renderCreate(result: CreateResult, style: Style): string {
-  const label = `${result.packageName} (${TEMPLATE_LABEL[result.template]})`;
-  const overwritten = new Set(result.overwritten);
-  const lines: string[] = [];
-
-  if (result.dryRun) {
-    lines.push(style.accent('Dry run: nothing was written.'));
-    lines.push(`Would create ${style.bold(label)} in ${result.targetDir} (${result.files.length} files):`);
-    for (const file of result.files) {
-      lines.push(overwritten.has(file) ? style.accent(`  ~ ${file} (overwrite)`) : `  + ${file}`);
-    }
-    if (result.env === 'kept') lines.push(style.muted('  = .env (existing file kept)'));
-    if (result.steps.length > 0) lines.push(`Then would run: ${result.steps.join(', ')}`);
-    return `${lines.join('\n')}\n`;
-  }
-
-  lines.push(style.success(`✔ Created ${style.bold(label)} in ${result.targetDir}`));
-  if (result.overwritten.length > 0) {
-    lines.push(style.accent(`  Overwrote ${result.overwritten.length} existing file(s): ${result.overwritten.join(', ')}`));
-  }
-  if (result.env === 'generated') lines.push(style.muted('  .env generated with random secrets (git-ignored)'));
-  if (result.env === 'kept') lines.push(style.accent('  Existing .env kept: compare it with .env.example'));
-  for (const [step, outcome] of [
-    ['git init', result.git],
-    ['npm install', result.install]
-  ] as const) {
-    if (!outcome) continue;
-    lines.push(outcome.ok ? style.success(`✔ ${step}`) : style.error(`✖ ${step} failed: ${outcome.error}`));
-  }
-
-  lines.push('', style.accent('Next steps:'));
-  if (!result.inCurrentDir) lines.push(`  cd ${result.name}`);
-  if (!result.install?.ok) lines.push('  npm install');
-  lines.push('  npm run docker:up   # start PostgreSQL', '  npm run dev');
-  lines.push('', style.muted(`Guide: ${DOCS_URL}`));
-  return `${lines.join('\n')}\n`;
-}
-
 function formatOptions(options: Record<string, OptionSpec>): string[] {
   const rows = Object.entries(options).map(([name, spec]) => [
-    `${spec.short ? `-${spec.short}, ` : '    '}--${name}${spec.type === 'string' ? ` <${spec.choices?.join('|') ?? 'value'}>` : ''}`,
+    `${spec.short ? `-${spec.short}, ` : '    '}--${name}${spec.type === 'string' ? ` <${spec.choices?.join('|') ?? spec.valueName ?? 'value'}>` : ''}`,
     spec.description
   ]);
   const width = Math.max(...rows.map(([flag]) => flag.length));
   return rows.map(([flag, description]) => `  ${flag.padEnd(width)}  ${description}`);
 }
 
-function formatArgument(spec: CommandSpec, style: Style): string[] {
-  const { argument } = spec;
-  if (!argument) return [];
-  const choices = argument.choices ? ` (${argument.choices.join(', ')})` : '';
-  return [style.accent('Arguments:'), `  ${argument.name}  ${argument.description}${choices}`, ''];
+function formatArguments(spec: CommandSpec, style: Style): string[] {
+  const args = spec.arguments ?? [];
+  if (args.length === 0) return [];
+  const names = args.map((argument) => `${argument.name}${argument.variadic ? '...' : ''}`);
+  const width = Math.max(...names.map((name) => name.length));
+  return [
+    style.accent('Arguments:'),
+    ...args.map((argument, index) => {
+      const choices = argument.choices ? ` (${argument.choices.join(', ')})` : '';
+      return `  ${names[index].padEnd(width)}  ${argument.description}${choices}`;
+    }),
+    ''
+  ];
 }
 
 export function renderHelp(command: string | undefined, style: Style, showBanner: boolean): string {
@@ -211,7 +209,7 @@ export function renderHelp(command: string | undefined, style: Style, showBanner
       '',
       spec.summary + (spec.aliases ? ` (alias: ${spec.aliases.map((alias) => `qn ${alias}`).join(', ')})` : ''),
       '',
-      ...formatArgument(spec, style),
+      ...formatArguments(spec, style),
       style.accent('Options:'),
       ...formatOptions({ ...spec.options, ...GLOBAL_OPTIONS }),
       '',

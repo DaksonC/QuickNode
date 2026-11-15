@@ -45,3 +45,27 @@ export function npmCommand(
   if (npmCli) return [execPath, [npmCli, ...args]];
   return platform === 'win32' ? undefined : ['npm', args];
 }
+
+export interface CaptureResult {
+  /** Exit code, or undefined when the program could not start or timed out. */
+  code?: number;
+  stdout: string;
+  error?: string;
+}
+
+/**
+ * Runs a program without a shell and captures its stdout (stderr is
+ * discarded), giving up after `timeoutMs`.
+ */
+export function capture(command: string, args: string[], cwd: string, timeoutMs = 60_000): Promise<CaptureResult> {
+  return new Promise((resolve) => {
+    const child = spawn(command, args, { cwd, shell: false, stdio: ['ignore', 'pipe', 'ignore'], timeout: timeoutMs });
+    let stdout = '';
+    child.stdout.setEncoding('utf8');
+    child.stdout.on('data', (chunk: string) => (stdout += chunk));
+    child.on('error', (error) => resolve({ stdout, error: error.message }));
+    child.on('close', (code, signal) =>
+      resolve(signal ? { stdout, error: `stopped (${signal})` } : { code: code ?? undefined, stdout })
+    );
+  });
+}

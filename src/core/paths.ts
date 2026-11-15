@@ -21,3 +21,8 @@ export function packageRoot(fromUrl: string = import.meta.url): string {
 export function templateDir(name: TemplateName): string {
   return path.join(packageRoot(), 'templates', name);
 }
+
+/** Source files that `qn generate` fills in, per language (see templates/generators). */
+export function generatorDir(language: TemplateName): string {
+  return path.join(packageRoot(), 'templates', 'generators', language);
+}

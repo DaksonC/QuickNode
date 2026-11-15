@@ -1,0 +1,38 @@
+{
+  "entity": [
+    {
+      "file": "src/infrastructure/database/models/index.js",
+      "marker": "imports",
+      "snippet": "const define__Name__Model = require('./__name__-model');"
+    },
+    {
+      "file": "src/infrastructure/database/models/index.js",
+      "marker": "models",
+      "snippet": "this.models.__Name__ = define__Name__Model(sequelize);"
+    }
+  ],
+  "repository": [
+    {
+      "file": "src/infrastructure/database/repository-factory.js",
+      "marker": "imports",
+      "snippet": "const { Sequelize__Name__Repository } = require('./repositories/__name__-repository');"
+    },
+    {
+      "file": "src/infrastructure/database/repository-factory.js",
+      "marker": "factories",
+      "snippet": "static create__Name__Repository() {\n  const { __Name__ } = modelsRegistry.getModels();\n  return new Sequelize__Name__Repository(__Name__);\n}\n"
+    }
+  ],
+  "controller": [
+    {
+      "file": "src/server.js",
+      "marker": "imports",
+      "snippet": "const { register__Name__Module } = require('./infrastructure/modules/__name__-module');"
+    },
+    {
+      "file": "src/server.js",
+      "marker": "modules",
+      "snippet": "register__Name__Module(app);"
+    }
+  ]
+}

@@ -60,7 +60,9 @@ describe('createInputFromFlags', () => {
       dryRun: true,
       install: false,
       git: true,
-      noCredits: false
+      noCredits: false,
+      pm: undefined,
+      testRunner: undefined
     });
   });
 

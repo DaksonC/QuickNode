@@ -16,10 +16,12 @@ import os from 'node:os';
 import path from 'node:path';
 import { PassThrough } from 'node:stream';
 import { fileURLToPath } from 'node:url';
+import { ERROR_CODES } from '../dist/core/errors.js';
 import { EXIT_ERROR, EXIT_OK, EXIT_USAGE, main, renderHelp } from '../dist/main.js';
 import { COMMANDS, DOCS_TOPICS, GLOBAL_OPTIONS, LEGACY_FLAGS } from '../dist/spec.js';
 import { createStyle } from '../dist/ui/style.js';
-import { COMMANDS_PT, LANGS, PAGES, REFERENCE_TEXT, SITE, UI } from '../docs-src/site.mjs';
+import { COMMANDS_PT, ERRORS_PT, LANGS, LLMS, PAGES, REFERENCE_TEXT, SITE, UI } from '../docs-src/site.mjs';
+import { htmlToMarkdown } from './docs-markdown.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT_DIR = path.join(ROOT, 'docs-src', 'content');
@@ -142,9 +144,36 @@ export function renderReference(lang) {
     '<dl class="opts">',
     ...[EXIT_OK, EXIT_ERROR, EXIT_USAGE].map((code, index) => `  <dt><code>${code}</code></dt>\n  <dd>${esc(t.exitCodes[index])}</dd>`),
     '</dl>',
+    '</section>',
+    '<section aria-labelledby="errors">',
+    `<h2 id="errors" tabindex="-1">${t.errors}</h2>`,
+    `<p>${t.errorsText}</p>`,
+    terminal(['$ qn create my-api --json', ...ERROR_EXAMPLE.split('\n')]),
+    '<dl class="opts">',
+    ...Object.entries(ERROR_CODES).map(([code, { exitCode, description }]) => {
+      const text = lang === 'en' ? description : ERRORS_PT[code];
+      if (!text) throw new Error(`Missing Portuguese text for error ${code}`);
+      return `  <dt id="${code}"><code>${code}</code> <span class="dim">(exit ${exitCode})</span></dt>\n  <dd>${esc(text)}</dd>`;
+    }),
+    '</dl>',
     '</section>'
   ].join('\n');
 }
+
+/** A real error, as `qn create my-api --json` prints it without a template flag and without a terminal. */
+const ERROR_EXAMPLE = JSON.stringify(
+  {
+    schemaVersion: 1,
+    ok: false,
+    error: {
+      code: 'E_USAGE',
+      message: 'Choose a template with --typescript or --javascript (or pass --yes).',
+      fix: 'qn create my-api --typescript'
+    }
+  },
+  null,
+  2
+);
 
 /* ---------- Content fragments ---------- */
 
@@ -414,6 +443,56 @@ function renderNotFound() {
   ].join('\n');
 }
 
+/* ---------- Markdown for LLMs (D9): page.md, llms.txt, llms-full.txt ---------- */
+
+/** "start/" -> "start.md", "" -> "index.md", under pt/ for Portuguese. */
+const markdownFile = (slug, lang) => `${lang === 'pt' ? 'pt/' : ''}${slug ? slug.replace(/\/$/, '') : 'index'}.md`;
+const markdownUrl = (slug, lang) => `${SITE.baseUrl}${markdownFile(slug, lang)}`;
+
+function renderMarkdown(page, lang) {
+  const ui = UI[lang];
+  const meta = page[lang];
+  const body = htmlToMarkdown(renderContent(page, lang), pageUrl(page.slug, lang));
+  return `${body.trimEnd()}\n\n---\n\n${ui.updated} ${page.updated} · ${ui.validFor} ${SITE.appliesTo} · ${pageUrl(page.slug, lang)}\n\n> ${meta.description}\n`;
+}
+
+function renderLlmsTxt() {
+  const entry = (page, lang) => `- [${page[lang].crumb}](${markdownUrl(page.slug, lang)}): ${page[lang].description}`;
+  const docs = PAGES.filter((page) => !page.slug.startsWith('adr/'));
+  const adrs = PAGES.filter((page) => page.slug.startsWith('adr/'));
+  return [
+    `# ${SITE.name}`,
+    '',
+    `> ${LLMS.summary}`,
+    '',
+    ...LLMS.facts.map((fact) => `- ${fact}`),
+    '',
+    '## Docs',
+    '',
+    ...docs.map((page) => entry(page, 'en')),
+    '',
+    '## Português',
+    '',
+    ...docs.map((page) => entry(page, 'pt')),
+    '',
+    '## Optional',
+    '',
+    ...adrs.map((page) => entry(page, 'en')),
+    `- [Full documentation in one file](${SITE.baseUrl}llms-full.txt): every English page above, in Markdown`,
+    ''
+  ].join('\n');
+}
+
+function renderLlmsFull() {
+  return [
+    `# ${SITE.name}: full documentation`,
+    '',
+    `> ${LLMS.summary}`,
+    '',
+    ...PAGES.map((page) => `<!-- ${pageUrl(page.slug, 'en')} -->\n\n${renderMarkdown(page, 'en')}`)
+  ].join('\n');
+}
+
 function renderSitemap() {
   const urls = PAGES.flatMap((page) =>
     LANGS.map(
@@ -490,6 +569,11 @@ export async function buildSite() {
   for (const page of PAGES) {
     for (const lang of LANGS) files.set(pageFile(page.slug, lang), renderPage(page, lang));
   }
+  for (const page of PAGES) {
+    for (const lang of LANGS) files.set(markdownFile(page.slug, lang), renderMarkdown(page, lang));
+  }
+  files.set('llms.txt', renderLlmsTxt());
+  files.set('llms-full.txt', renderLlmsFull());
   files.set('404.html', renderNotFound());
   files.set('sitemap.xml', renderSitemap());
   files.set('assets/js/qn-data.js', await renderSimulatorData());

@@ -22,7 +22,7 @@
         '  qn --help                  general help',
         '  qn help <command>          help and examples of a command',
         '  qn create <name> [-ts|-js] [--dry-run]',
-        '  qn generate, check, add, doctor: run inside a project (shows help)',
+        '  qn generate, check, add, doctor, schema, mcp (shows help)',
         '  qn ui [topic]              go to a page (alias: qn docs)',
         '  qn --version',
         'Page: theme light|dark, fx on|off, lang en|pt, clear'
@@ -33,7 +33,7 @@
       theme: (t) => `${t === 'light' ? 'Light' : 'Dark'} theme on.`,
       themeHint: (next) => ` switch to ${next} theme`,
       usage: (syntax) => `Usage: ${syntax}`,
-      inProject: (cmd) => `qn ${cmd} works on a project in your terminal; this simulator has no project, so here is its help:`,
+      inProject: (cmd) => `qn ${cmd} runs in your terminal (and, except schema and mcp, inside a project); this simulator only shows its help:`,
       unknown: (cmd) => `Bad command or file name: ${cmd}. Type help.`
     },
     pt: {
@@ -42,7 +42,7 @@
         '  qn --help                  ajuda geral',
         '  qn help <comando>          ajuda e exemplos de um comando',
         '  qn create <nome> [-ts|-js] [--dry-run]',
-        '  qn generate, check, add, doctor: rodam dentro de um projeto (mostra a ajuda)',
+        '  qn generate, check, add, doctor, schema, mcp (mostra a ajuda)',
         '  qn ui [tópico]             vai para uma página (apelido: qn docs)',
         '  qn --version',
         'Página: theme light|dark, fx on|off, lang en|pt, clear'
@@ -53,7 +53,7 @@
       theme: (t) => `Tema ${t === 'light' ? 'claro' : 'escuro'} ativado.`,
       themeHint: (next) => ` mudar para o tema ${next === 'light' ? 'claro' : 'escuro'}`,
       usage: (syntax) => `Uso: ${syntax}`,
-      inProject: (cmd) => `O qn ${cmd} trabalha num projeto no seu terminal; o simulador não tem projeto, então aqui vai a ajuda dele:`,
+      inProject: (cmd) => `O qn ${cmd} roda no seu terminal (e, fora schema e mcp, dentro de um projeto); o simulador só mostra a ajuda:`,
       unknown: (cmd) => `Comando ou nome de arquivo inválido: ${cmd}. Digite help.`
     }
   }[lang];

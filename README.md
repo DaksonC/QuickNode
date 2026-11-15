@@ -137,15 +137,15 @@ qn ui structure --lang pt
 qn ui faq --print        # only print the link
 ```
 
-Topics: `start`, `commands`, `create`, `ui`, `generate`, `check`, `add`, `doctor`, `structure`,
-`tutorial`, `faq`, `compare`, `changelog`, `adr`. The link is always printed; a browser is opened only in an interactive
+Topics: `start`, `commands`, `create`, `ui`, `generate`, `agents`, `when`, `errors`, `check`,
+`add`, `doctor`, `structure`, `tutorial`, `faq`, `compare`, `changelog`, `adr`. The link is always printed; a browser is opened only in an interactive
 desktop session (never in CI, over SSH or in a container), with the system opener and no shell.
 
 ### Scripts and CI
 
 `qn` never prompts when stdin is not a terminal: pass the name and template (or `--yes`).
 Prompts and progress go to stderr and results to stdout, so `--json` output can be piped.
-Exit codes: `0` success, `1` error, `2` invalid usage.
+Exit codes: `0` success, `1` error, `2` invalid usage; error codes are listed by `qn schema`.
 
 ```bash
 qn create api --yes --json | jq .targetDir
@@ -180,43 +180,10 @@ Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY
 
 ## 🏗️ What's Included
 
-### Dependencies
-
-- **Express.js**: Web framework
-- **Helmet**: Security middleware
-- **Express-validator**: Request validation
-- **Pino**: Structured logging
-- **Swagger**: API documentation
-- **TypeORM**: SQL ORM (TypeScript template)
-- **Sequelize**: SQL ORM (JavaScript template)
-- **Class-transformer & Class-validator**: DTO validation (TypeScript)
-
-### Development Dependencies
-
-- **TypeScript**: Type checking (TypeScript template)
-- **tsx**: Development server with hot reload (TypeScript)
-- **Jest**: Testing framework
-- **Jest-extended**: Additional Jest matchers
-- **ESLint**: Code linting
-- **Prettier**: Code formatting
-- **Husky**: Git hooks
-- **Commitlint**: Conventional commits
-
-### Pre-configured Scripts
-
-```json
-{
-  "dev": "Start development server",
-  "build": "Build TypeScript to JavaScript (TypeScript only)",
-  "start": "Start production server",
-  "test": "Run tests",
-  "test:watch": "Run tests in watch mode",
-  "test:coverage": "Run tests with coverage",
-  "lint": "Lint code",
-  "lint:fix": "Lint and fix code",
-  "format": "Format code with Prettier"
-}
-```
+Express, Helmet, express-validator, Pino and Swagger; TypeORM with class-validator DTOs
+(TypeScript) or Sequelize (JavaScript); Jest or `node:test`, ESLint, Prettier, Husky and
+commitlint; `npm run dev | build | start | test | lint | check | format`. Every folder is
+explained in the [project structure guide](https://daksonc.github.io/QuickNode/structure/).
 
 ## 🏛️ Clean Architecture Structure
 
@@ -285,51 +252,20 @@ Set `DB_TYPE=mysql` or `DB_TYPE=sqlite` in `.env` and adjust the `DB_*` variable
 template needs only the driver (`npm install mysql2` or `sqlite3`); in the TypeScript template
 these repositories are not implemented yet.
 
-## 🧪 Testing
+## 🤖 For AI agents
 
-The template includes a complete testing setup:
-
-- **Unit tests** for use cases and entities
-- **Integration tests** for API endpoints
-- **Coverage reports** with detailed metrics
-- **Jest extended** for additional matchers
-
-Run tests:
-```bash
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:coverage # With coverage
-```
-
-## 🔧 Code Quality
-
-### ESLint & Prettier
-
-Code quality is ensured with ESLint and Prettier:
+Every command runs without prompts when there is no terminal, prints JSON with `--json`
+(with a `schemaVersion`), plans with `--dry-run` and fails with a stable code and a fix
+(`{"code": "E_DIR_NOT_EMPTY", "message": "...", "fix": "qn create my-api --force"}`).
 
 ```bash
-npm run lint          # Check for issues
-npm run lint:fix      # Fix issues automatically
-npm run format        # Format code
+npx @10565/quicknode-cli@2 schema                       # every command, flag, value and error code
+claude mcp add quicknode -- npx @10565/quicknode-cli@2 mcp   # MCP server: dry run unless "apply": true
 ```
 
-### Git Hooks
-
-Husky 9 installs the hooks on `npm install` when the project is a git repository
-(`qn create --git` does `git init` for you). They:
-- Lint the code before each commit
-- Validate commit messages (conventional commits)
-
-### Conventional Commits
-
-Commit format: `type(scope): description`
-
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
-Examples:
-- `feat: add user authentication`
-- `fix: resolve database connection issue`
-- `docs: update API documentation`
+Generated projects include `AGENTS.md`/`CLAUDE.md` and `docs/adr/`. See the
+[guide for AI agents](https://daksonc.github.io/QuickNode/agents/) and
+[when to use QuickNode](https://daksonc.github.io/QuickNode/when/); `llms.txt` is at the site root.
 
 ## 🌟 Example API
 

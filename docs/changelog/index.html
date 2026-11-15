@@ -49,7 +49,7 @@
       "description": "Release notes of QuickNode CLI from v1.0.0 to v2: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.",
       "url": "https://daksonc.github.io/QuickNode/changelog/",
       "inLanguage": "en",
-      "dateModified": "2026-11-14",
+      "dateModified": "2026-11-15",
       "author": {
         "@type": "Person",
         "name": "Dakson Chaves Cruz",
@@ -135,6 +135,8 @@
           <li><a href="../structure/">[structure]</a></li>
           <li><a href="../tutorial/">[tutorial]</a></li>
           <li><a href="../add/">[add]</a></li>
+          <li><a href="../agents/">[agents]</a></li>
+          <li><a href="../when/">[when]</a></li>
           <li><a href="../faq/">[faq]</a></li>
           <li><a href="../compare/">[compare]</a></li>
           <li><a href="../changelog/" aria-current="page">[changelog]</a></li>
@@ -157,7 +159,7 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Breadcrumb"><ol class="crumbs" role="list"><li><a href="../">Home</a></li><li aria-current="page">Changelog</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui changelog</p>
-    <p class="meta">Updated on <time datetime="2026-11-14">2026-11-14</time> · valid for v2.x</p>
+    <p class="meta">Updated on <time datetime="2026-11-15">2026-11-15</time> · valid for v2.x</p>
 <h1 tabindex="-1">Changelog</h1>
 <p class="answer">Version 2.0.0 rewrites QuickNode CLI with zero runtime dependencies, makes <code>qn create</code> safe by default, publishes with provenance and adds <code>qn generate</code>, <code>qn check</code>, <code>qn add</code>, <code>qn doctor</code>, <code>qn ui</code> and this site; it requires Node.js 22.13+.</p>
 <p>Versions follow <a href="https://semver.org/" rel="noopener noreferrer">semantic versioning</a>. Release notes with the build provenance are on <a href="https://github.com/DaksonC/QuickNode/releases" rel="noopener noreferrer">GitHub Releases</a>.</p>
@@ -175,7 +177,8 @@
   <li><code>qn check</code>: fails when <code>src/domain</code> imports infrastructure, Express, an ORM or another package; readable output or <code>--json</code>, exit code 1 for CI.</li>
   <li><code>qn add &lt;recipe&gt;</code>: auth (JWT with <code>node:crypto</code>), healthcheck, rate-limit, graceful-shutdown, docker, ci, agents, eslint, husky, swagger and tests, idempotent, with <code>--dry-run</code> showing the diff.</li>
   <li><code>qn doctor</code>: checks Node.js, <code>.env</code>, Docker, <code>npm audit</code> and the dependency rule.</li>
-  <li><code>AGENTS.md</code> and <code>CLAUDE.md</code> in new projects, for AI coding assistants; <code>npm run check</code> script.</li>
+  <li><code>AGENTS.md</code> and <code>CLAUDE.md</code> in new projects, for AI coding assistants; <code>npm run check</code> script; <code>docs/adr/</code> with a template for architecture decisions.</li>
+  <li>For AI agents: <code>qn schema</code> (also <code>qn --help --json</code>) with the full specification; stable error codes (<code>E_USAGE</code>, <code>E_DIR_NOT_EMPTY</code>…) with a <code>fix</code>; <code>schemaVersion</code> in every JSON output; <code>qn mcp</code>, an MCP server on stdio that plans by default; <code>llms.txt</code>, <code>llms-full.txt</code> and every page in Markdown.</li>
   <li><code>--dry-run</code>, <code>--yes</code>, <code>--force</code>, <code>--json</code>, <code>--git</code>, <code>--install</code>, <code>--no-credits</code>, <code>--pm npm|pnpm|yarn</code> and <code>--test jest|node</code> on <code>qn create</code>.</li>
   <li><code>qn ui [topic]</code> (alias <code>qn docs</code>) opens this documentation; <code>qn help &lt;command&gt;</code> with examples.</li>
   <li>Random <code>DB_PASSWORD</code> and <code>JWT_SECRET</code> in a git-ignored <code>.env</code>.</li>

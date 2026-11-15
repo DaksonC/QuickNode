@@ -76,6 +76,29 @@ O push da tag dispara o workflow, que:
 - `npm view @10565/quicknode-cli@latest dist.attestations --json`
 - Em qualquer projeto que instalou a CLI: `npm audit signatures`
 
+## 6. Reservar nomes próximos (ADR-001, D9)
+
+LLMs às vezes sugerem nomes sem escopo ou parecidos. Para que ninguém publique um pacote
+malicioso com esses nomes (typosquatting), reserve-os na sua conta, uma única vez:
+
+| Nome | Uso |
+| --- | --- |
+| `create-quicknode` | `npm create quicknode` → repassa para `@10565/quicknode-cli create` (ADR, seção 4: "a avaliar") |
+| `quicknode-cli` | sem escopo; só aponta para o pacote com escopo |
+
+Os dois estavam livres em 15/11/2026 (`npm view <nome>` devolvia 404). Para cada um:
+
+1. Crie uma pasta só com um `package.json` mínimo (`name`, `version: 0.0.1`, `description:
+   "Use @10565/quicknode-cli"`, `repository`) e um `README.md` que manda instalar
+   `@10565/quicknode-cli`.
+2. Publique uma vez com `npm publish --access public` (2FA pedido pelo npm).
+3. Marque como obsoleto, para quem instalar ver o nome certo:
+   `npm deprecate <nome> "Use @10565/quicknode-cli (npx @10565/quicknode-cli create my-api)"`.
+
+`quicknode` e `qn-cli` já existem no npm e são de terceiros: a documentação e o `llms.txt`
+sempre usam o nome com escopo. Os pacotes reservados não têm código nem scripts, e não entram
+no Trusted Publishing.
+
 ## Problemas comuns
 
 | Sintoma | Causa |

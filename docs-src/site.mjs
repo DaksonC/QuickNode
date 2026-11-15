@@ -35,6 +35,29 @@ export const SITE = {
 
 export const LANGS = ['en', 'pt'];
 
+/** Header of llms.txt (https://llmstxt.org/): the facts an assistant should get right. */
+export const LLMS = {
+  summary: `${SITE.positioning.en}: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready, plus generators (qn generate), a dependency rule check (qn check), recipes (qn add) and an MCP server (qn mcp).`,
+  facts: [
+    `Package: ${SITE.packageName} (always with the scope). Command: qn. Run without installing: npx ${SITE.packageName}@2 <command>.`,
+    `Not related to QuickNode, the blockchain infrastructure provider.`,
+    `Requires Node.js ${SITE.node} or newer. Zero runtime dependencies, no telemetry, no network while generating.`,
+    'Non-interactive use: pass every value as a flag (or --yes) and add --json; errors have a stable code and a fix.',
+    'Full machine-readable specification: qn schema (or qn --help --json).'
+  ]
+};
+
+/** Portuguese text of the error codes (English comes from src/core/errors.ts). */
+export const ERRORS_PT = {
+  E_USAGE: 'Uso inválido: comando, flag ou valor desconhecido, ou argumento faltando',
+  E_DIR_NOT_EMPTY: 'qn create: a pasta de destino não está vazia (use --force para gravar nela)',
+  E_PATH_BLOCKED: 'qn create: um caminho do projeto está ocupado por um arquivo ou pasta de outro tipo',
+  E_FILES_EXIST: 'qn generate / qn add: existem arquivos com outro conteúdo (use --force para sobrescrever)',
+  E_NOT_A_PROJECT: 'O comando precisa rodar dentro de um projeto criado com qn create',
+  E_ABORTED: 'Uma pergunta interativa foi cancelada',
+  E_INTERNAL: 'Erro inesperado (rode de novo com DEBUG=1 e reporte)'
+};
+
 /**
  * Pages in menu order. `slug` is the path under the language root and matches
  * the `qn ui` topics (spec.ts DOCS_TOPICS). `file` names the content fragment
@@ -44,7 +67,7 @@ export const PAGES = [
   {
     slug: '',
     file: 'index',
-    updated: '2026-11-14',
+    updated: '2026-11-15',
     en: {
       title: 'QuickNode CLI | Zero-dependency Node.js clean architecture generator',
       description:
@@ -80,17 +103,17 @@ export const PAGES = [
     slug: 'commands/',
     file: 'commands',
     menu: 'commands',
-    updated: '2026-11-14',
+    updated: '2026-11-15',
     en: {
       title: 'Command reference: qn create, generate, check, add, doctor and every flag',
       description:
-        'Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, ui, --dry-run, --json and exit codes.',
+        'Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.',
       crumb: 'Commands'
     },
     pt: {
       title: 'Referência de comandos: qn create, generate, check, add, doctor e todas as flags',
       description:
-        'Todos os comandos e flags do QuickNode CLI, gerados da mesma definição que a CLI usa: qn create, generate, check, add, doctor, ui, --dry-run, --json e códigos de saída.',
+        'Todos os comandos e flags do QuickNode CLI, gerados da mesma definição que a CLI usa: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, códigos de saída e de erro.',
       crumb: 'Comandos'
     }
   },
@@ -149,6 +172,42 @@ export const PAGES = [
     }
   },
   {
+    slug: 'agents/',
+    file: 'agents',
+    menu: 'agents',
+    updated: '2026-11-15',
+    en: {
+      title: 'QuickNode CLI for AI agents: non-interactive commands, JSON, MCP and error codes',
+      description:
+        'How AI coding agents should use QuickNode CLI: exact non-interactive commands with a pinned version, --json and --dry-run, qn schema, the MCP server and stable error codes with fixes.',
+      crumb: 'For AI agents'
+    },
+    pt: {
+      title: 'QuickNode CLI para agentes de IA: comandos não interativos, JSON, MCP e códigos de erro',
+      description:
+        'Como agentes de código com IA devem usar o QuickNode CLI: comandos não interativos com versão fixada, --json e --dry-run, qn schema, o servidor MCP e códigos de erro estáveis com correção.',
+      crumb: 'Para agentes de IA'
+    }
+  },
+  {
+    slug: 'when/',
+    file: 'when',
+    menu: 'when',
+    updated: '2026-11-15',
+    en: {
+      title: 'When to use QuickNode CLI, and when not to',
+      description:
+        'Clear criteria for choosing QuickNode CLI: use it for Express REST APIs with clean architecture and PostgreSQL; do not use it for front ends, monorepos, NestJS projects or other databases.',
+      crumb: 'When to use'
+    },
+    pt: {
+      title: 'Quando usar o QuickNode CLI, e quando não usar',
+      description:
+        'Critérios claros para escolher o QuickNode CLI: use para APIs REST com Express, arquitetura limpa e PostgreSQL; não use para front-end, monorepos, projetos NestJS ou outros bancos.',
+      crumb: 'Quando usar'
+    }
+  },
+  {
     slug: 'faq/',
     file: 'faq',
     menu: 'faq',
@@ -188,7 +247,7 @@ export const PAGES = [
     slug: 'changelog/',
     file: 'changelog',
     menu: 'changelog',
-    updated: '2026-11-14',
+    updated: '2026-11-15',
     en: {
       title: 'QuickNode CLI changelog: what changed in each version',
       description:
@@ -358,6 +417,14 @@ export const COMMANDS_PT = {
         force: 'Sobrescreve arquivos existentes com conteúdo diferente'
       }
     },
+    schema: {
+      summary: 'Imprime em JSON a especificação completa de comandos, flags, valores e códigos de erro',
+      options: {}
+    },
+    mcp: {
+      summary: 'Roda um servidor Model Context Protocol no stdio para assistentes de IA (simulação por padrão)',
+      options: {}
+    },
     doctor: {
       summary: 'Verifica Node.js, .env, Docker, vulnerabilidades e a regra de dependência',
       options: {
@@ -389,6 +456,9 @@ export const REFERENCE_TEXT = {
     global: 'Global options',
     globalText: 'Accepted by every command.',
     exit: 'Exit codes',
+    errors: 'Error codes',
+    errorsText:
+      'Every error has a stable code, a short message and, when known, a fix. With --json it goes to stdout as below; without it, to stderr with a "Fix:" line. Codes never change within a major version.',
     exitCodes: [
       'success',
       'the command failed (for example, the target folder is not empty, or qn check found violations)',
@@ -407,6 +477,9 @@ export const REFERENCE_TEXT = {
     global: 'Opções globais',
     globalText: 'Aceitas por todos os comandos.',
     exit: 'Códigos de saída',
+    errors: 'Códigos de erro',
+    errorsText:
+      'Todo erro tem um código estável, uma mensagem curta e, quando conhecida, uma correção (fix). Com --json ele vai para o stdout como abaixo; sem, para o stderr com uma linha "Fix:". Os códigos não mudam dentro de uma versão major.',
     exitCodes: [
       'sucesso',
       'o comando falhou (por exemplo, a pasta de destino não está vazia, ou o qn check achou violações)',

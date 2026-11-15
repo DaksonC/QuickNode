@@ -208,25 +208,6 @@ Once the server is running, visit:
 - **Swagger UI**: http://localhost:3000/api-docs
 - **Health Check**: http://localhost:3000/health
 
-## 🔧 Available Scripts
-
-- `npm run dev` - Start development server with hot reload
-- `npm start` - Start production server
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
-- `npm run lint` - Lint JavaScript files
-- `npm run check` - Check the dependency rule of the clean architecture (`qn check`)
-- `npm run lint:fix` - Lint and fix JavaScript files
-- `npm run format` - Format code with Prettier
-- `npm run docker:up` - Start PostgreSQL container
-- `npm run docker:down` - Stop PostgreSQL container
-- `npm run docker:logs` - View PostgreSQL logs
-- `npm run docker:reset` - Reset database (removes all data)
-- `npm run db:seed` - Seed database with sample data
-- `npm run db:setup` - Setup database (Docker + Seed)
-- `npm run dev:docker` - Start development with Docker
-
 ## 🎯 Usage Examples
 
 ### Creating a User

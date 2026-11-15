@@ -64,6 +64,12 @@ The generator and the recipes insert code before marker comments such as `// qn:
 
 All of them must pass before a commit. The pre-commit hook runs the lint.
 
+## Decisions
+
+Architecture decisions are recorded in `docs/adr/` (one Markdown file per decision). Read them
+before changing how the project is organized; when a change needs a new decision, add a record
+from `docs/adr/0000-template.md` in the same change.
+
 ## Conventions
 
 - Commit messages follow Conventional Commits (`feat: ...`, `fix: ...`), checked by commitlint.

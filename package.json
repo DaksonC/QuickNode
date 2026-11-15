@@ -1,7 +1,7 @@
 {
   "name": "@10565/quicknode-cli",
   "version": "1.1.0",
-  "description": "A CLI tool to quickly bootstrap Node.js projects with pre-configured dependencies and clean architecture",
+  "description": "Zero-dependency CLI to create Node.js APIs with clean architecture: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready.",
   "type": "module",
   "bin": {
     "qn": "dist/cli.js"
@@ -13,10 +13,13 @@
     "test": "npm run build && node --test test/*.test.js",
     "test:coverage": "npm run build && node --test --experimental-test-coverage --test-coverage-include=dist/** --test-coverage-lines=80 test/*.test.js",
     "test:templates": "npm run build && node --test test/templates.e2e.test.js",
+    "docs:build": "npm run build && node scripts/build-docs.mjs",
+    "docs:check": "npm run build && node scripts/build-docs.mjs --check",
+    "docs:serve": "node scripts/serve-docs.mjs",
     "verify": "npm run lint && npm run test:coverage && npm audit signatures && npm audit --omit=dev --audit-level=high",
-    "lint": "eslint src test",
-    "lint:fix": "eslint src test --fix",
-    "format": "prettier --write src test",
+    "lint": "eslint src test scripts docs-src",
+    "lint:fix": "eslint src test scripts docs-src --fix",
+    "format": "prettier --write src test scripts docs-src/*.mjs",
     "prepublishOnly": "npm run build",
     "release:patch": "./scripts/release.sh patch",
     "release:minor": "./scripts/release.sh minor",
@@ -26,16 +29,25 @@
   },
   "keywords": [
     "nodejs",
+    "node",
     "cli",
+    "scaffold",
+    "generator",
+    "boilerplate",
     "template",
+    "clean-architecture",
     "express",
     "typescript",
-    "clean-architecture",
-    "boilerplate"
+    "typescript-template",
+    "javascript",
+    "api",
+    "rest-api",
+    "postgresql",
+    "zero-dependencies"
   ],
   "author": "Dakson C <daksonmendes@outlook.com>",
   "license": "MIT",
-  "homepage": "https://github.com/DaksonC/QuickNode#readme",
+  "homepage": "https://daksonc.github.io/QuickNode/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DaksonC/QuickNode.git"

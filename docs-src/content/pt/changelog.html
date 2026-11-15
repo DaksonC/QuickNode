@@ -1,0 +1,50 @@
+<h1 tabindex="-1">Changelog</h1>
+<p class="answer">A versão {{version}} reescreve o QuickNode CLI sem dependências de runtime, torna o <code>qn create</code> seguro por padrão, publica com provenance e traz o <code>qn ui</code> e este site; ela exige Node.js {{node}}+.</p>
+<p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="{{repo}}/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
+
+<h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// em breve</span></h2>
+<h3>Mudanças incompatíveis</h3>
+<ul class="list" role="list">
+  <li>Exige Node.js {{node}} ou mais novo, na CLI e nos projetos gerados.</li>
+  <li>Sem terminal, o <code>qn create</code> não pergunta mais: passe o nome e <code>--typescript</code>/<code>--javascript</code>, ou <code>--yes</code>.</li>
+  <li>Uma pasta de destino não vazia é recusada, a menos que se passe <code>--force</code>.</li>
+</ul>
+<h3>Adicionado</h3>
+<ul class="list" role="list">
+  <li><code>--dry-run</code>, <code>--yes</code>, <code>--force</code>, <code>--json</code>, <code>--git</code>, <code>--install</code> e <code>--no-credits</code> no <code>qn create</code>.</li>
+  <li><code>qn ui [tópico]</code> (apelido <code>qn docs</code>) abre esta documentação; <code>qn help &lt;comando&gt;</code> com exemplos.</li>
+  <li><code>DB_PASSWORD</code> e <code>JWT_SECRET</code> aleatórios num <code>.env</code> ignorado pelo git.</li>
+  <li>Site de documentação bilíngue, com a referência de comandos gerada a partir da CLI.</li>
+  <li>Publicação pelo GitHub Actions com provenance do npm e SBOM; <code>SECURITY.md</code>.</li>
+</ul>
+<h3>Alterado</h3>
+<ul class="list" role="list">
+  <li>Zero dependências de runtime: chalk, commander, figlet, fs-extra, inquirer e ora trocados por APIs do Node.js (de 56 pacotes instalados para 1).</li>
+  <li>Templates sem lockfiles congelados e com dependências atualizadas: 0 vulnerabilidades altas ou críticas na data da versão; ESLint 10, Husky 9, Postgres preso a 127.0.0.1.</li>
+  <li>Pacote publicado de 1,6 MB para menos de 300 KB.</li>
+</ul>
+<h3>Corrigido</h3>
+<ul class="list" role="list">
+  <li>Arquivos existentes (como o seu README) eram sobrescritos sem aviso.</li>
+  <li>Nomes como <code>../escaped</code> criavam o projeto fora da pasta atual.</li>
+</ul>
+
+<h2 id="v1.1.1" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1.1.1 <span class="dim">// 2025-09-28</span></h2>
+<ul class="list" role="list">
+  <li>Informação de financiamento no npm; <code>.gitignore</code> incluído nos projetos novos.</li>
+</ul>
+
+<h2 id="v1.1.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1.1.0 <span class="dim">// 2025-09-28</span></h2>
+<ul class="list" role="list">
+  <li>Templates independentes de banco com TypeORM (TypeScript) e Sequelize (JavaScript); revisão da injeção de dependência.</li>
+</ul>
+
+<h2 id="v1.0.1" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1.0.1 <span class="dim">// 2025-09-21</span></h2>
+<ul class="list" role="list">
+  <li>Pacote renomeado para {{package}} com o comando <code>qn</code>; banner novo.</li>
+</ul>
+
+<h2 id="v1.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1.0.0 <span class="dim">// 2025-09-18</span></h2>
+<ul class="list" role="list">
+  <li>Primeira versão: <code>create</code> com templates TypeScript e JavaScript.</li>
+</ul>

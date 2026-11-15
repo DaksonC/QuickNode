@@ -20,6 +20,8 @@ export interface CreateInput {
   dryRun?: boolean;
   install?: boolean;
   git?: boolean;
+  /** Leave the "Generated with QuickNode" line out of the README. */
+  noCredits?: boolean;
 }
 
 export interface CreateContext {
@@ -68,7 +70,8 @@ export function createInputFromFlags(
     yes: Boolean(values.yes),
     dryRun: Boolean(values['dry-run']),
     install: Boolean(values.install),
-    git: Boolean(values.git)
+    git: Boolean(values.git),
+    noCredits: Boolean(values['no-credits'])
   };
 }
 
@@ -96,6 +99,26 @@ async function setPackageName(projectDir: string, name: string): Promise<void> {
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
   packageJson.name = name;
   await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+}
+
+/** Marks the removable credit line in the templates' README.md. */
+const CREDITS_BLOCK = /\n*<!-- quicknode:credits -->[\s\S]*?<!-- \/quicknode:credits -->\n?/;
+
+/**
+ * Removes the credit block from the generated README. The line lives only in
+ * the README: never in code, HTTP headers or API responses (ADR-001, D8).
+ */
+export async function removeCredits(projectDir: string): Promise<void> {
+  const readmePath = path.join(projectDir, 'README.md');
+  let readme: string;
+  try {
+    readme = await fs.readFile(readmePath, 'utf8');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    throw error;
+  }
+  const stripped = readme.replace(CREDITS_BLOCK, '\n');
+  if (stripped !== readme) await fs.writeFile(readmePath, stripped);
 }
 
 /**
@@ -139,6 +162,7 @@ export async function createProject(input: CreateInput, ctx: CreateContext): Pro
     transform: async (stagingDir) => {
       await setPackageName(stagingDir, project.packageName);
       await createEnvFile(stagingDir);
+      if (input.noCredits) await removeCredits(stagingDir);
     }
   });
 

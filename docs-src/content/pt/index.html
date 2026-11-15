@@ -1,0 +1,29 @@
+<h1 tabindex="-1">QuickNode CLI</h1>
+<p class="answer">Para criar uma API Node.js com arquitetura limpa, rode <code>npx {{package}} create minha-api</code>: você recebe Express, TypeScript ou JavaScript, PostgreSQL, testes, lint e hooks do Git, já ligados nas camadas de domínio e infraestrutura.<span class="cursor" aria-hidden="true">_</span></p>
+<p>O {{package}} é uma CLI sem dependências para criar APIs Node.js com arquitetura limpa. A própria CLI é um único pacote npm feito só com APIs do Node.js: nada mais é baixado quando você a executa.</p>
+<pre class="term"><code>$ npx {{package}} create minha-api --typescript
+$ cd minha-api
+$ npm install
+$ npm run docker:up
+$ npm run dev</code></pre>
+
+<h2 id="what" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>O que vem no projeto?</h2>
+<ul class="list" role="list">
+  <li><span class="key">Arquitetura limpa:</span> entidades, interfaces de repositório e casos de uso em <code>src/domain</code>; Express, banco e logs em <code>src/infrastructure</code>. <a href="{{home}}structure/">Veja a estrutura</a>.</li>
+  <li><span class="key">Dois templates:</span> TypeScript (Express, TypeORM, class-validator, tsx) ou JavaScript (Express, Sequelize, <code>node --watch</code>).</li>
+  <li><span class="key">Pronto para rodar:</span> PostgreSQL em 127.0.0.1 via Docker Compose, Swagger em <code>/api-docs</code>, rota de saúde, logs estruturados com pino e cabeçalhos do helmet.</li>
+  <li><span class="key">Qualidade:</span> Jest, ESLint 10, Prettier, Husky 9 e commitlint, com um CRUD de exemplo e seus testes.</li>
+  <li><span class="key">Seguro por padrão:</span> nunca grava numa pasta não vazia sem <code>--force</code>, rejeita nomes inseguros, gera segredos aleatórios num <code>.env</code> ignorado pelo git e mostra o plano com <code>--dry-run</code>.</li>
+</ul>
+
+<h2 id="why" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Por que zero dependências?</h2>
+<p>Toda dependência de uma CLI é código rodando na sua máquina. O QuickNode usa só APIs do Node.js {{node}}+ (<code>util.parseArgs</code>, <code>util.styleText</code>, <code>readline</code>, <code>fs</code>), então o <code>npx</code> instala um único pacote pequeno, sem scripts de instalação. As versões são publicadas pelo GitHub Actions com provenance do npm, e cada uma pode ser rastreada até um commit. O raciocínio está no <a href="{{home}}adr/001/">ADR-001</a>.</p>
+
+<h2 id="next" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Por onde continuar?</h2>
+<ul class="list" role="list">
+  <li><a href="{{home}}start/">Primeiros passos</a>: requisitos e a primeira API em cinco passos.</li>
+  <li><a href="{{home}}commands/">Referência de comandos</a>: todos os comandos e flags.</li>
+  <li><a href="{{home}}tutorial/">Crie uma entidade e um caso de uso</a> nas camadas certas.</li>
+  <li><a href="{{home}}compare/">QuickNode, Nest CLI ou template manual?</a></li>
+</ul>
+<p>No terminal, <code>qn ui</code> abre estas páginas e <code>qn help create</code> mostra a mesma ajuda offline.</p>

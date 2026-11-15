@@ -8,15 +8,50 @@ export interface OptionSpec {
   type: 'boolean' | 'string';
   short?: string;
   description: string;
+  /** Closed list of accepted values (string options only). */
+  choices?: readonly string[];
+}
+
+export interface ArgumentSpec {
+  name: string;
+  description: string;
+  /** Closed list of accepted values. */
+  choices?: readonly string[];
 }
 
 export interface CommandSpec {
   name: string;
+  /** Other names that run the same command. */
+  aliases?: string[];
   summary: string;
   usage: string;
+  /** Positional argument, if the command takes one. */
+  argument?: ArgumentSpec;
   options: Record<string, OptionSpec>;
   examples: string[];
 }
+
+/**
+ * Pages of the documentation site that `qn ui <topic>` can open. Only these
+ * paths (relative to the fixed base URL) ever end up in a URL.
+ */
+export const DOCS_TOPICS = {
+  start: 'start/',
+  commands: 'commands/',
+  create: 'commands/#create',
+  ui: 'commands/#ui',
+  structure: 'structure/',
+  tutorial: 'tutorial/',
+  add: 'add/',
+  faq: 'faq/',
+  compare: 'compare/',
+  changelog: 'changelog/',
+  adr: 'adr/'
+} as const satisfies Record<string, string>;
+
+export type DocsTopic = keyof typeof DOCS_TOPICS;
+
+export const DOCS_LANGUAGES = ['en', 'pt'] as const;
 
 export const GLOBAL_OPTIONS: Record<string, OptionSpec> = {
   help: { type: 'boolean', short: 'h', description: 'Show help' },
@@ -27,6 +62,7 @@ export const GLOBAL_OPTIONS: Record<string, OptionSpec> = {
 export const COMMANDS: Record<string, CommandSpec> = {
   create: {
     name: 'create',
+    argument: { name: 'name', description: 'Project folder and package name ("." for the current directory)' },
     summary: 'Create a new project with clean architecture',
     usage: 'qn create [name] [options]',
     options: {
@@ -36,7 +72,8 @@ export const COMMANDS: Record<string, CommandSpec> = {
       yes: { type: 'boolean', short: 'y', description: 'Accept defaults without prompting (name, TypeScript)' },
       'dry-run': { type: 'boolean', description: 'Show what would be created without writing anything' },
       install: { type: 'boolean', description: 'Run npm install after creating the project' },
-      git: { type: 'boolean', description: 'Initialize a git repository' }
+      git: { type: 'boolean', description: 'Initialize a git repository' },
+      'no-credits': { type: 'boolean', description: 'Leave the "Generated with QuickNode" line out of the README' }
     },
     examples: [
       'qn create my-api',
@@ -45,11 +82,28 @@ export const COMMANDS: Record<string, CommandSpec> = {
       'qn create my-api --dry-run',
       'qn create my-api --yes --json'
     ]
+  },
+  ui: {
+    name: 'ui',
+    aliases: ['docs'],
+    summary: 'Open the documentation in the browser',
+    usage: 'qn ui [topic] [options]',
+    argument: { name: 'topic', description: 'Page to open', choices: Object.keys(DOCS_TOPICS) },
+    options: {
+      print: { type: 'boolean', short: 'p', description: 'Only print the link, do not open the browser' },
+      lang: { type: 'string', description: 'Language of the page (default: from LANG)', choices: DOCS_LANGUAGES }
+    },
+    examples: ['qn ui', 'qn docs create', 'qn ui structure --lang pt', 'qn ui faq --print']
   }
 };
 
+/** Command name for a name or alias ("docs" -> "ui"). */
+export function resolveCommand(name: string): CommandSpec | undefined {
+  return COMMANDS[name] ?? Object.values(COMMANDS).find((spec) => spec.aliases?.includes(name));
+}
+
 /** Legacy two-letter flags from v1, which util.parseArgs cannot express. */
-const LEGACY_FLAGS: Record<string, string> = { '-ts': '--typescript', '-js': '--javascript' };
+export const LEGACY_FLAGS: Record<string, string> = { '-ts': '--typescript', '-js': '--javascript' };
 
 /**
  * Best-effort --json detection for errors thrown before parsing succeeded
@@ -96,17 +150,34 @@ export function parseCommandLine(argv: string[]): ParsedArgs {
     const { values, positionals } = parse(first === 'help' ? rest : args, GLOBAL_OPTIONS, undefined);
     const json = Boolean(values.json);
     if (values.version && first !== 'help') return { kind: 'version', json };
-    return { kind: 'help', command: positionals[0], json };
+    const command = positionals[0];
+    return { kind: 'help', command: command === undefined ? undefined : (resolveCommand(command)?.name ?? command), json };
   }
 
-  const spec = COMMANDS[first];
+  const spec = resolveCommand(first);
   if (!spec) throw new UsageError(`Unknown command "${first}".`);
 
   const { values, positionals } = parse(rest, { ...GLOBAL_OPTIONS, ...spec.options }, spec.name);
   const json = Boolean(values.json);
   if (values.help) return { kind: 'help', command: spec.name, json };
   if (values.version) return { kind: 'version', json };
+  assertChoices(spec, positionals, values);
   return { kind: 'command', command: spec.name, positionals, values, json };
+}
+
+/** Rejects values outside the closed lists declared in the spec. */
+function assertChoices(spec: CommandSpec, positionals: string[], values: FlagValues): void {
+  const { argument } = spec;
+  const value = positionals[0];
+  if (argument?.choices && value !== undefined && !argument.choices.includes(value)) {
+    throw new UsageError(`Unknown ${argument.name} "${value}". Choose one of: ${argument.choices.join(', ')}.`, spec.name);
+  }
+  for (const [name, option] of Object.entries(spec.options)) {
+    const given = values[name];
+    if (option.choices && typeof given === 'string' && !option.choices.includes(given)) {
+      throw new UsageError(`Invalid value "${given}" for --${name}. Choose one of: ${option.choices.join(', ')}.`, spec.name);
+    }
+  }
 }
 
 type FlagValues = Record<string, boolean | string | undefined>;

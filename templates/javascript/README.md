@@ -262,3 +262,13 @@ This template follows Clean Architecture principles:
 ## 📄 License
 
 MIT License
+
+## 📚 Guide
+
+The [QuickNode guide](https://daksonc.github.io/QuickNode/structure/) explains each folder and layer, and [how to add an entity and a use case](https://daksonc.github.io/QuickNode/tutorial/). From the terminal: `npx @10565/quicknode-cli ui structure`.
+
+<!-- quicknode:credits -->
+---
+
+Generated with [QuickNode](https://daksonc.github.io/QuickNode/).
+<!-- /quicknode:credits -->

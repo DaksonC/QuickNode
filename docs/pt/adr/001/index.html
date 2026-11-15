@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <title>ADR-001: evolução, segurança e leveza do QuickNode CLI</title>
+  <meta name="description" content="O ADR-001 completo: diagnóstico da v1.1.1, os cinco princípios, as decisões D1 a D9 (zero dependências, templates seguros, supply chain, docs, SEO, agentes de IA) e o plano por fases.">
+  <link rel="canonical" href="https://daksonc.github.io/QuickNode/pt/adr/001/">
+  <link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/adr/001/">
+  <link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/adr/001/">
+  <link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/adr/001/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="QuickNode CLI">
+  <meta property="og:title" content="ADR-001: evolução, segurança e leveza do QuickNode CLI">
+  <meta property="og:description" content="O ADR-001 completo: diagnóstico da v1.1.1, os cinco princípios, as decisões D1 a D9 (zero dependências, templates seguros, supply chain, docs, SEO, agentes de IA) e o plano por fases.">
+  <meta property="og:url" content="https://daksonc.github.io/QuickNode/pt/adr/001/">
+  <meta property="og:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ADR-001: evolução, segurança e leveza do QuickNode CLI">
+  <meta name="twitter:description" content="O ADR-001 completo: diagnóstico da v1.1.1, os cinco princípios, as decisões D1 a D9 (zero dependências, templates seguros, supply chain, docs, SEO, agentes de IA) e o plano por fases.">
+  <meta name="twitter:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta name="twitter:image:alt" content="Tela de terminal preta com texto verde: QuickNode CLI, crie APIs Node.js com arquitetura limpa.">
+
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../../../assets/fonts/VT323-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../../../assets/css/site.css">
+  <link rel="stylesheet" href="../../../assets/css/docs.css">
+  <script src="../../../assets/js/theme.js"></script>
+  <script src="../../../assets/js/qn-data.js" defer></script>
+  <script src="../../../assets/js/docs.js" defer></script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "ADR-001",
+      "name": "ADR-001: evolução, segurança e leveza do QuickNode CLI",
+      "description": "O ADR-001 completo: diagnóstico da v1.1.1, os cinco princípios, as decisões D1 a D9 (zero dependências, templates seguros, supply chain, docs, SEO, agentes de IA) e o plano por fases.",
+      "url": "https://daksonc.github.io/QuickNode/pt/adr/001/",
+      "inLanguage": "pt-BR",
+      "dateModified": "2026-11-14",
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      },
+      "about": {
+        "@id": "https://daksonc.github.io/QuickNode/#software"
+      },
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://daksonc.github.io/QuickNode/#software",
+      "name": "QuickNode CLI",
+      "alternateName": "@10565/quicknode-cli",
+      "description": "CLI sem dependências para criar APIs Node.js com arquitetura limpa",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Windows, macOS, Linux",
+      "softwareRequirements": "Node.js 22.13+",
+      "softwareVersion": "2.0.0",
+      "license": "https://opensource.org/licenses/MIT",
+      "url": "https://daksonc.github.io/QuickNode/",
+      "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "installUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "sameAs": [
+        "https://www.npmjs.com/package/@10565/quicknode-cli",
+        "https://github.com/DaksonC/QuickNode"
+      ],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Início",
+          "item": "https://daksonc.github.io/QuickNode/pt/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "ADRs",
+          "item": "https://daksonc.github.io/QuickNode/pt/adr/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "ADR-001",
+          "item": "https://daksonc.github.io/QuickNode/pt/adr/001/"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+</head>
+<body id="top">
+  <a class="skip" href="#main">Pular para o conteúdo</a>
+
+  <header class="wrap site-header">
+    <p class="title"><a href="../../" class="home"><span aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Documentação do QuickNode CLI, início</span></a></p>
+    <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="header-panel">[MENU]</button>
+
+    <div class="panel" id="header-panel">
+      <div class="controls">
+        <ul class="lang" role="list" aria-label="Idioma">
+          <li><a href="../../../adr/001/" hreflang="en" lang="en">[EN]<span class="sr-only"> English</span></a></li>
+          <li><a href="./" hreflang="pt-BR" lang="pt-BR" aria-current="page">[PT]<span class="sr-only"> Português</span></a></li>
+        </ul>
+        <button type="button" id="fx-toggle" hidden>[FX: <span id="fx-state">ON</span>]<span class="sr-only"> efeitos visuais e animação</span></button>
+        <button type="button" id="theme-toggle" hidden>[<span id="theme-state">LIGHT</span>]<span class="sr-only" id="theme-hint"> mudar para o tema claro</span></button>
+      </div>
+
+      <nav class="menu" aria-label="Documentação">
+        <ul>
+          <li><a href="../../start/">[start]</a></li>
+          <li><a href="../../commands/">[commands]</a></li>
+          <li><a href="../../structure/">[structure]</a></li>
+          <li><a href="../../tutorial/">[tutorial]</a></li>
+          <li><a href="../../add/">[add]</a></li>
+          <li><a href="../../faq/">[faq]</a></li>
+          <li><a href="../../compare/">[compare]</a></li>
+          <li><a href="../../changelog/">[changelog]</a></li>
+          <li><a href="../../adr/" aria-current="true">[adr]</a></li>
+        </ul>
+      </nav>
+
+      <section class="cli-wrap" id="cli-wrap" aria-label="Linha de comando opcional. Digite help para listar os comandos." hidden>
+        <form class="cli" id="cli">
+          <label for="cli-input"><span class="prompt" aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Linha de comando opcional. Digite help para listar os comandos.</span></label>
+          <input id="cli-input" name="command" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="digite help">
+        </form>
+        <div class="cli-output" id="cli-output" role="log" aria-live="polite" aria-label="Saída dos comandos"></div>
+      </section>
+    </div>
+
+    <span class="sr-only" role="status" id="status"></span>
+  </header>
+
+  <main id="main" class="wrap" tabindex="-1">
+    <nav aria-label="Trilha de navegação"><ol class="crumbs" role="list"><li><a href="../../">Início</a></li><li><a href="../../adr/">ADRs</a></li><li aria-current="page">ADR-001</li></ol></nav>
+    <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui</p>
+    <p class="meta">Atualizado em <time datetime="2026-11-14">2026-11-14</time> · válido para a v2.x</p>
+<h1 tabindex="-1">ADR-001 — Evolução, segurança e leveza do QuickNode CLI</h1>
+<p class="answer">O ADR-001 decide que o QuickNode CLI não terá dependências de runtime, vai gerar projetos seguros por padrão, será publicado com procedência verificável e ganhará este site de documentação bilíngue, em fases da v1.2.0 à v3.</p>
+<p class="dim">Status: Proposto · Pacote: @10565/quicknode-cli v1.1.1 · Escopo: CLI qn, templates gerados e documentação</p>
+<p class="note">Versão original. Há uma <a href="../../../adr/001/" hreflang="en" lang="en">English translation</a>.</p>
+<h2 id="s1" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1. Contexto</h2>
+<p>O QuickNode CLI inicializa projetos Node.js com arquitetura limpa (camadas domain e infrastructure) e ferramentas já configuradas. Hoje oferece um único comando, qn create [nome] [-ts|-js], que copia um de dois templates:</p>
+<ul class="list" role="list">
+  <li>TypeScript: Express, TypeORM, class-validator, Swagger, pino, helmet, Jest, ESLint/Prettier, Husky + commitlint, Postgres via docker-compose.</li>
+  <li>JavaScript: a mesma base com Sequelize no lugar do TypeORM.</li>
+</ul>
+<p>A última versão (1.1.1) é de 28/09/2025. A visão do projeto vai além do scaffolding: ter comandos que configurem automaticamente ferramentas consolidadas no mercado. Antes de crescer em funcionalidades, a lib precisa de uma base segura e leve, que é o motivo deste ADR.</p>
+<h2 id="s2" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2. Diagnóstico (verificado em 13/11/2026)</h2>
+<p>O pacote publicado foi baixado, instalado com --ignore-scripts, executado e auditado.</p>
+<div class="scroll" role="region" aria-label="Tabela: 2. Diagnóstico (verificado em 13/11/2026)" tabindex="0">
+<table>
+  <thead><tr><th scope="col">Área</th><th scope="col">Achado</th><th scope="col">Impacto</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Dependências de runtime</th><td>6 diretas (chalk, commander, figlet, fs-extra, inquirer, ora) puxam 56 pacotes e 39 MB em node_modules. Só o figlet ocupa 22 MB e o rxjs (via inquirer) 12 MB.</td><td>npx lento e grande superfície de supply chain para desenhar um banner e fazer duas perguntas.</td></tr>
+    <tr><th scope="row">Tamanho do pacote</th><td>139 arquivos, 1,6 MB descompactado. Os templates estão duplicados (/templates e /dist/templates, 1,1 MB cada). Testes compilados vão em dist/__tests__.</td><td>Download e instalação desnecessariamente pesados.</td></tr>
+    <tr><th scope="row">Projetos gerados</th><td>Os templates trazem package-lock.json congelados (287 KB e 430 KB). npm audit sobre eles: TS = 45 vulnerabilidades (3 críticas, 25 altas); JS = 31 (1 crítica, 14 altas).</td><td>Todo projeto novo já nasce vulnerável. É o risco mais grave hoje.</td></tr>
+    <tr><th scope="row">Sobrescrita silenciosa</th><td>qn create demo sobre uma pasta existente sobrescreveu o README.md do usuário sem aviso (testado). Com . o template é copiado por cima do diretório atual.</td><td>Perda de dados do usuário.</td></tr>
+    <tr><th scope="row">Validação de nome</th><td>qn create ../escaped criou o projeto fora do diretório atual (testado). O nome não é validado e vai direto para o package.json.</td><td>Path traversal e package.json inválido.</td></tr>
+    <tr><th scope="row">Segredos padrão</th><td>docker-compose.yml e .env.example usam password e your-super-secure-jwt-secret-key; Postgres publicado em 5432 em todas as interfaces.</td><td>Credenciais fracas que costumam chegar a ambientes reais.</td></tr>
+    <tr><th scope="row">Supply chain da publicação</th><td>Sem provenance (só a assinatura padrão do registry), sem SBOM, script prepare: husky install no pacote publicado.</td><td>Não é possível provar que o tarball veio do repositório.</td></tr>
+    <tr><th scope="row">Manutenção</th><td>main aponta para dist/index.js, que não existe; arquivo órfão user-routes-new.js; ESLint 8 (sem suporte), Husky 8 (atual 9), Commander 11 (atual 15), Inquirer 9 (atual 14); engines: &gt;=18, mas Node 18 e 20 já saíram de suporte.</td><td>Dívida técnica e configurações desatualizadas propagadas aos usuários.</td></tr>
+    <tr><th scope="row">Ponto positivo</th><td>npm audit da própria CLI: 0 vulnerabilidades; código ESM e TypeScript; lógica de create pequena (~100 linhas).</td><td>A reescrita é barata.</td></tr>
+  </tbody>
+</table>
+</div>
+<h2 id="s3" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3. Decisão</h2>
+<p>Adotar cinco princípios que valem para toda mudança futura e executar as decisões D1 a D9.</p>
+<h3 id="principles" tabindex="-1">Princípios</h3>
+<ul class="list" role="list">
+  <li>Zero dependências de runtime. Qualquer exceção exige um ADR próprio com justificativa, tamanho e histórico de manutenção do pacote.</li>
+  <li>Seguro por padrão. Nada destrutivo, nenhum segredo fixo, nenhum script executado sem opt-in.</li>
+  <li>Não destrutivo e previsível. O mesmo comando com as mesmas entradas gera o mesmo resultado; --dry-run mostra o que vai acontecer.</li>
+  <li>Templates como dados vivos. Os templates são testados e auditados no CI como se fossem produtos.</li>
+  <li>Cadeia de suprimentos verificável. Toda versão publicada é rastreável até um commit e um build de CI.</li>
+</ul>
+<h3 id="d1" tabindex="-1">D1 — Substituir todas as dependências por APIs nativas do Node</h3>
+<p>Exigir node &gt;= 22 (LTS) e trocar:</p>
+<div class="scroll" role="region" aria-label="Tabela: D1 — Substituir todas as dependências por APIs nativas do Node" tabindex="0">
+<table>
+  <thead><tr><th scope="col">Hoje</th><th scope="col">Substituto nativo</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">commander</th><td>util.parseArgs (node:util)</td></tr>
+    <tr><th scope="row">chalk</th><td>util.styleText, respeitando NO_COLOR e saída não-TTY</td></tr>
+    <tr><th scope="row">figlet</th><td>Banner ASCII estático já pré-renderizado (a função createSimpleBanner já existe)</td></tr>
+    <tr><th scope="row">fs-extra</th><td>fs/promises: cp, mkdir, readFile, writeFile, rename</td></tr>
+    <tr><th scope="row">inquirer</th><td>readline/promises para texto, confirmação e escolha numerada</td></tr>
+    <tr><th scope="row">ora</th><td>Mensagens de etapa simples ou um spinner próprio de poucas linhas</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Se no futuro for necessária uma UX mais rica (seleção com setas, multi-select), avaliar uma única dependência pequena e sem dependências transitivas, via ADR.</p>
+<h3 id="d2" tabindex="-1">D2 — Proteções no comando create</h3>
+<ul class="list" role="list">
+  <li>Validar o nome com as regras de nome de pacote do npm (minúsculas, até 214 caracteres, sem /, \, .. ou caminho absoluto) e garantir que o diretório resolvido fique dentro do diretório atual.</li>
+  <li>Recusar diretório não vazio (ignorando .git), a menos que o usuário passe --force; com ., listar os arquivos em conflito antes de qualquer escrita.</li>
+  <li>Gerar o projeto em diretório temporário e mover no final, para não deixar projeto pela metade em caso de erro.</li>
+  <li>Copiar sem seguir symlinks e garantir no CI que os templates não contenham symlinks.</li>
+  <li>npm install e git init só com opt-in explícito (--install, --git), executados com spawn sem shell.</li>
+</ul>
+<h3 id="d3" tabindex="-1">D3 — Templates seguros e enxutos</h3>
+<ul class="list" role="list">
+  <li>Remover os package-lock.json dos templates; o lock é criado no primeiro npm install do usuário com versões atuais.</li>
+  <li>Manter as versões dos templates atualizadas por Dependabot/Renovate e falhar o CI se o projeto gerado tiver vulnerabilidade alta ou crítica.</li>
+  <li>Gerar no .env local (ignorado pelo git) um JWT_SECRET e uma senha de banco aleatórios com crypto.randomBytes; o .env.example fica só com placeholders.</li>
+  <li>Publicar o Postgres em 127.0.0.1:5432 no docker-compose.</li>
+  <li>Atualizar ferramentas: ESLint 9 (flat config), Husky 9, engines: &gt;=22; avaliar Express 5.</li>
+  <li>Reduzir devDependencies dos templates usando recursos nativos: node --watch no lugar de nodemon, node --env-file no lugar de dotenv; avaliar node:test e a remoção de tipos nativa do Node para TypeScript.</li>
+  <li>Remover arquivos órfãos (user-routes-new.js).</li>
+</ul>
+<h3 id="d4" tabindex="-1">D4 — Pacote publicado enxuto</h3>
+<ul class="list" role="list">
+  <li>Templates em um único lugar, resolvidos a partir da raiz do pacote (sem copiar para dist).</li>
+  <li>Campo files sem testes compilados e sem .d.ts desnecessários; corrigir ou remover main; tirar o prepare do pacote publicado.</li>
+  <li>Orçamento de tamanho no CI: falhar se npm pack --dry-run passar de 300 KB descompactado.</li>
+</ul>
+<h3 id="d5" tabindex="-1">D5 — Cadeia de suprimentos</h3>
+<ul class="list" role="list">
+  <li>Publicar apenas pelo GitHub Actions com Trusted Publishing (OIDC) e --provenance; 2FA obrigatório na conta e nenhum token de longa duração.</li>
+  <li>CI com npm ci, lint, testes, npm audit, npm audit signatures; actions fixadas por SHA; OpenSSF Scorecard.</li>
+  <li>SECURITY.md com canal de reporte e política de versões suportadas.</li>
+</ul>
+<h3 id="d6" tabindex="-1">D6 — Evolução funcional</h3>
+<p>Regra geral: priorizar comandos que ajudam no dia a dia de quem já criou o projeto, em vez de multiplicar variações do create. Toda opção nova precisa caber na matriz de testes do CI (D5) e manter o princípio 1. Todos os comandos que escrevem arquivos aceitam --dry-run, não sobrescrevem sem --force e respeitam o modo CI (--yes, --json).</p>
+<h4>Comandos novos (prioridade alta)</h4>
+<ul class="list" role="list">
+  <li>qn generate &lt;tipo&gt; &lt;nome&gt; (atalho qn g): gera os arquivos de uma funcionalidade já nas camadas corretas. qn g crud product cria entidade, caso de uso, interface e implementação do repositório, controller, rota e teste, todos ligados. Tipos: crud, entity, usecase, repository, controller. Opções: --only &lt;tipo&gt;, --no-test, --dry-run. É o que faz a arquitetura limpa se manter no projeto depois do create.</li>
+  <li>qn check: valida a regra de dependência da arquitetura limpa. Lê os imports (sem dependências, só com fs e análise simples de import/require) e falha se, por exemplo, domain importar infrastructure, Express ou ORM. Saída legível e --json; código de saída diferente de zero para uso em CI e no pre-commit. É um diferencial da lib em relação a outros scaffolders.</li>
+  <li>Instruções para agentes de IA no projeto gerado: um AGENTS.md (com cópia em CLAUDE.md) descrevendo as camadas, a regra de dependência, como rodar testes, lint e qn check, e como usar qn generate. Assim, assistentes como Copilot e Claude Code respeitam a arquitetura. Também disponível em projetos existentes via qn add agents.</li>
+  <li>qn add &lt;recurso&gt;: aplica de forma idempotente uma ferramenta a um projeto existente, com --dry-run mostrando o diff. É a realização da visão de "comandos que configuram ferramentas". Receitas:</li>
+  <li>Já previstas: docker, eslint, husky (com commitlint), swagger, github-actions, tests.</li>
+  <li>Novas: auth (JWT com segredo vindo do .env), healthcheck (rotas de saúde e prontidão), ci (GitHub Actions com lint, testes, qn check e npm audit), docker em etapas rodando sem root, graceful-shutdown, rate-limit e agents.</li>
+  <li>qn doctor: verifica versão do Node, .env, Docker, vulnerabilidades do projeto e roda o qn check.</li>
+</ul>
+<h4>Comandos novos (segundo momento)</h4>
+<ul class="list" role="list">
+  <li>quicknode.json no projeto gerado: registra as escolhas do create (banco, gerenciador de pacotes, versão do template, pastas de cada camada). qn add, qn generate, qn check e qn upgrade leem esse arquivo para saber como o projeto está organizado. Permite presets: qn create --preset api-minima ou um preset local em JSON, validado antes do uso.</li>
+  <li>qn upgrade: aplica num projeto existente as melhorias de uma versão nova do template. Usa o quicknode.json e o hash dos arquivos gerados para separar o que o usuário alterou; arquivos não alterados são atualizados, arquivos alterados recebem um diff para revisão manual. Sempre com --dry-run e nunca sobrescreve sem confirmação. É o item mais complexo da lista.</li>
+  <li>qn env: compara .env com .env.example, lista variáveis faltando ou sobrando e gera segredos com crypto.randomBytes (qn env --generate-secrets). Nunca imprime os valores dos segredos.</li>
+</ul>
+<h4>Opções de configuração no create</h4>
+<div class="scroll" role="region" aria-label="Tabela: Opções de configuração no create" tabindex="0">
+<table>
+  <thead><tr><th scope="col">Opção</th><th scope="col">Valores</th><th scope="col">Quando</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">--db</th><td>postgres, sqlite, none</td><td>Com os templates modulares (base mínima + add-ons)</td></tr>
+    <tr><th scope="row">--pm</th><td>npm, pnpm, yarn</td><td>Barato de manter</td></tr>
+    <tr><th scope="row">--test</th><td>jest, node</td><td>Barato de manter; node usa o node:test nativo</td></tr>
+    <tr><th scope="row">--http</th><td>express, fastify</td><td>Só com demanda real; dobra a matriz de testes</td></tr>
+    <tr><th scope="row">--orm</th><td>typeorm, prisma, none</td><td>Só com demanda real; adicionar um eixo por vez</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Comportamento geral</h4>
+<ul class="list" role="list">
+  <li>Modo CI: --yes (sem prompts), --json na saída, sem banner quando não for TTY. Banner e link de doação só em --help ou na primeira execução.</li>
+  <li>Sem telemetria.</li>
+  <li>Fora do escopo: templates de front-end, suporte a muitos bancos e monorepos. Puxam dependências e transformam a lib em outro produto.</li>
+</ul>
+<h3 id="d7" tabindex="-1">D7 — Documentação e interface de uso, com a identidade do site pessoal</h3>
+<p>O dev precisa de um lugar claro para aprender a usar a lib e o projeto gerado. Essa interface fica fora do pacote npm, para não ferir os princípios 1 e 2, e segue a mesma identidade visual e as mesmas regras técnicas do site pessoal profissional (daksonc.github.io), para que o projeto seja reconhecido como parte do mesmo portfólio.</p>
+<h4>Onde fica e como é construída</h4>
+<ul class="list" role="list">
+  <li>Site estático em docs/ no repositório do QuickNode, publicado pelo GitHub Pages. Como o site pessoal já é daksonc.github.io, a documentação fica naturalmente em daksonc.github.io/QuickNode/, no mesmo domínio.</li>
+  <li>Mesma arquitetura do site pessoal: HTML, CSS e JavaScript puros, sem framework, sem etapa de build obrigatória e sem recursos de terceiros (nada de CDN, Google Fonts ou analytics). Isso também cumpre o princípio 1 na documentação.</li>
+  <li>A referência de comandos é gerada por um script Node próprio, sem dependências, a partir da mesma definição usada pelo parseArgs, para a documentação nunca divergir da CLI. O HTML gerado é commitado.</li>
+  <li>Orçamento igual ao do site: cada página com menos de 100 KB (sem contar a fonte).</li>
+</ul>
+<h4>Identidade visual (tokens do site pessoal)</h4>
+<div class="scroll" role="region" aria-label="Tabela: Identidade visual (tokens do site pessoal)" tabindex="0">
+<table>
+  <thead><tr><th scope="col">Elemento</th><th scope="col">Tema escuro (padrão)</th><th scope="col">Tema claro ("impressão matricial")</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Fundo</th><td>#000</td><td>#f4f1e6</td></tr>
+    <tr><th scope="row">Texto</th><td>#33ff66 (verde terminal)</td><td>#1a1a1a</td></tr>
+    <tr><th scope="row">Texto secundário</th><td>#22b24a</td><td>#5c5c5c</td></tr>
+    <tr><th scope="row">Destaque e links</th><td>#ffc94d (âmbar)</td><td>#7a4a00</td></tr>
+    <tr><th scope="row">Fonte</th><td>VT323 (licença OFL), servida localmente; fallback ui-monospace, Consolas, Courier New</td><td>Igual</td></tr>
+  </tbody>
+</table>
+</div>
+<ul class="list" role="list">
+  <li>Visual de terminal DOS: prompt no cabeçalho (ex.: C:\QUICKNODE&gt;), botões e seletores entre colchetes ([MENU], [EN], [PT]), títulos de seção com linha tracejada, listas com o marcador &gt;  e blocos de código como saída de terminal.</li>
+  <li>Acessibilidade WCAG 2.2 AA, como no site: contraste mínimo de 4,5:1 nos dois temas, foco visível com inversão verde/preto, lang correto e conteúdo legível a 320 px.</li>
+  <li>Efeitos CRT (brilho e scanlines) ligados por padrão ([FX: ON]), com [FX: OFF] para desligar (a escolha fica salva); apenas no tema escuro, e as animações param com prefers-reduced-motion.</li>
+  <li>Bilíngue EN/PT, com a mesma estrutura de páginas e seletor de idioma do site; tema claro/escuro salvo antes da primeira pintura, sem "flash".</li>
+  <li>Linha de comando opcional na página, como no site, simulando qn --help, qn create, qn add e qn ui para o dev experimentar antes de instalar. É melhoria progressiva: a página funciona inteira sem JavaScript.</li>
+  <li>Coerência no terminal: a própria CLI usa a mesma lógica de cores via util.styleText (verde para sucesso, âmbar para destaques e links) e o banner ASCII segue o mesmo estilo.</li>
+  <li>Os tokens são copiados para docs/assets/css/ com um comentário apontando a origem, em vez de importados do repositório do site, para que os dois projetos publiquem de forma independente.</li>
+</ul>
+<h4>Conteúdo mínimo</h4>
+<ul class="list" role="list">
+  <li>Primeiros passos; referência de cada comando e flag; estrutura do projeto gerado e o papel de cada camada da arquitetura limpa; como criar uma nova entidade e caso de uso; receitas do qn add; perguntas frequentes; os ADRs publicados.</li>
+  <li>Ajuda offline no terminal: qn help &lt;comando&gt; e qn &lt;comando&gt; --help, sempre com exemplos.</li>
+  <li>qn ui [tópico] (apelido: qn docs [tópico]): abre o navegador do usuário na página da documentação. Regras:</li>
+  <li>URL fixa: base <a href="https://daksonc.github.io/QuickNode/;" rel="noopener noreferrer">https://daksonc.github.io/QuickNode/;</a> o tópico só escolhe uma entrada de uma lista fechada (ex.: start, create, add). Nenhum texto digitado pelo usuário entra na URL, o que impede redirecionamento para outro site.</li>
+  <li>Abertura nativa, sem shell: spawn com argumentos em lista, usando o programa do sistema: open (macOS), explorer.exe (Windows; nunca cmd /c start, que interpreta &amp;) e xdg-open (Linux). Processo detached e unref, para a CLI terminar na hora.</li>
+  <li>Link sempre impresso no terminal. Em CI, SSH, contêiner ou saída não interativa, o comando só imprime o link e não tenta abrir nada; a opção --print força esse comportamento.</li>
+  <li>Falha silenciosa: se não houver programa para abrir links, o link impresso basta e o comando termina com sucesso.</li>
+  <li>Zero dependências: nada de pacotes como open.</li>
+  <li>Projeto gerado com README contendo o mapa das pastas e links para o guia.</li>
+</ul>
+<p>Fora do escopo: servidor web ou UI embutida na CLI. O qn ui apenas abre a documentação publicada; ele nunca sobe servidor local, abre porta ou adiciona dependências ao pacote. Uma UI local só seria reavaliada, via ADR próprio, se surgir demanda real (por exemplo, um assistente visual de criação de projeto).</p>
+<h3 id="d8" tabindex="-1">D8 — SEO e descoberta da lib</h3>
+<p>Objetivo: fazer a lib ser encontrada por quem busca soluções de scaffolding e arquitetura limpa em Node.js, sem telemetria e sem recursos de terceiros.</p>
+<h4>No site de documentação</h4>
+<ul class="list" role="list">
+  <li>Metadados por página: &lt;title&gt; e meta description únicos, link rel="canonical" e hreflang EN/PT (com x-default), no mesmo padrão do site pessoal.</li>
+  <li>Compartilhamento: Open Graph e Twitter Card com imagem de prévia (1200×630) no visual de terminal da D7.</li>
+  <li>Dados estruturados (JSON-LD): SoftwareApplication na página inicial (nome, descrição, licença, link do npm e do repositório) e BreadcrumbList nas páginas internas.</li>
+  <li>Sitemap e robots: sitemap.xml próprio em daksonc.github.io/QuickNode/sitemap.xml. Como o robots.txt só vale na raiz do domínio, que pertence ao repositório do site pessoal, o sitemap do QuickNode é referenciado no robots.txt do site pessoal. Verificação do domínio daksonc.github.io no Google Search Console cobre os dois.</li>
+  <li>Conteúdo orientado a busca: páginas e tutoriais, em EN e PT, para intenções como "Node.js clean architecture boilerplate", "Express + TypeScript com arquitetura limpa", "como criar um caso de uso" e "como validar a regra de dependência"; changelog público por versão.</li>
+  <li>Rastreabilidade: todo o conteúdo está no HTML; o simulador de terminal e os efeitos são só melhoria progressiva. URLs limpas e estáveis por tópico (as mesmas usadas pelo qn ui).</li>
+  <li>Desempenho: limite de 100 KB por página, preload da fonte e font-display: swap; meta de Lighthouse &gt; 95 em SEO, desempenho e acessibilidade.</li>
+  <li>Opcional: llms.txt com o resumo da documentação, para buscadores e assistentes com IA.</li>
+</ul>
+<h4>SEO para buscadores com IA</h4>
+<p>Além dos buscadores tradicionais, a documentação deve ser fácil de ler, entender e citar por buscadores e assistentes com IA (ChatGPT, Claude, Perplexity, respostas com IA do Google). Complementa o llms.txt, as páginas em .md e o posicionamento definidos na D9.</p>
+<ul class="list" role="list">
+  <li>Robôs de IA no robots.txt: permitir explicitamente os rastreadores de IA (ex.: GPTBot, ClaudeBot, PerplexityBot e Google-Extended) para que a documentação possa ser lida e citada. Como o robots.txt fica na raiz do domínio, no repositório do site pessoal, a regra vale para os dois sites e é registrada também lá.</li>
+  <li>Conteúdo em formato de resposta: cada página começa com uma frase que responde diretamente à pergunta principal (ex.: "Para criar uma API Node.js com arquitetura limpa, rode npx @10565/quicknode-cli create minha-api"), usa títulos em forma de pergunta e passos numerados, para facilitar a extração de trechos.</li>
+  <li>Datas e versões visíveis: cada página mostra "atualizado em" e a versão a que se aplica (ex.: "válido para a v2.x"), também no JSON-LD (dateModified, softwareVersion), para sinalizar que a fonte está atual.</li>
+  <li>Fatos consistentes em todos os canais: nome, comando de instalação, versão atual e frase de posicionamento idênticos no npm, no GitHub, na documentação e em artigos externos. Informação contraditória entre fontes leva modelos a errar ou deixar de recomendar a lib.</li>
+  <li>Página de comparação honesta: quando usar o QuickNode, o Nest CLI ou um template manual, com critérios objetivos, já que perguntas comparativas são frequentes em assistentes de IA.</li>
+  <li>Limite conhecido: a otimização para buscadores com IA ainda é recente e muda rápido; esses itens aumentam a chance de citação, mas não a garantem, e não há ferramenta equivalente ao Search Console para medi-la. O acompanhamento é feito com consultas periódicas a assistentes de IA (ex.: "como criar uma API Node.js com arquitetura limpa"), registrando se a lib aparece e se os dados citados estão corretos.</li>
+</ul>
+<h4>No npm e no GitHub</h4>
+<ul class="list" role="list">
+  <li>package.json: description objetiva; keywords ampliadas (scaffold, generator, boilerplate, clean-architecture, express, typescript-template, nodejs); homepage apontando para a documentação; repository e bugs corretos.</li>
+  <li>Sinais de qualidade do npm: provenance, testes, releases frequentes e zero dependências (D1 a D5) também melhoram a posição na busca do npm.</li>
+  <li>GitHub: descrição e topics no repositório, campo "Website" com o link da documentação, imagem de prévia social, releases com notas e README que abre com um GIF do qn create e o comando de instalação.</li>
+  <li>npm create quicknode: o apelido create-quicknode (seção 4) também é um canal de descoberta.</li>
+  <li>Crédito nos projetos gerados: uma linha "Gerado com QuickNode" com link no README do projeto, removível com --no-credits. Nunca em código, cabeçalhos HTTP ou respostas da API.</li>
+</ul>
+<h4>Fora do código</h4>
+<ul class="list" role="list">
+  <li>Divulgação técnica: artigo do TCC (quando publicado) citando a lib como referência acadêmica; artigos no dev.to e no LinkedIn mostrando qn check e qn generate.</li>
+</ul>
+<p>Fora do escopo: analytics, pixels de rastreamento ou qualquer coleta de dados de visitantes, coerente com a regra de "sem telemetria" e "sem recursos de terceiros".</p>
+<h3 id="d9" tabindex="-1">D9 — Experiência para agentes de IA</h3>
+<p>LLMs e agentes de código (Claude Code, Copilot, Cursor e similares) passam a sugerir, instalar e operar a lib no lugar do dev. A experiência do agente é tratada como experiência de usuário de primeira classe: o agente precisa descobrir o que a lib faz, executá-la sem travar, entender erros e produzir código que respeite a arquitetura, sempre com a pessoa no controle das ações que alteram arquivos.</p>
+<h4>CLI operável por agentes</h4>
+<ul class="list" role="list">
+  <li>Nunca bloquear: todo prompt interativo tem uma flag equivalente. Sem TTY (agente, CI, pipe), o qn nunca pergunta: usa os padrões declarados ou falha imediatamente informando qual flag falta.</li>
+  <li>Autodescrição: qn schema (e qn --help --json) devolve a especificação completa de comandos, flags, valores aceitos e padrões em JSON, gerada da mesma definição usada pelo parseArgs e pela documentação (D7). O agente descobre o que existe em vez de inventar flags.</li>
+  <li>Erros acionáveis: todo erro tem código estável, mensagem curta e sugestão de correção, inclusive em --json (ex.: {"code":"E_DIR_NOT_EMPTY","message":"…","fix":"qn create minha-api --force"}). Os códigos e os códigos de saída ficam documentados.</li>
+  <li>Plano antes de agir: --dry-run --json devolve a lista de arquivos a criar, alterar ou remover, para o agente mostrar à pessoa antes de aplicar.</li>
+  <li>Saída estável: o formato JSON é versionado; mudanças incompatíveis só em versão major.</li>
+</ul>
+<h4>Servidor MCP</h4>
+<ul class="list" role="list">
+  <li>Expor create, generate, add, check, doctor e schema como ferramentas MCP (Model Context Protocol), para assistentes chamarem a lib de forma estruturada em vez de montar comandos de shell.</li>
+  <li>Distribuído como pacote separado (@10565/quicknode-mcp) ou implementado com JSON-RPC mínimo sobre stdio, sem SDK, para manter o princípio 1 no pacote principal.</li>
+  <li>Segurança: atua apenas dentro do diretório do projeto; sem acesso à rede; dry-run como padrão; escrita só com parâmetro explícito de confirmação; nunca executa comandos arbitrários.</li>
+</ul>
+<h4>Documentação legível por LLMs</h4>
+<ul class="list" role="list">
+  <li>llms.txt (índice) e llms-full.txt (conteúdo completo) na raiz da documentação; cada página também disponível em Markdown na mesma URL com .md.</li>
+  <li>Página "Para agentes de IA" com comandos exatos, não interativos e com versão fixada (ex.: npx @10565/quicknode-cli@2 create minha-api --typescript --db postgres --yes), fluxo recomendado e códigos de erro.</li>
+  <li>Página "Quando usar e quando não usar", com critérios claros, para que modelos recomendem a lib só nos contextos certos.</li>
+  <li>Posicionamento único repetido no npm, no README, no GitHub e na documentação: "CLI sem dependências para criar APIs Node.js com arquitetura limpa".</li>
+</ul>
+<h4>Proteção contra alucinação e confusão de nome</h4>
+<ul class="list" role="list">
+  <li>"QuickNode" também é o nome de um provedor de infraestrutura blockchain. README e documentação trazem um aviso explícito ("não confundir com…") e o nome completo do pacote com escopo em todos os exemplos.</li>
+  <li>Reservar nomes próximos no npm (create-quicknode e variações sem escopo) para evitar typosquatting de pacotes que LLMs possam sugerir por engano.</li>
+  <li>Instalação segura mesmo sem revisão humana: nenhum script de ciclo de vida (preinstall, postinstall), nenhum download durante a geração e provenance para verificar a origem (D5).</li>
+  <li>Templates e documentação nunca contêm instruções direcionadas a agentes fora do escopo do projeto, para não abrir espaço para prompt injection.</li>
+</ul>
+<h4>Projeto gerado pronto para IA</h4>
+<ul class="list" role="list">
+  <li>O AGENTS.md (D6) orienta o agente a preferir qn generate a escrever estrutura à mão, a rodar qn check e os testes após cada mudança e a registrar decisões em docs/adr/.</li>
+  <li>qn check e testes funcionam como trilhos: feedback imediato e determinístico para o agente corrigir o próprio código.</li>
+  <li>Pasta docs/adr/ com um modelo de ADR no projeto gerado, para que decisões de arquitetura fiquem registradas e sejam respeitadas por pessoas e agentes.</li>
+</ul>
+<h4>Avaliação contínua com agentes</h4>
+<ul class="list" role="list">
+  <li>Bateria de tarefas reais executadas periodicamente por agentes (ex.: "crie uma API com Postgres e um CRUD de produto", "adicione autenticação JWT"), medindo taxa de sucesso sem intervenção humana, flags inventadas e violações apontadas pelo qn check.</li>
+</ul>
+<p>Fora do escopo: chamar LLMs a partir da CLI, embutir chaves de API ou enviar código do usuário para serviços externos. A lib se torna fácil de usar por agentes, mas continua offline e sem telemetria.</p>
+<h2 id="s4" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>4. Alternativas consideradas</h2>
+<div class="scroll" role="region" aria-label="Tabela: 4. Alternativas consideradas" tabindex="0">
+<table>
+  <thead><tr><th scope="col">Alternativa</th><th scope="col">Decisão</th><th scope="col">Motivo</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Manter as dependências e apenas atualizar versões</th><td>Rejeitada</td><td>Mantém os 56 pacotes e a superfície de ataque.</td></tr>
+    <tr><th scope="row">Trocar por libs menores (picocolors, cac, @clack/prompts)</th><td>Plano B</td><td>Reduz o peso, mas continua dependendo de terceiros; fica como exceção possível via ADR.</td></tr>
+    <tr><th scope="row">Baixar templates de um repositório remoto (estilo degit/giget)</th><td>Rejeitada</td><td>Exige rede, abre um ponto de supply chain no momento da geração e perde reprodutibilidade e uso offline.</td></tr>
+    <tr><th scope="row">Publicar também como create-quicknode (npm create quicknode)</th><td>A avaliar</td><td>Melhora a descoberta; depende da disponibilidade do nome no npm.</td></tr>
+    <tr><th scope="row">Servidor MCP dentro do pacote principal, usando o SDK oficial</th><td>Rejeitada</td><td>Adicionaria dependências ao pacote que todo usuário instala; pacote separado ou JSON-RPC mínimo mantém o princípio 1.</td></tr>
+    <tr><th scope="row">Integrar um LLM na própria CLI (ex.: gerar código por prompt)</th><td>Rejeitada</td><td>Exige chaves de API, rede e envio de código a terceiros; os agentes já fazem isso melhor usando a lib como ferramenta.</td></tr>
+    <tr><th scope="row">Gerador de documentação (VitePress, Astro Starlight) com tema próprio</th><td>Rejeitada</td><td>Traz dezenas de dependências e uma etapa de build, e exigiria brigar com o tema padrão para reproduzir o visual de terminal; o site pessoal já prova que HTML/CSS puro resolve.</td></tr>
+  </tbody>
+</table>
+</div>
+<h2 id="s5" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>5. Consequências</h2>
+<h3>Positivas</h3>
+<ul class="list" role="list">
+  <li>Instalação via npx quase instantânea, com um único pacote.</li>
+  <li>Projetos gerados sem vulnerabilidades conhecidas e sem segredos fixos.</li>
+  <li>Nenhum risco de apagar arquivos do usuário.</li>
+  <li>Publicações verificáveis e documentação com a mesma identidade do site pessoal, o que aumenta a confiança para adoção e fortalece o portfólio.</li>
+</ul>
+<h3>Negativas e riscos</h3>
+<ul class="list" role="list">
+  <li>Exigir Node 22+ é uma quebra de compatibilidade: a mudança sai como v2.0.0 (semver major), com nota de migração.</li>
+  <li>Prompts nativos são menos sofisticados que os do inquirer.</li>
+  <li>Manter templates atualizados passa a ser trabalho contínuo, mitigado por automação (Dependabot + CI que gera e testa os projetos).</li>
+  <li>O formato JSON e os códigos de erro viram contrato público: mudá-los quebra agentes e integrações, então exigem versionamento cuidadoso.</li>
+  <li>Tokens visuais copiados podem divergir do site pessoal com o tempo; mitigar com uma verificação no CI que compara as variáveis CSS dos dois repositórios.</li>
+</ul>
+<h2 id="s6" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>6. Plano de implementação</h2>
+<div class="scroll" role="region" aria-label="Tabela: 6. Plano de implementação" tabindex="0">
+<table>
+  <thead><tr><th scope="col">Fase</th><th scope="col">Versão</th><th scope="col">Entregas</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">0 — Correções urgentes</th><td>v1.2.0</td><td>Validação de nome e bloqueio de sobrescrita; remover lockfiles dos templates e atualizar dependências vulneráveis; eliminar duplicação de templates; corrigir main; remover arquivo órfão; Postgres em 127.0.0.1.</td></tr>
+    <tr><th scope="row">1 — Zero dependências</th><td>v2.0.0</td><td>Reescrita com APIs nativas; engines &gt;=22; flags --yes, --force, --dry-run; cores e banner alinhados à identidade do site.</td></tr>
+    <tr><th scope="row">2 — Supply chain</th><td>v2.x</td><td>CI completo, Trusted Publishing com provenance, Dependabot, SECURITY.md, teste e2e que gera os dois templates e roda npm install, npm test e npm audit.</td></tr>
+    <tr><th scope="row">3 — Documentação</th><td>v2.x</td><td>Site em daksonc.github.io/QuickNode/ com a identidade do site pessoal, bilíngue, qn help e qn ui (apelido qn docs); SEO da D8 (metadados, JSON-LD, sitemap, Search Console, robôs de IA no robots.txt, páginas em formato de resposta com data e versão, página de comparação) e ajustes de package.json e GitHub; Lighthouse &gt; 95 e axe sem erros.</td></tr>
+    <tr><th scope="row">4 — Produtividade</th><td>v2.x</td><td>qn generate, qn check, AGENTS.md/CLAUDE.md no projeto gerado, qn add com as receitas novas, qn doctor; opções --pm e --test.</td></tr>
+    <tr><th scope="row">4b — Agentes de IA</th><td>v2.x</td><td>Modo sem TTY que nunca bloqueia, qn schema, erros com código e correção, --dry-run --json; llms.txt, páginas "Para agentes de IA" e "Quando usar"; aviso de nome e reserva de nomes no npm; docs/adr/ no projeto gerado; servidor MCP; bateria de avaliação com agentes.</td></tr>
+    <tr><th scope="row">5 — Ciclo de vida</th><td>v3</td><td>quicknode.json e presets, templates modulares (--db), qn env, qn upgrade; --http e --orm somente se houver demanda.</td></tr>
+  </tbody>
+</table>
+</div>
+<h2 id="s7" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>7. Métricas de aceitação</h2>
+<div class="scroll" role="region" aria-label="Tabela: 7. Métricas de aceitação" tabindex="0">
+<table>
+  <thead><tr><th scope="col">Métrica</th><th scope="col">Hoje (v1.1.1)</th><th scope="col">Meta</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Dependências diretas de runtime</th><td>6</td><td>0</td></tr>
+    <tr><th scope="row">Pacotes instalados pelo npx</th><td>56</td><td>1</td></tr>
+    <tr><th scope="row">node_modules após instalar a CLI</th><td>39 MB</td><td>&lt; 300 KB</td></tr>
+    <tr><th scope="row">Pacote publicado (descompactado)</th><td>1,6 MB / 139 arquivos</td><td>&lt; 300 KB</td></tr>
+    <tr><th scope="row">Vulnerabilidades altas + críticas no projeto gerado</th><td>TS 28 · JS 15</td><td>0</td></tr>
+    <tr><th scope="row">Provenance na publicação</th><td>Não</td><td>Sim</td></tr>
+    <tr><th scope="row">Testes da CLI</th><td>1 arquivo de teste</td><td>≥ 80% de cobertura + e2e dos templates</td></tr>
+    <tr><th scope="row">Página de documentação</th><td>Não existe</td><td>&lt; 100 KB, Lighthouse &gt; 95, WCAG 2.2 AA</td></tr>
+    <tr><th scope="row">Uso por agentes de IA</th><td>Prompts interativos travam agentes</td><td>≥ 90% de sucesso na bateria de tarefas sem intervenção; 0 travamentos sem TTY; 0 flags inventadas aceitas</td></tr>
+    <tr><th scope="row">SEO da documentação</th><td>Não existe</td><td>Lighthouse SEO = 100; sitemap enviado e páginas indexadas no Search Console</td></tr>
+    <tr><th scope="row">Citação por assistentes de IA</th><td>Não medido</td><td>Lib citada com nome, comando e versão corretos nas consultas periódicas de referência</td></tr>
+  </tbody>
+</table>
+</div>
+<h2 id="s8" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>8. Referências</h2>
+<ul class="list" role="list">
+  <li>Pacote no npm: <a href="https://www.npmjs.com/package/@10565/quicknode-cli" rel="noopener noreferrer">https://www.npmjs.com/package/@10565/quicknode-cli</a></li>
+  <li>Repositório: <a href="https://github.com/DaksonC/QuickNode" rel="noopener noreferrer">https://github.com/DaksonC/QuickNode</a></li>
+  <li>Site pessoal profissional (referência de identidade visual): <a href="https://daksonc.github.io/" rel="noopener noreferrer">https://daksonc.github.io/</a> e <a href="https://github.com/DaksonC/DaksonC.github.io" rel="noopener noreferrer">https://github.com/DaksonC/DaksonC.github.io</a></li>
+</ul>
+  </main>
+
+  <footer class="wrap">
+    <p>© 2026 <a href="https://daksonc.github.io/">Dakson Chaves Cruz</a>. MIT License. HTML, CSS e JavaScript puros: sem frameworks, sem rastreadores, sem recursos de terceiros.</p>
+    <ul class="list" role="list">
+      <li><a href="https://github.com/DaksonC/QuickNode" rel="noopener noreferrer">Código-fonte no GitHub</a></li>
+      <li><a href="https://www.npmjs.com/package/@10565/quicknode-cli" rel="noopener noreferrer">Pacote no npm: <code>@10565/quicknode-cli</code></a></li>
+    </ul>
+    <p class="dim"><a href="../../../assets/fonts/OFL.txt">VT323</a>: SIL Open Font License.</p>
+  </footer>
+
+  <a class="to-top" id="to-top" href="#top"><span aria-hidden="true">[^]</span> topo</a>
+</body>
+</html>

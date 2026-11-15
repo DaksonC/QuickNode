@@ -1,0 +1,61 @@
+<h1 tabindex="-1">Estrutura do projeto</h1>
+<p class="answer">Um projeto QuickNode divide o <code>src/</code> em duas camadas: <code>domain</code> guarda as regras de negócio (entidades, interfaces de repositório, casos de uso) e <code>infrastructure</code> guarda tudo o que fala com o mundo externo (HTTP, banco, logs, documentação).</p>
+
+<h2 id="tree" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>O que tem em cada pasta?</h2>
+<div class="scroll" role="region" aria-label="Árvore de pastas do template TypeScript" tabindex="0">
+<pre class="term tree"><code>src/
+├── domain/                  regras de negócio, sem Express nem ORM
+│   ├── entities/            User e seus tipos de entrada
+│   ├── repositories/        interface UserRepository
+│   └── use-cases/           CreateUser, GetUser, UpdateUser...
+├── infrastructure/          adaptadores para o mundo externo
+│   ├── config/              load-env: lê o .env com o loader do Node
+│   ├── controllers/         entra HTTP, chama o caso de uso, sai HTTP
+│   ├── database/
+│   │   ├── connection.ts    data source do TypeORM
+│   │   ├── entities/        mapeamento das tabelas no TypeORM
+│   │   ├── repositories/    implementação do UserRepository
+│   │   └── repository-factory.ts
+│   ├── docs/                configuração do Swagger (OpenAPI 3)
+│   ├── logging/             logger pino
+│   ├── middleware/          validação e tratamento de erros
+│   └── routes/              routers do Express
+├── __tests__/               testes Jest dos casos de uso
+└── server.ts                montagem: repositório → casos de uso → controller → rotas</code></pre>
+</div>
+<p>O template JavaScript tem as mesmas camadas, com models do Sequelize em <code>infrastructure/database/models/</code> no lugar das entidades do TypeORM.</p>
+
+<h2 id="rule" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Qual é a regra de dependência?</h2>
+<p>As dependências apontam para dentro: <code>infrastructure</code> pode importar <code>domain</code>, mas <code>domain</code> nunca importa <code>infrastructure</code>, Express ou o ORM. Um caso de uso recebe uma <em>interface</em> de repositório no construtor; quem decide a implementação é o <code>server.ts</code>.</p>
+<pre class="term"><code>requisição HTTP
+  → routes/        (router do Express, validação)
+  → controllers/   (transforma HTTP numa chamada)
+  → use-cases/     (regra de negócio)        ← domínio
+  → repositories/  (interface)               ← domínio
+  ← database/repositories/ (implementação TypeORM)</code></pre>
+<p class="note">Manter essa regra é o que permite testar casos de uso sem banco e trocar o Express ou o ORM depois. Um comando <code>qn check</code>, que vai verificar a regra automaticamente, está planejado.</p>
+
+<h2 id="layers" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>O que cada camada faz?</h2>
+<dl class="opts">
+  <dt>domain/entities</dt>
+  <dd>Classes simples com os dados e o comportamento do negócio (<code>User.updateName()</code>). No template TypeScript elas também trazem os DTOs do class-validator que validam a entrada.</dd>
+  <dt>domain/repositories</dt>
+  <dd>Interfaces que dizem do que o domínio precisa do armazenamento (<code>findByEmail</code>, <code>create</code>…), nunca como.</dd>
+  <dt>domain/use-cases</dt>
+  <dd>Uma classe por ação, com um método <code>execute()</code>. Regras como "o e-mail precisa ser único" ficam aqui.</dd>
+  <dt>infrastructure/database</dt>
+  <dd>A conexão, o mapeamento do ORM e as classes que implementam as interfaces de repositório, convertendo linhas em entidades do domínio.</dd>
+  <dt>infrastructure/controllers e routes</dt>
+  <dd>Traduzem HTTP em chamadas aos casos de uso e os resultados em respostas JSON, com status e anotações do Swagger.</dd>
+  <dt>server.ts</dt>
+  <dd>A raiz de composição: cria o repositório, injeta nos casos de uso, os casos de uso no controller e monta as rotas em <code>/api/v1</code>.</dd>
+</dl>
+
+<h2 id="files" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quais arquivos ficam na raiz?</h2>
+<ul class="list" role="list">
+  <li><code>.env</code>: gerado com <code>DB_PASSWORD</code> e <code>JWT_SECRET</code> aleatórios, ignorado pelo git, permissão 600. O <code>.env.example</code> documenta cada variável.</li>
+  <li><code>docker-compose.yml</code>: PostgreSQL 17 e Adminer, ambos presos a 127.0.0.1.</li>
+  <li><code>eslint.config.mjs</code>, <code>.prettierrc.json</code>, <code>jest.config.js</code>, <code>commitlint.config.js</code> e <code>.husky/</code>: ferramentas de qualidade.</li>
+</ul>
+<p>Scripts: <code>npm run dev</code>, <code>npm test</code>, <code>npm run lint</code>, <code>npm run docker:up</code>, <code>npm run db:seed</code>; o template TypeScript tem também <code>npm run build</code>.</p>
+<p>Próximo passo: <a href="{{home}}tutorial/">crie uma entidade e um caso de uso</a>.</p>

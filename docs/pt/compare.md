@@ -4,7 +4,7 @@ Use o QuickNode para uma API Express simples, com arquitetura limpa e sem ficar 
 
 ## Como eles se comparam?
 
-*Critérios objetivos, considerando a v2.x do QuickNode.*
+*Critérios objetivos, considerando a v3.x do QuickNode.*
 
 | Critério | QuickNode CLI | Nest CLI | Template manual |
 | --- | --- | --- | --- |
@@ -40,6 +40,6 @@ Algo errado ou desatualizado aqui? [Abra uma issue](https://github.com/DaksonC/Q
 
 ---
 
-Atualizado em 2026-11-14 · válido para a v2.x · https://daksonc.github.io/QuickNode/pt/compare/
+Atualizado em 2026-11-14 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/compare/
 
 > Comparação honesta entre QuickNode CLI, Nest CLI e copiar um template à mão, com critérios objetivos: dependências, arquitetura, acoplamento ao framework e manutenção.

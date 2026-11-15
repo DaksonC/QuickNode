@@ -69,7 +69,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "softwareRequirements": "Node.js 22.13+",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://daksonc.github.io/QuickNode/",
       "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
@@ -165,7 +165,7 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Breadcrumb"><ol class="crumbs" role="list"><li><a href="../../">Home</a></li><li><a href="../../adr/">ADRs</a></li><li aria-current="page">ADR-001</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui</p>
-    <p class="meta">Updated on <time datetime="2026-11-14">2026-11-14</time> · valid for v2.x</p>
+    <p class="meta">Updated on <time datetime="2026-11-14">2026-11-14</time> · valid for v3.x</p>
 <h1 tabindex="-1">ADR-001 — Evolution, security and lightness of QuickNode CLI</h1>
 <p class="answer">ADR-001 decides that QuickNode CLI has zero runtime dependencies, generates projects that are safe by default, is published with verifiable provenance and gets this bilingual documentation site, in phases from v1.2.0 to v3.</p>
 <p class="dim">Status: Proposed · Package: @10565/quicknode-cli v1.1.1 · Scope: the qn CLI, generated templates and documentation</p>
@@ -243,7 +243,7 @@
 <ul class="list" role="list">
   <li>Templates in a single place, resolved from the package root (not copied into dist).</li>
   <li>A files field without compiled tests or unnecessary .d.ts files; fix or remove main; take prepare out of the published package.</li>
-  <li>Size budget in CI: fail if npm pack --dry-run exceeds 300 KB unpacked.</li>
+  <li>Size budget in CI: fail if npm pack --dry-run exceeds 400 KB unpacked (300 KB until phase 5, raised for the modular templates and qn upgrade).</li>
 </ul>
 <h3 id="d5" tabindex="-1">D5 — Supply chain</h3>
 <ul class="list" role="list">
@@ -462,8 +462,8 @@
   <tbody>
     <tr><th scope="row">Direct runtime dependencies</th><td>6</td><td>0</td></tr>
     <tr><th scope="row">Packages installed by npx</th><td>56</td><td>1</td></tr>
-    <tr><th scope="row">node_modules after installing the CLI</th><td>39 MB</td><td>&lt; 300 KB</td></tr>
-    <tr><th scope="row">Published package (unpacked)</th><td>1.6 MB / 139 files</td><td>&lt; 300 KB</td></tr>
+    <tr><th scope="row">node_modules after installing the CLI</th><td>39 MB</td><td>&lt; 400 KB</td></tr>
+    <tr><th scope="row">Published package (unpacked)</th><td>1.6 MB / 139 files</td><td>&lt; 400 KB</td></tr>
     <tr><th scope="row">High + critical vulnerabilities in the generated project</th><td>TS 28 · JS 15</td><td>0</td></tr>
     <tr><th scope="row">Provenance on publishing</th><td>No</td><td>Yes</td></tr>
     <tr><th scope="row">CLI tests</th><td>1 test file</td><td>≥ 80% coverage + e2e of the templates</td></tr>

@@ -4,7 +4,7 @@ Use QuickNode for a plain Express API with clean architecture and no framework l
 
 ## How do they compare?
 
-*Objective criteria, as of v2.x of QuickNode.*
+*Objective criteria, as of v3.x of QuickNode.*
 
 | Criterion | QuickNode CLI | Nest CLI | Manual template |
 | --- | --- | --- | --- |
@@ -40,6 +40,6 @@ Something wrong or outdated here? [Open an issue](https://github.com/DaksonC/Qui
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/compare/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/compare/
 
 > An honest comparison of QuickNode CLI, Nest CLI and copying a template by hand, with objective criteria: dependencies, architecture, framework lock-in and maintenance.

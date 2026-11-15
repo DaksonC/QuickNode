@@ -69,7 +69,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "softwareRequirements": "Node.js 22.13+",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://daksonc.github.io/QuickNode/",
       "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
@@ -159,20 +159,20 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Trilha de navegação"><ol class="crumbs" role="list"><li><a href="../">Início</a></li><li aria-current="page">Para agentes de IA</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui agents</p>
-    <p class="meta">Atualizado em <time datetime="2026-11-15">2026-11-15</time> · válido para a v2.x</p>
+    <p class="meta">Atualizado em <time datetime="2026-11-15">2026-11-15</time> · válido para a v3.x</p>
 <h1 tabindex="-1">QuickNode CLI para agentes de IA</h1>
-<p class="answer">Um agente de código com IA cria uma API Node.js com arquitetura limpa rodando <code>npx @10565/quicknode-cli@2 create my-api --typescript --yes --json</code>: sem terminal nenhum comando pergunta nada, e os comandos imprimem JSON com <code>--json</code>, planejam com <code>--dry-run</code> e falham com um código de erro estável e uma correção.</p>
+<p class="answer">Um agente de código com IA cria uma API Node.js com arquitetura limpa rodando <code>npx @10565/quicknode-cli@3 create my-api --typescript --yes --json</code>: sem terminal nenhum comando pergunta nada, e os comandos imprimem JSON com <code>--json</code>, planejam com <code>--dry-run</code> e falham com um código de erro estável e uma correção.</p>
 <p class="note">Não confundir com QuickNode, o provedor de infraestrutura blockchain. Use sempre o nome do pacote com escopo, <code>@10565/quicknode-cli</code>; o comando que ele instala é o <code>qn</code>.</p>
 
 <h2 id="commands" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quais comandos um agente deve rodar?</h2>
 <p>Fixe a versão major e passe todo valor como flag. Sem terminal, o <code>qn</code> nunca pergunta: usa os padrões declarados ou para com <code>E_USAGE</code> e o comando exato que corrige.</p>
-<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@2 schema
-<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@2 create my-api --typescript --yes --json
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@3 schema
+<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@3 create my-api --typescript --yes --json
 <span class="ps" aria-hidden="true">C:\&gt; </span>cd my-api
-<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@2 generate crud product --dry-run --json
-<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@2 generate crud product --json
-<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@2 add healthcheck docker --dry-run --json
-<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@2 check --json</code></pre>
+<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@3 generate crud product --dry-run --json
+<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@3 generate crud product --json
+<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@3 add healthcheck docker --dry-run --json
+<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@3 check --json</code></pre>
 
 <h2 id="flow" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Qual é o fluxo recomendado?</h2>
 <ol>
@@ -201,10 +201,10 @@
 <p>O <code>qn mcp</code> roda um servidor Model Context Protocol no stdio, dentro do mesmo pacote e sem dependências. As ferramentas são <code>qn_schema</code>, <code>qn_check</code>, <code>qn_doctor</code>, <code>qn_generate</code>, <code>qn_add</code> e <code>qn_create</code>.</p>
 <pre class="term"><code>{
   "mcpServers": {
-    "quicknode": { "command": "npx", "args": ["@10565/quicknode-cli@2", "mcp"] }
+    "quicknode": { "command": "npx", "args": ["@10565/quicknode-cli@3", "mcp"] }
   }
 }</code></pre>
-<p>No Claude Code: <code>claude mcp add quicknode -- npx @10565/quicknode-cli@2 mcp</code>.</p>
+<p>No Claude Code: <code>claude mcp add quicknode -- npx @10565/quicknode-cli@3 mcp</code>.</p>
 <ul class="list" role="list">
   <li>Simulação por padrão: as ferramentas que gravam devolvem o plano, a menos que sejam chamadas com <code>"apply": true</code>, e arquivos com outro conteúdo só são sobrescritos com <code>"force": true</code>.</li>
   <li>Quem define o <code>apply</code> é o próprio agente, então o servidor não distingue isso da aprovação de uma pessoa. A pessoa mantém o controle pelo cliente MCP (Claude Code, Cursor…), que pede permissão antes de rodar uma ferramenta que grava: essas ferramentas vêm marcadas com <code>readOnlyHint: false</code>.</li>

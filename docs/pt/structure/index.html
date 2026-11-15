@@ -69,7 +69,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "softwareRequirements": "Node.js 22.13+",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://daksonc.github.io/QuickNode/",
       "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
@@ -159,7 +159,7 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Trilha de navegação"><ol class="crumbs" role="list"><li><a href="../">Início</a></li><li aria-current="page">Estrutura do projeto</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui structure</p>
-    <p class="meta">Atualizado em <time datetime="2026-11-14">2026-11-14</time> · válido para a v2.x</p>
+    <p class="meta">Atualizado em <time datetime="2026-11-14">2026-11-14</time> · válido para a v3.x</p>
 <h1 tabindex="-1">Estrutura do projeto</h1>
 <p class="answer">Um projeto QuickNode divide o <code>src/</code> em duas camadas: <code>domain</code> guarda as regras de negócio (entidades, interfaces de repositório, casos de uso) e <code>infrastructure</code> guarda tudo o que fala com o mundo externo (HTTP, banco, logs, documentação).</p>
 
@@ -188,6 +188,7 @@
 └── server.ts                app Express: middlewares, módulos, início e encerramento</code></pre>
 </div>
 <p>O template JavaScript tem as mesmas camadas, com models do Sequelize em <code>infrastructure/database/models/</code> no lugar das entidades do TypeORM.</p>
+<p>Esse é o padrão <code>--db postgres</code>. Com <code>--db sqlite</code>, o <code>database/</code> tem uma conexão <code>node:sqlite</code> (nativo do Node.js) e repositórios que criam as próprias tabelas; com <code>--db none</code>, repositórios em memória. A conexão sempre exporta <code>databaseConnection</code> com <code>initialize()</code>, <code>ping()</code> e <code>close()</code>, e o <code>qn generate</code> escreve o repositório do banco do projeto.</p>
 
 <h2 id="rule" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Qual é a regra de dependência?</h2>
 <p>As dependências apontam para dentro: <code>infrastructure</code> pode importar <code>domain</code>, mas <code>domain</code> importa só outros arquivos do domínio e módulos nativos do Node.js: nunca <code>infrastructure</code>, Express, o ORM ou outro pacote. Um caso de uso recebe uma <em>interface</em> de repositório no construtor; quem decide a implementação é o módulo da funcionalidade em <code>infrastructure/modules</code>.</p>
@@ -220,8 +221,9 @@
 
 <h2 id="files" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quais arquivos ficam na raiz?</h2>
 <ul class="list" role="list">
-  <li><code>.env</code>: gerado com <code>DB_PASSWORD</code> e <code>JWT_SECRET</code> aleatórios, ignorado pelo git, permissão 600. O <code>.env.example</code> documenta cada variável.</li>
-  <li><code>docker-compose.yml</code>: PostgreSQL 17 e Adminer, ambos presos a 127.0.0.1.</li>
+  <li><code>quicknode.json</code>: como o projeto foi criado (template, banco, gerenciador de pacotes, executor de testes, pastas das camadas, versão do template) e o hash de cada arquivo gerado, que o <code>qn upgrade</code> usa para separar as suas alterações. Faça commit dele.</li>
+  <li><code>.env</code>: gerado com segredos aleatórios (<code>JWT_SECRET</code>, e <code>DB_PASSWORD</code> com PostgreSQL), ignorado pelo git, permissão 600. O <code>.env.example</code> documenta cada variável; o <code>qn env</code> compara os dois sem imprimir valores.</li>
+  <li><code>docker-compose.yml</code> (só PostgreSQL): PostgreSQL 17 e Adminer, ambos presos a 127.0.0.1.</li>
   <li><code>eslint.config.mjs</code>, <code>.prettierrc.json</code>, <code>jest.config.js</code>, <code>commitlint.config.js</code> e <code>.husky/</code>: ferramentas de qualidade.</li>
   <li><code>AGENTS.md</code> e a cópia <code>CLAUDE.md</code>: as camadas, a regra de dependência e os comandos a rodar, para assistentes de código com IA.</li>
 </ul>

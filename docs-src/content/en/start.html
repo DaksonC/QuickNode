@@ -4,7 +4,7 @@
 <h2 id="requirements" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>What do I need?</h2>
 <ul class="list" role="list">
   <li><span class="key">Node.js {{node}} or newer</span> (check with <code>node --version</code>). Older versions get a clear error instead of a crash.</li>
-  <li><span class="key">Docker</span> with Docker Compose, for the PostgreSQL database of the generated project (or a PostgreSQL server of your own, set in <code>.env</code>).</li>
+  <li><span class="key">Docker</span> with Docker Compose, for the PostgreSQL database of the generated project (or a PostgreSQL server of your own, set in <code>.env</code>). Not needed with <code>--db sqlite</code> (<code>node:sqlite</code>, built into Node.js) or <code>--db none</code> (in-memory repositories).</li>
   <li><span class="key">Git</span>, only if you want <code>--git</code> to initialize a repository.</li>
 </ul>
 

@@ -69,7 +69,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "softwareRequirements": "Node.js 22.13+",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://daksonc.github.io/QuickNode/",
       "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
@@ -159,9 +159,9 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Breadcrumb"><ol class="crumbs" role="list"><li><a href="../">Home</a></li><li aria-current="page">Commands</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui commands</p>
-    <p class="meta">Updated on <time datetime="2026-11-15">2026-11-15</time> · valid for v2.x</p>
+    <p class="meta">Updated on <time datetime="2026-11-15">2026-11-15</time> · valid for v3.x</p>
 <h1 tabindex="-1">Command reference</h1>
-<p class="answer">QuickNode CLI creates a project with <code>qn create</code>, grows it with <code>qn generate</code> and <code>qn add</code>, checks it with <code>qn check</code> and <code>qn doctor</code>, describes itself with <code>qn schema</code>, serves AI assistants with <code>qn mcp</code> and opens this documentation with <code>qn ui</code>; run <code>qn help &lt;command&gt;</code> for the same reference offline.</p>
+<p class="answer">QuickNode CLI creates a project with <code>qn create</code>, grows it with <code>qn generate</code> and <code>qn add</code>, checks it with <code>qn check</code>, <code>qn doctor</code> and <code>qn env</code>, upgrades its template with <code>qn upgrade</code>, describes itself with <code>qn schema</code>, serves AI assistants with <code>qn mcp</code> and opens this documentation with <code>qn ui</code>; run <code>qn help &lt;command&gt;</code> for the same reference offline.</p>
 <p class="dim">This page is generated from the definition the CLI parses (<code>src/spec.ts</code>), so it always matches the installed version.</p>
 <section aria-labelledby="create">
 <h2 id="create" tabindex="-1">qn create</h2>
@@ -182,7 +182,7 @@
   <dt id="create-force"><code>-f, --force</code></dt>
   <dd>Write into a non-empty directory, overwriting conflicting files</dd>
   <dt id="create-yes"><code>-y, --yes</code></dt>
-  <dd>Accept defaults without prompting (name, TypeScript)</dd>
+  <dd>Accept defaults without prompting (name, TypeScript, PostgreSQL)</dd>
   <dt id="create-dry-run"><code>--dry-run</code></dt>
   <dd>Show what would be created without writing anything</dd>
   <dt id="create-install"><code>--install</code></dt>
@@ -195,11 +195,18 @@
   <dd>Package manager used in scripts, docs and --install (default: npm)</dd>
   <dt id="create-test"><code>--test &lt;jest|node&gt;</code></dt>
   <dd>Test runner (default: jest; node uses the built-in node:test)</dd>
+  <dt id="create-db"><code>--db &lt;postgres|sqlite|none&gt;</code></dt>
+  <dd>Database: postgres (Docker), sqlite (node:sqlite, no driver) or none (in-memory repositories)</dd>
+  <dt id="create-preset"><code>--preset &lt;name|file.json&gt;</code></dt>
+  <dd>Start from a preset (api-minima, api-postgres) or a local JSON file; flags win over it</dd>
 </dl>
 <h3>Examples</h3>
 <pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api
 <span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api -ts --git --install
 <span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --pm pnpm --test node
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --db sqlite
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --preset api-minima
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --preset ./team-preset.json
 <span class="ps" aria-hidden="true">C:\&gt; </span>qn create . --javascript --force
 <span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --dry-run
 <span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --yes --json</code></pre>
@@ -214,24 +221,29 @@ Arguments:
   name  Project folder and package name (&quot;.&quot; for the current directory)
 
 Options:
-  -t, --typescript          Use the TypeScript template (also -ts)
-  -j, --javascript          Use the JavaScript template (also -js)
-  -f, --force               Write into a non-empty directory, overwriting conflicting files
-  -y, --yes                 Accept defaults without prompting (name, TypeScript)
-      --dry-run             Show what would be created without writing anything
-      --install             Run npm install after creating the project
-      --git                 Initialize a git repository
-      --no-credits          Leave the &quot;Generated with QuickNode&quot; line out of the README
-      --pm &lt;npm|pnpm|yarn&gt;  Package manager used in scripts, docs and --install (default: npm)
-      --test &lt;jest|node&gt;    Test runner (default: jest; node uses the built-in node:test)
-  -h, --help                Show help
-  -v, --version             Show the version
-      --json                Print a JSON result to stdout (no prompts, no colors)
+  -t, --typescript                 Use the TypeScript template (also -ts)
+  -j, --javascript                 Use the JavaScript template (also -js)
+  -f, --force                      Write into a non-empty directory, overwriting conflicting files
+  -y, --yes                        Accept defaults without prompting (name, TypeScript, PostgreSQL)
+      --dry-run                    Show what would be created without writing anything
+      --install                    Run npm install after creating the project
+      --git                        Initialize a git repository
+      --no-credits                 Leave the &quot;Generated with QuickNode&quot; line out of the README
+      --pm &lt;npm|pnpm|yarn&gt;         Package manager used in scripts, docs and --install (default: npm)
+      --test &lt;jest|node&gt;           Test runner (default: jest; node uses the built-in node:test)
+      --db &lt;postgres|sqlite|none&gt;  Database: postgres (Docker), sqlite (node:sqlite, no driver) or none (in-memory repositories)
+      --preset &lt;name|file.json&gt;    Start from a preset (api-minima, api-postgres) or a local JSON file; flags win over it
+  -h, --help                       Show help
+  -v, --version                    Show the version
+      --json                       Print a JSON result to stdout (no prompts, no colors)
 
 Examples:
   qn create my-api
   qn create my-api -ts --git --install
   qn create my-api --pm pnpm --test node
+  qn create my-api --db sqlite
+  qn create my-api --preset api-minima
+  qn create my-api --preset ./team-preset.json
   qn create . --javascript --force
   qn create my-api --dry-run
   qn create my-api --yes --json
@@ -409,6 +421,90 @@ Examples:
 Docs: https://daksonc.github.io/QuickNode/</code></pre>
 </details>
 </section>
+<section aria-labelledby="env">
+<h2 id="env" tabindex="-1">qn env</h2>
+<p>Compare .env with .env.example and generate missing secrets (values are never printed).</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn env [options]</code></pre>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="env-generate-secrets"><code>--generate-secrets</code></dt>
+  <dd>Write missing variables to .env, with random values for secrets and change-me placeholders</dd>
+  <dt id="env-dry-run"><code>--dry-run</code></dt>
+  <dd>With --generate-secrets, show what would change without writing</dd>
+  <dt id="env-force"><code>-f, --force</code></dt>
+  <dd>With --generate-secrets, also replace secrets that already have a value</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn env
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn env --generate-secrets
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn env --generate-secrets --dry-run
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn env --json</code></pre>
+<details>
+<summary>Same text as <code>qn help env</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help env
+qn env [options]
+
+Compare .env with .env.example and generate missing secrets (values are never printed)
+
+Options:
+      --generate-secrets  Write missing variables to .env, with random values for secrets and change-me placeholders
+      --dry-run           With --generate-secrets, show what would change without writing
+  -f, --force             With --generate-secrets, also replace secrets that already have a value
+  -h, --help              Show help
+  -v, --version           Show the version
+      --json              Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn env
+  qn env --generate-secrets
+  qn env --generate-secrets --dry-run
+  qn env --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="upgrade">
+<h2 id="upgrade" tabindex="-1">qn upgrade</h2>
+<p>Apply the improvements of a newer template: updates files you did not change, diffs the rest.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn upgrade [options]</code></pre>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="upgrade-dry-run"><code>--dry-run</code></dt>
+  <dd>Show the plan and the diffs without writing anything</dd>
+  <dt id="upgrade-yes"><code>-y, --yes</code></dt>
+  <dd>Apply without asking (required without a terminal)</dd>
+  <dt id="upgrade-force"><code>-f, --force</code></dt>
+  <dd>Also overwrite files you changed (their diff is shown first)</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn upgrade --dry-run
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn upgrade
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn upgrade --yes --json</code></pre>
+<details>
+<summary>Same text as <code>qn help upgrade</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help upgrade
+qn upgrade [options]
+
+Apply the improvements of a newer template: updates files you did not change, diffs the rest
+
+Options:
+      --dry-run  Show the plan and the diffs without writing anything
+  -y, --yes      Apply without asking (required without a terminal)
+  -f, --force    Also overwrite files you changed (their diff is shown first)
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn upgrade --dry-run
+  qn upgrade
+  qn upgrade --yes --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
 <section aria-labelledby="schema">
 <h2 id="schema" tabindex="-1">qn schema</h2>
 <p>Print the full specification of commands, flags, values and error codes as JSON.</p>
@@ -445,7 +541,7 @@ Docs: https://daksonc.github.io/QuickNode/</code></pre>
 <pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn mcp</code></pre>
 <h3>Examples</h3>
 <pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn mcp
-<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@2 mcp</code></pre>
+<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@3 mcp</code></pre>
 <details>
 <summary>Same text as <code>qn help mcp</code></summary>
 <pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help mcp
@@ -460,7 +556,7 @@ Options:
 
 Examples:
   qn mcp
-  npx @10565/quicknode-cli@2 mcp
+  npx @10565/quicknode-cli@3 mcp
 
 Docs: https://daksonc.github.io/QuickNode/</code></pre>
 </details>
@@ -474,7 +570,7 @@ Docs: https://daksonc.github.io/QuickNode/</code></pre>
 <h3>Argument</h3>
 <dl class="opts">
   <dt><code>[topic]</code></dt>
-  <dd>Page to open <span class="dim">(accepted values: <code>start</code>, <code>commands</code>, <code>create</code>, <code>ui</code>, <code>structure</code>, <code>tutorial</code>, <code>generate</code>, <code>agents</code>, <code>when</code>, <code>errors</code>, <code>check</code>, <code>add</code>, <code>doctor</code>, <code>faq</code>, <code>compare</code>, <code>changelog</code>, <code>adr</code>)</span></dd>
+  <dd>Page to open <span class="dim">(accepted values: <code>start</code>, <code>commands</code>, <code>create</code>, <code>ui</code>, <code>structure</code>, <code>tutorial</code>, <code>generate</code>, <code>agents</code>, <code>when</code>, <code>errors</code>, <code>check</code>, <code>add</code>, <code>doctor</code>, <code>env</code>, <code>upgrade</code>, <code>faq</code>, <code>compare</code>, <code>changelog</code>, <code>adr</code>)</span></dd>
 </dl>
 <h3>Options</h3>
 <dl class="opts">
@@ -496,7 +592,7 @@ qn ui [topic] [options]
 Open the documentation in the browser (alias: qn docs)
 
 Arguments:
-  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, agents, when, errors, check, add, doctor, faq, compare, changelog, adr)
+  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, agents, when, errors, check, add, doctor, env, upgrade, faq, compare, changelog, adr)
 
 Options:
   -p, --print         Only print the link, do not open the browser
@@ -561,6 +657,16 @@ Docs: https://daksonc.github.io/QuickNode/</code></pre>
   <dd>qn generate / qn add: files exist with other content (use --force to overwrite)</dd>
   <dt id="E_NOT_A_PROJECT"><code>E_NOT_A_PROJECT</code> <span class="dim">(exit 1)</span></dt>
   <dd>The command must run inside a project created with qn create</dd>
+  <dt id="E_CONFIG_INVALID"><code>E_CONFIG_INVALID</code> <span class="dim">(exit 1)</span></dt>
+  <dd>quicknode.json is not valid JSON or has unknown keys or values</dd>
+  <dt id="E_PRESET_INVALID"><code>E_PRESET_INVALID</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn create --preset: unknown preset, unreadable file, or unknown keys or values</dd>
+  <dt id="E_ENV_EXAMPLE_MISSING"><code>E_ENV_EXAMPLE_MISSING</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn env: the project has no .env.example to compare .env with</dd>
+  <dt id="E_CONFIRM_REQUIRED"><code>E_CONFIRM_REQUIRED</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn upgrade: confirmation needed and there is no terminal (pass --yes)</dd>
+  <dt id="E_CLI_OUTDATED"><code>E_CLI_OUTDATED</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn upgrade: the project was created by a newer CLI than this one</dd>
   <dt id="E_ABORTED"><code>E_ABORTED</code> <span class="dim">(exit 1)</span></dt>
   <dd>An interactive prompt was cancelled</dd>
   <dt id="E_INTERNAL"><code>E_INTERNAL</code> <span class="dim">(exit 1)</span></dt>

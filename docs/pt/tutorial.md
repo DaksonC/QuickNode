@@ -118,6 +118,6 @@ Ele sai com código 1 quando há violação, então pode rodar no CI (o `qn add 
 
 ---
 
-Atualizado em 2026-11-14 · válido para a v2.x · https://daksonc.github.io/QuickNode/pt/tutorial/
+Atualizado em 2026-11-14 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/tutorial/
 
 > Adicione um Product a uma API Express + TypeScript com qn generate crud: entidade, repositório, casos de uso, teste, controller e rota nas camadas certas, depois campos, regras e qn check.

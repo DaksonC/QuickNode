@@ -15,11 +15,11 @@ export const SITE = {
   packageName: '@10565/quicknode-cli',
   /**
    * Version the documentation describes. Set by hand because the docs ship
-   * before the release: the first release after ADR-001 is 2.0.0, while
+   * before the release: the release with phase 5 of ADR-001 is 3.0.0, while
    * package.json still says 1.x. A test fails if the package gets ahead of it.
    */
-  version: '2.0.0',
-  appliesTo: 'v2.x',
+  version: '3.0.0',
+  appliesTo: 'v3.x',
   /** Minimum Node.js version, from package.json engines (">=22.13.0" -> "22.13"). */
   node: pkg.engines.node.replace(/^>=\s*/, '').replace(/\.0$/, ''),
   baseUrl: 'https://daksonc.github.io/QuickNode/',
@@ -37,9 +37,9 @@ export const LANGS = ['en', 'pt'];
 
 /** Header of llms.txt (https://llmstxt.org/): the facts an assistant should get right. */
 export const LLMS = {
-  summary: `${SITE.positioning.en}: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready, plus generators (qn generate), a dependency rule check (qn check), recipes (qn add) and an MCP server (qn mcp).`,
+  summary: `${SITE.positioning.en}: Express, TypeScript or JavaScript, PostgreSQL, SQLite or no database, tests and linting ready, plus generators (qn generate), a dependency rule check (qn check), recipes (qn add), .env checks (qn env), template upgrades (qn upgrade) and an MCP server (qn mcp).`,
   facts: [
-    `Package: ${SITE.packageName} (always with the scope). Command: qn. Run without installing: npx ${SITE.packageName}@2 <command>.`,
+    `Package: ${SITE.packageName} (always with the scope). Command: qn. Run without installing: npx ${SITE.packageName}@3 <command>.`,
     `Not related to QuickNode, the blockchain infrastructure provider.`,
     `Requires Node.js ${SITE.node} or newer. Zero runtime dependencies, no telemetry, no network while generating.`,
     'Non-interactive use: pass every value as a flag (or --yes) and add --json; errors have a stable code and a fix.',
@@ -54,6 +54,11 @@ export const ERRORS_PT = {
   E_PATH_BLOCKED: 'qn create: um caminho do projeto está ocupado por um arquivo ou pasta de outro tipo',
   E_FILES_EXIST: 'qn generate / qn add: existem arquivos com outro conteúdo (use --force para sobrescrever)',
   E_NOT_A_PROJECT: 'O comando precisa rodar dentro de um projeto criado com qn create',
+  E_CONFIG_INVALID: 'quicknode.json não é um JSON válido ou tem chaves ou valores desconhecidos',
+  E_PRESET_INVALID: 'qn create --preset: preset desconhecido, arquivo ilegível ou chaves ou valores desconhecidos',
+  E_ENV_EXAMPLE_MISSING: 'qn env: o projeto não tem .env.example para comparar com o .env',
+  E_CONFIRM_REQUIRED: 'qn upgrade: precisa de confirmação e não há terminal (passe --yes)',
+  E_CLI_OUTDATED: 'qn upgrade: o projeto foi criado por uma CLI mais nova que esta',
   E_ABORTED: 'Uma pergunta interativa foi cancelada',
   E_INTERNAL: 'Erro inesperado (rode de novo com DEBUG=1 e reporte)'
 };
@@ -383,13 +388,15 @@ export const COMMANDS_PT = {
         typescript: 'Usa o template TypeScript (também -ts)',
         javascript: 'Usa o template JavaScript (também -js)',
         force: 'Grava num diretório não vazio, sobrescrevendo os arquivos em conflito',
-        yes: 'Aceita os padrões sem perguntar (nome, TypeScript)',
+        yes: 'Aceita os padrões sem perguntar (nome, TypeScript, PostgreSQL)',
         'dry-run': 'Mostra o que seria criado sem gravar nada',
         install: 'Roda npm install depois de criar o projeto',
         git: 'Inicializa um repositório git',
         'no-credits': 'Deixa de fora do README a linha "Generated with QuickNode"',
         pm: 'Gerenciador de pacotes usado nos scripts, na documentação e no --install (padrão: npm)',
-        test: 'Executor de testes (padrão: jest; node usa o node:test nativo)'
+        test: 'Executor de testes (padrão: jest; node usa o node:test nativo)',
+        db: 'Banco: postgres (Docker), sqlite (node:sqlite, sem driver) ou none (repositórios em memória)',
+        preset: 'Parte de um preset (api-minima, api-postgres) ou de um arquivo JSON local; as flags vencem o preset'
       }
     },
     generate: {
@@ -415,6 +422,22 @@ export const COMMANDS_PT = {
       options: {
         'dry-run': 'Mostra o diff sem gravar nada',
         force: 'Sobrescreve arquivos existentes com conteúdo diferente'
+      }
+    },
+    env: {
+      summary: 'Compara o .env com o .env.example e gera os segredos que faltam (os valores nunca são impressos)',
+      options: {
+        'generate-secrets': 'Grava no .env as variáveis que faltam, com valores aleatórios para segredos e placeholders change-me',
+        'dry-run': 'Com --generate-secrets, mostra o que mudaria sem gravar',
+        force: 'Com --generate-secrets, troca também os segredos que já têm valor'
+      }
+    },
+    upgrade: {
+      summary: 'Aplica as melhorias de um template mais novo: atualiza os arquivos que você não alterou e mostra o diff dos outros',
+      options: {
+        'dry-run': 'Mostra o plano e os diffs sem gravar nada',
+        yes: 'Aplica sem perguntar (obrigatório sem terminal)',
+        force: 'Sobrescreve também os arquivos que você alterou (o diff é mostrado antes)'
       }
     },
     schema: {

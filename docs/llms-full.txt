@@ -1,6 +1,6 @@
 # QuickNode CLI: full documentation
 
-> Zero-dependency CLI to create Node.js APIs with clean architecture: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready, plus generators (qn generate), a dependency rule check (qn check), recipes (qn add) and an MCP server (qn mcp).
+> Zero-dependency CLI to create Node.js APIs with clean architecture: Express, TypeScript or JavaScript, PostgreSQL, SQLite or no database, tests and linting ready, plus generators (qn generate), a dependency rule check (qn check), recipes (qn add), .env checks (qn env), template upgrades (qn upgrade) and an MCP server (qn mcp).
 
 <!-- https://daksonc.github.io/QuickNode/ -->
 
@@ -43,7 +43,7 @@ From a terminal, `qn ui` opens these pages and `qn help create` shows the same h
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/
 
 > Create a Node.js API with clean architecture in one command: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready. Zero runtime dependencies.
 
@@ -56,7 +56,7 @@ To start a Node.js API with clean architecture, run `npx @10565/quicknode-cli cr
 ## What do I need?
 
 - Node.js 22.13 or newer (check with `node --version`). Older versions get a clear error instead of a crash.
-- Docker with Docker Compose, for the PostgreSQL database of the generated project (or a PostgreSQL server of your own, set in `.env`).
+- Docker with Docker Compose, for the PostgreSQL database of the generated project (or a PostgreSQL server of your own, set in `.env`). Not needed with `--db sqlite` (`node:sqlite`, built into Node.js) or `--db none` (in-memory repositories).
 - Git, only if you want `--git` to initialize a repository.
 
 ## How do I create my first API?
@@ -113,7 +113,7 @@ $ npx @10565/quicknode-cli create my-api --yes --json
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/start/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/start/
 
 > Install nothing: run npx @10565/quicknode-cli create my-api, start PostgreSQL with Docker and run the API. Step-by-step guide for Node.js 22.13+.
 
@@ -121,7 +121,7 @@ Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/s
 
 # Command reference
 
-QuickNode CLI creates a project with `qn create`, grows it with `qn generate` and `qn add`, checks it with `qn check` and `qn doctor`, describes itself with `qn schema`, serves AI assistants with `qn mcp` and opens this documentation with `qn ui`; run `qn help <command>` for the same reference offline.
+QuickNode CLI creates a project with `qn create`, grows it with `qn generate` and `qn add`, checks it with `qn check`, `qn doctor` and `qn env`, upgrades its template with `qn upgrade`, describes itself with `qn schema`, serves AI assistants with `qn mcp` and opens this documentation with `qn ui`; run `qn help <command>` for the same reference offline.
 
 This page is generated from the definition the CLI parses (`src/spec.ts`), so it always matches the installed version.
 
@@ -144,13 +144,15 @@ $ qn create [name] [options]
 - **`-t, --typescript`**: Use the TypeScript template (also -ts)
 - **`-j, --javascript`**: Use the JavaScript template (also -js)
 - **`-f, --force`**: Write into a non-empty directory, overwriting conflicting files
-- **`-y, --yes`**: Accept defaults without prompting (name, TypeScript)
+- **`-y, --yes`**: Accept defaults without prompting (name, TypeScript, PostgreSQL)
 - **`--dry-run`**: Show what would be created without writing anything
 - **`--install`**: Run npm install after creating the project
 - **`--git`**: Initialize a git repository
 - **`--no-credits`**: Leave the "Generated with QuickNode" line out of the README
 - **`--pm <npm|pnpm|yarn>`**: Package manager used in scripts, docs and --install (default: npm)
 - **`--test <jest|node>`**: Test runner (default: jest; node uses the built-in node:test)
+- **`--db <postgres|sqlite|none>`**: Database: postgres (Docker), sqlite (node:sqlite, no driver) or none (in-memory repositories)
+- **`--preset <name|file.json>`**: Start from a preset (api-minima, api-postgres) or a local JSON file; flags win over it
 
 ### Examples
 
@@ -158,6 +160,9 @@ $ qn create [name] [options]
 $ qn create my-api
 $ qn create my-api -ts --git --install
 $ qn create my-api --pm pnpm --test node
+$ qn create my-api --db sqlite
+$ qn create my-api --preset api-minima
+$ qn create my-api --preset ./team-preset.json
 $ qn create . --javascript --force
 $ qn create my-api --dry-run
 $ qn create my-api --yes --json
@@ -175,24 +180,29 @@ Arguments:
   name  Project folder and package name ("." for the current directory)
 
 Options:
-  -t, --typescript          Use the TypeScript template (also -ts)
-  -j, --javascript          Use the JavaScript template (also -js)
-  -f, --force               Write into a non-empty directory, overwriting conflicting files
-  -y, --yes                 Accept defaults without prompting (name, TypeScript)
-      --dry-run             Show what would be created without writing anything
-      --install             Run npm install after creating the project
-      --git                 Initialize a git repository
-      --no-credits          Leave the "Generated with QuickNode" line out of the README
-      --pm <npm|pnpm|yarn>  Package manager used in scripts, docs and --install (default: npm)
-      --test <jest|node>    Test runner (default: jest; node uses the built-in node:test)
-  -h, --help                Show help
-  -v, --version             Show the version
-      --json                Print a JSON result to stdout (no prompts, no colors)
+  -t, --typescript                 Use the TypeScript template (also -ts)
+  -j, --javascript                 Use the JavaScript template (also -js)
+  -f, --force                      Write into a non-empty directory, overwriting conflicting files
+  -y, --yes                        Accept defaults without prompting (name, TypeScript, PostgreSQL)
+      --dry-run                    Show what would be created without writing anything
+      --install                    Run npm install after creating the project
+      --git                        Initialize a git repository
+      --no-credits                 Leave the "Generated with QuickNode" line out of the README
+      --pm <npm|pnpm|yarn>         Package manager used in scripts, docs and --install (default: npm)
+      --test <jest|node>           Test runner (default: jest; node uses the built-in node:test)
+      --db <postgres|sqlite|none>  Database: postgres (Docker), sqlite (node:sqlite, no driver) or none (in-memory repositories)
+      --preset <name|file.json>    Start from a preset (api-minima, api-postgres) or a local JSON file; flags win over it
+  -h, --help                       Show help
+  -v, --version                    Show the version
+      --json                       Print a JSON result to stdout (no prompts, no colors)
 
 Examples:
   qn create my-api
   qn create my-api -ts --git --install
   qn create my-api --pm pnpm --test node
+  qn create my-api --db sqlite
+  qn create my-api --preset api-minima
+  qn create my-api --preset ./team-preset.json
   qn create . --javascript --force
   qn create my-api --dry-run
   qn create my-api --yes --json
@@ -401,6 +411,104 @@ Examples:
 Docs: https://daksonc.github.io/QuickNode/
 ```
 
+## qn env
+
+Compare .env with .env.example and generate missing secrets (values are never printed).
+
+### Usage
+
+```
+$ qn env [options]
+```
+
+### Options
+
+- **`--generate-secrets`**: Write missing variables to .env, with random values for secrets and change-me placeholders
+- **`--dry-run`**: With --generate-secrets, show what would change without writing
+- **`-f, --force`**: With --generate-secrets, also replace secrets that already have a value
+
+### Examples
+
+```
+$ qn env
+$ qn env --generate-secrets
+$ qn env --generate-secrets --dry-run
+$ qn env --json
+```
+
+Same text as `qn help env`
+
+```
+$ qn help env
+qn env [options]
+
+Compare .env with .env.example and generate missing secrets (values are never printed)
+
+Options:
+      --generate-secrets  Write missing variables to .env, with random values for secrets and change-me placeholders
+      --dry-run           With --generate-secrets, show what would change without writing
+  -f, --force             With --generate-secrets, also replace secrets that already have a value
+  -h, --help              Show help
+  -v, --version           Show the version
+      --json              Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn env
+  qn env --generate-secrets
+  qn env --generate-secrets --dry-run
+  qn env --json
+
+Docs: https://daksonc.github.io/QuickNode/
+```
+
+## qn upgrade
+
+Apply the improvements of a newer template: updates files you did not change, diffs the rest.
+
+### Usage
+
+```
+$ qn upgrade [options]
+```
+
+### Options
+
+- **`--dry-run`**: Show the plan and the diffs without writing anything
+- **`-y, --yes`**: Apply without asking (required without a terminal)
+- **`-f, --force`**: Also overwrite files you changed (their diff is shown first)
+
+### Examples
+
+```
+$ qn upgrade --dry-run
+$ qn upgrade
+$ qn upgrade --yes --json
+```
+
+Same text as `qn help upgrade`
+
+```
+$ qn help upgrade
+qn upgrade [options]
+
+Apply the improvements of a newer template: updates files you did not change, diffs the rest
+
+Options:
+      --dry-run  Show the plan and the diffs without writing anything
+  -y, --yes      Apply without asking (required without a terminal)
+  -f, --force    Also overwrite files you changed (their diff is shown first)
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn upgrade --dry-run
+  qn upgrade
+  qn upgrade --yes --json
+
+Docs: https://daksonc.github.io/QuickNode/
+```
+
 ## qn schema
 
 Print the full specification of commands, flags, values and error codes as JSON.
@@ -454,7 +562,7 @@ $ qn mcp
 
 ```
 $ qn mcp
-$ npx @10565/quicknode-cli@2 mcp
+$ npx @10565/quicknode-cli@3 mcp
 ```
 
 Same text as `qn help mcp`
@@ -472,7 +580,7 @@ Options:
 
 Examples:
   qn mcp
-  npx @10565/quicknode-cli@2 mcp
+  npx @10565/quicknode-cli@3 mcp
 
 Docs: https://daksonc.github.io/QuickNode/
 ```
@@ -491,7 +599,7 @@ Alias: `qn docs`
 
 ### Argument
 
-- **`[topic]`**: Page to open (accepted values: `start`, `commands`, `create`, `ui`, `structure`, `tutorial`, `generate`, `agents`, `when`, `errors`, `check`, `add`, `doctor`, `faq`, `compare`, `changelog`, `adr`)
+- **`[topic]`**: Page to open (accepted values: `start`, `commands`, `create`, `ui`, `structure`, `tutorial`, `generate`, `agents`, `when`, `errors`, `check`, `add`, `doctor`, `env`, `upgrade`, `faq`, `compare`, `changelog`, `adr`)
 
 ### Options
 
@@ -516,7 +624,7 @@ qn ui [topic] [options]
 Open the documentation in the browser (alias: qn docs)
 
 Arguments:
-  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, agents, when, errors, check, add, doctor, faq, compare, changelog, adr)
+  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, agents, when, errors, check, add, doctor, env, upgrade, faq, compare, changelog, adr)
 
 Options:
   -p, --print         Only print the link, do not open the browser
@@ -570,12 +678,17 @@ $ qn create my-api --json
 - **`E_PATH_BLOCKED` (exit 1)**: qn create: a project path is taken by a file or folder of another type
 - **`E_FILES_EXIST` (exit 1)**: qn generate / qn add: files exist with other content (use --force to overwrite)
 - **`E_NOT_A_PROJECT` (exit 1)**: The command must run inside a project created with qn create
+- **`E_CONFIG_INVALID` (exit 1)**: quicknode.json is not valid JSON or has unknown keys or values
+- **`E_PRESET_INVALID` (exit 1)**: qn create --preset: unknown preset, unreadable file, or unknown keys or values
+- **`E_ENV_EXAMPLE_MISSING` (exit 1)**: qn env: the project has no .env.example to compare .env with
+- **`E_CONFIRM_REQUIRED` (exit 1)**: qn upgrade: confirmation needed and there is no terminal (pass --yes)
+- **`E_CLI_OUTDATED` (exit 1)**: qn upgrade: the project was created by a newer CLI than this one
 - **`E_ABORTED` (exit 1)**: An interactive prompt was cancelled
 - **`E_INTERNAL` (exit 1)**: Unexpected error (rerun with DEBUG=1 and report it)
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/commands/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/commands/
 
 > Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.
 
@@ -613,6 +726,8 @@ src/
 
 The JavaScript template has the same layers, with Sequelize models in `infrastructure/database/models/` instead of TypeORM entities.
 
+That is the default `--db postgres`. With `--db sqlite`, `database/` holds a `node:sqlite` connection (built into Node.js) and repositories that create their own tables; with `--db none`, in-memory repositories. The connection always exports `databaseConnection` with `initialize()`, `ping()` and `close()`, and `qn generate` writes the repository for the project's database.
+
 ## What is the dependency rule?
 
 Dependencies point inwards: `infrastructure` may import `domain`, but `domain` imports only other domain files and Node.js built-in modules: never `infrastructure`, Express, the ORM or another package. A use case receives a repository *interface* in its constructor; the feature module in `infrastructure/modules` decides which implementation it gets.
@@ -642,8 +757,9 @@ Comments such as `// qn:modules` and `// qn:entities` mark where `qn generate` a
 
 ## Which files sit at the project root?
 
-- `.env`: generated with random `DB_PASSWORD` and `JWT_SECRET`, git-ignored, permission 600. `.env.example` documents every variable.
-- `docker-compose.yml`: PostgreSQL 17 and Adminer, both bound to 127.0.0.1.
+- `quicknode.json`: how the project was created (template, database, package manager, test runner, layer folders, template version) and the hash of each generated file, which `qn upgrade` uses to tell your changes apart. Commit it.
+- `.env`: generated with random secrets (`JWT_SECRET`, and `DB_PASSWORD` with PostgreSQL), git-ignored, permission 600. `.env.example` documents every variable; `qn env` compares both without printing values.
+- `docker-compose.yml` (PostgreSQL only): PostgreSQL 17 and Adminer, both bound to 127.0.0.1.
 - `eslint.config.mjs`, `.prettierrc.json`, `jest.config.js`, `commitlint.config.js` and `.husky/`: quality tools.
 - `AGENTS.md` and its copy `CLAUDE.md`: the layers, the dependency rule and the commands to run, for AI coding assistants.
 
@@ -653,7 +769,7 @@ Next: [add a new entity and use case](https://daksonc.github.io/QuickNode/tutori
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/structure/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/structure/
 
 > What each folder of a QuickNode project does: domain entities, repository interfaces and use cases, and the infrastructure layer with Express, TypeORM or Sequelize.
 
@@ -779,7 +895,7 @@ It exits with code 1 on a violation, so it can run in CI (`qn add ci` adds it) a
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/tutorial/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/tutorial/
 
 > Add a Product to an Express + TypeScript API with qn generate crud: entity, repository, use cases, test, controller and route in the right layers, then fields, rules and qn check.
 
@@ -816,7 +932,7 @@ Recipes follow the package manager of the project (npm, pnpm or yarn) and its te
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/add/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/add/
 
 > qn add recipes for QuickNode projects: JWT auth, health checks, rate limit, graceful shutdown, Docker, GitHub Actions and AI agent instructions, idempotent and with --dry-run.
 
@@ -824,7 +940,7 @@ Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/a
 
 # QuickNode CLI for AI agents
 
-An AI coding agent creates a Node.js API with clean architecture by running `npx @10565/quicknode-cli@2 create my-api --typescript --yes --json`: without a terminal no command prompts, commands print JSON with `--json`, plan with `--dry-run` and fail with a stable error code and a fix.
+An AI coding agent creates a Node.js API with clean architecture by running `npx @10565/quicknode-cli@3 create my-api --typescript --yes --json`: without a terminal no command prompts, commands print JSON with `--json`, plan with `--dry-run` and fail with a stable error code and a fix.
 
 Not to be confused with QuickNode, the blockchain infrastructure provider. Always use the scoped package name `@10565/quicknode-cli`; the command it installs is `qn`.
 
@@ -833,13 +949,13 @@ Not to be confused with QuickNode, the blockchain infrastructure provider. Alway
 Pin the major version and pass every value as a flag. Without a terminal, `qn` never asks: it uses the declared defaults or stops with `E_USAGE` and the exact command that fixes it.
 
 ```
-$ npx @10565/quicknode-cli@2 schema
-$ npx @10565/quicknode-cli@2 create my-api --typescript --yes --json
+$ npx @10565/quicknode-cli@3 schema
+$ npx @10565/quicknode-cli@3 create my-api --typescript --yes --json
 $ cd my-api
-$ npx @10565/quicknode-cli@2 generate crud product --dry-run --json
-$ npx @10565/quicknode-cli@2 generate crud product --json
-$ npx @10565/quicknode-cli@2 add healthcheck docker --dry-run --json
-$ npx @10565/quicknode-cli@2 check --json
+$ npx @10565/quicknode-cli@3 generate crud product --dry-run --json
+$ npx @10565/quicknode-cli@3 generate crud product --json
+$ npx @10565/quicknode-cli@3 add healthcheck docker --dry-run --json
+$ npx @10565/quicknode-cli@3 check --json
 ```
 
 ## What is the recommended flow?
@@ -877,12 +993,12 @@ Every code and exit code is listed in the [command reference](https://daksonc.gi
 ```
 {
   "mcpServers": {
-    "quicknode": { "command": "npx", "args": ["@10565/quicknode-cli@2", "mcp"] }
+    "quicknode": { "command": "npx", "args": ["@10565/quicknode-cli@3", "mcp"] }
   }
 }
 ```
 
-For Claude Code: `claude mcp add quicknode -- npx @10565/quicknode-cli@2 mcp`.
+For Claude Code: `claude mcp add quicknode -- npx @10565/quicknode-cli@3 mcp`.
 
 - Dry run by default: tools that write return the plan unless called with `"apply": true`, and files with other content are only overwritten with `"force": true`.
 - The agent sets `apply` itself, so the server cannot tell it from a person's approval. The person stays in control through the MCP client (Claude Code, Cursor…), which asks before running a tool that writes: those tools are marked `readOnlyHint: false`.
@@ -900,7 +1016,7 @@ Not sure the CLI fits the task? See [when to use it, and when not to](https://da
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/agents/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/agents/
 
 > How AI coding agents should use QuickNode CLI: exact non-interactive commands with a pinned version, --json and --dry-run, qn schema, the MCP server and stable error codes with fixes.
 
@@ -930,13 +1046,13 @@ Use QuickNode CLI to start an Express REST API in TypeScript or JavaScript with 
 
 ## How do I decide quickly?
 
-1. Preview without writing anything: `npx @10565/quicknode-cli@2 create my-api --typescript --dry-run`.
+1. Preview without writing anything: `npx @10565/quicknode-cli@3 create my-api --typescript --dry-run`.
 2. Read the [project structure](https://daksonc.github.io/QuickNode/structure/) and the [comparison with Nest CLI and a manual template](https://daksonc.github.io/QuickNode/compare/).
 3. If the layers and tools match your needs, create the project; if not, nothing was written.
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/when/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/when/
 
 > Clear criteria for choosing QuickNode CLI: use it for Express REST APIs with clean architecture and PostgreSQL; do not use it for front ends, monorepos, NestJS projects or other databases.
 
@@ -992,7 +1108,7 @@ Bugs and ideas: [GitHub issues](https://github.com/DaksonC/QuickNode/issues). Vu
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/faq/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/faq/
 
 > Answers about QuickNode CLI: required Node.js version, writing into existing folders, generated secrets, offline use, telemetry and the QuickNode name.
 
@@ -1004,7 +1120,7 @@ Use QuickNode for a plain Express API with clean architecture and no framework l
 
 ## How do they compare?
 
-*Objective criteria, as of v2.x of QuickNode.*
+*Objective criteria, as of v3.x of QuickNode.*
 
 | Criterion | QuickNode CLI | Nest CLI | Manual template |
 | --- | --- | --- | --- |
@@ -1040,7 +1156,7 @@ Something wrong or outdated here? [Open an issue](https://github.com/DaksonC/Qui
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/compare/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/compare/
 
 > An honest comparison of QuickNode CLI, Nest CLI and copying a template by hand, with objective criteria: dependencies, architecture, framework lock-in and maintenance.
 
@@ -1048,9 +1164,29 @@ Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/c
 
 # Changelog
 
-Version 2.0.0 rewrites QuickNode CLI with zero runtime dependencies, makes `qn create` safe by default, publishes with provenance and adds `qn generate`, `qn check`, `qn add`, `qn doctor`, `qn ui` and this site; it requires Node.js 22.13+.
+Version 3.0.0 records how each project was created in `quicknode.json`, adds `--db postgres|sqlite|none` and presets to `qn create`, and brings `qn env` and `qn upgrade`; version 2.0.0 rewrote QuickNode CLI with zero runtime dependencies and a safe `qn create`. Both require Node.js 22.13+.
 
 Versions follow [semantic versioning](https://semver.org/). Release notes with the build provenance are on [GitHub Releases](https://github.com/DaksonC/QuickNode/releases).
+
+## 3.0.0 // upcoming
+
+### Breaking changes
+
+- The generated database code has one shape for every database: `src/infrastructure/database/connection` exports `databaseConnection` with `initialize()`, `ping()` and `close()`. In JavaScript projects it replaces the default export `sequelizeConnection` and the models are loaded by `initialize()`.
+- The connection is PostgreSQL only: `DB_TYPE` and the half-supported MySQL and SQLite branches are gone (use `--db sqlite`). `@types/sqlite3` left the TypeScript template.
+- The commands written into new projects and docs use `npx @10565/quicknode-cli@3`.
+- The size budget of the published package is 400 KB (was 300 KB), recorded in ADR-001 D4.
+- `qn create` asks for the database in a terminal (`--yes` and `--preset` skip the question).
+
+### Added
+
+- `quicknode.json` in new projects: template, database, package manager, test runner, layer folders, template version and the hash of every generated file. `qn generate`, `qn add`, `qn check`, `qn doctor` and `qn upgrade` read it; projects without it are still detected by their layout.
+- `qn create --db postgres|sqlite|none`: templates made of a small base plus one database add-on. SQLite uses `node:sqlite`, built into Node.js (no driver, no Docker); `none` uses in-memory repositories. `qn generate` writes the repository for the project's database.
+- `qn create --preset api-minima|api-postgres` or `--preset ./file.json`, validated before anything is written; flags win over the preset.
+- `qn env`: compares `.env` with `.env.example` by name and, with `--generate-secrets`, adds what is missing with random secrets (`crypto.randomBytes`). It never prints values.
+- `qn upgrade`: applies a newer template. Files you did not change are updated, changed files get a diff and a `.qn-new` copy, `package.json` only gets newer versions of the dependencies it has; `--dry-run` first, confirmation (or `--yes`) to apply.
+- Error codes `E_CONFIG_INVALID`, `E_PRESET_INVALID`, `E_ENV_EXAMPLE_MISSING`, `E_CONFIRM_REQUIRED` and `E_CLI_OUTDATED`; MCP tools `qn_env` and `qn_upgrade` (dry run unless `"apply": true`).
+- `qn doctor` skips Docker when the project has no PostgreSQL and says when `qn upgrade` has something new.
 
 ## 2.0.0 // upcoming
 
@@ -1104,7 +1240,7 @@ Versions follow [semantic versioning](https://semver.org/). Release notes with t
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/changelog/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/changelog/
 
 > Release notes of QuickNode CLI from v1.0.0 to v2: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.
 
@@ -1122,7 +1258,7 @@ The original of ADR-001 is written in Portuguese; the English version is a faith
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/adr/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/adr/
 
 > The architecture decision records behind QuickNode CLI: why it has zero dependencies, how it is published and how the documentation is built.
 
@@ -1210,7 +1346,7 @@ If a richer UX is needed in the future (arrow-key selection, multi-select), eval
 
 - Templates in a single place, resolved from the package root (not copied into dist).
 - A files field without compiled tests or unnecessary .d.ts files; fix or remove main; take prepare out of the published package.
-- Size budget in CI: fail if npm pack --dry-run exceeds 300 KB unpacked.
+- Size budget in CI: fail if npm pack --dry-run exceeds 400 KB unpacked (300 KB until phase 5, raised for the modular templates and qn upgrade).
 
 ### D5 — Supply chain
 
@@ -1428,8 +1564,8 @@ Out of scope: calling LLMs from the CLI, embedding API keys or sending user code
 | --- | --- | --- |
 | Direct runtime dependencies | 6 | 0 |
 | Packages installed by npx | 56 | 1 |
-| node_modules after installing the CLI | 39 MB | < 300 KB |
-| Published package (unpacked) | 1.6 MB / 139 files | < 300 KB |
+| node_modules after installing the CLI | 39 MB | < 400 KB |
+| Published package (unpacked) | 1.6 MB / 139 files | < 400 KB |
 | High + critical vulnerabilities in the generated project | TS 28 · JS 15 | 0 |
 | Provenance on publishing | No | Yes |
 | CLI tests | 1 test file | ≥ 80% coverage + e2e of the templates |
@@ -1446,6 +1582,6 @@ Out of scope: calling LLMs from the CLI, embedding API keys or sending user code
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/adr/001/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/adr/001/
 
 > ADR-001 in full: diagnosis of v1.1.1, the five principles, decisions D1 to D9 (zero dependencies, safe templates, supply chain, docs, SEO, AI agents) and the phased plan.

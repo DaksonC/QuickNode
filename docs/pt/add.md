@@ -29,6 +29,6 @@ As receitas seguem o gerenciador de pacotes do projeto (npm, pnpm ou yarn) e o e
 
 ---
 
-Atualizado em 2026-11-14 · válido para a v2.x · https://daksonc.github.io/QuickNode/pt/add/
+Atualizado em 2026-11-14 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/add/
 
 > Receitas do qn add para projetos QuickNode: autenticação JWT, healthcheck, rate limit, encerramento gracioso, Docker, GitHub Actions e instruções para agentes de IA, idempotentes e com --dry-run.

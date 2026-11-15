@@ -75,7 +75,7 @@
 <ul class="list" role="list">
   <li>Templates em um único lugar, resolvidos a partir da raiz do pacote (sem copiar para dist).</li>
   <li>Campo files sem testes compilados e sem .d.ts desnecessários; corrigir ou remover main; tirar o prepare do pacote publicado.</li>
-  <li>Orçamento de tamanho no CI: falhar se npm pack --dry-run passar de 300 KB descompactado.</li>
+  <li>Orçamento de tamanho no CI: falhar se npm pack --dry-run passar de 400 KB descompactado (300 KB até a fase 5, ampliado para os templates modulares e o qn upgrade).</li>
 </ul>
 <h3 id="d5" tabindex="-1">D5 — Cadeia de suprimentos</h3>
 <ul class="list" role="list">
@@ -294,8 +294,8 @@
   <tbody>
     <tr><th scope="row">Dependências diretas de runtime</th><td>6</td><td>0</td></tr>
     <tr><th scope="row">Pacotes instalados pelo npx</th><td>56</td><td>1</td></tr>
-    <tr><th scope="row">node_modules após instalar a CLI</th><td>39 MB</td><td>&lt; 300 KB</td></tr>
-    <tr><th scope="row">Pacote publicado (descompactado)</th><td>1,6 MB / 139 arquivos</td><td>&lt; 300 KB</td></tr>
+    <tr><th scope="row">node_modules após instalar a CLI</th><td>39 MB</td><td>&lt; 400 KB</td></tr>
+    <tr><th scope="row">Pacote publicado (descompactado)</th><td>1,6 MB / 139 arquivos</td><td>&lt; 400 KB</td></tr>
     <tr><th scope="row">Vulnerabilidades altas + críticas no projeto gerado</th><td>TS 28 · JS 15</td><td>0</td></tr>
     <tr><th scope="row">Provenance na publicação</th><td>Não</td><td>Sim</td></tr>
     <tr><th scope="row">Testes da CLI</th><td>1 arquivo de teste</td><td>≥ 80% de cobertura + e2e dos templates</td></tr>

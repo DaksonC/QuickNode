@@ -48,6 +48,6 @@ Bugs and ideas: [GitHub issues](https://github.com/DaksonC/QuickNode/issues). Vu
 
 ---
 
-Updated on 2026-11-14 · valid for v2.x · https://daksonc.github.io/QuickNode/faq/
+Updated on 2026-11-14 · valid for v3.x · https://daksonc.github.io/QuickNode/faq/
 
 > Answers about QuickNode CLI: required Node.js version, writing into existing folders, generated secrets, offline use, telemetry and the QuickNode name.

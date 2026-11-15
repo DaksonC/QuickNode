@@ -1,8 +1,28 @@
 # Changelog
 
-Version 2.0.0 rewrites QuickNode CLI with zero runtime dependencies, makes `qn create` safe by default, publishes with provenance and adds `qn generate`, `qn check`, `qn add`, `qn doctor`, `qn ui` and this site; it requires Node.js 22.13+.
+Version 3.0.0 records how each project was created in `quicknode.json`, adds `--db postgres|sqlite|none` and presets to `qn create`, and brings `qn env` and `qn upgrade`; version 2.0.0 rewrote QuickNode CLI with zero runtime dependencies and a safe `qn create`. Both require Node.js 22.13+.
 
 Versions follow [semantic versioning](https://semver.org/). Release notes with the build provenance are on [GitHub Releases](https://github.com/DaksonC/QuickNode/releases).
+
+## 3.0.0 // upcoming
+
+### Breaking changes
+
+- The generated database code has one shape for every database: `src/infrastructure/database/connection` exports `databaseConnection` with `initialize()`, `ping()` and `close()`. In JavaScript projects it replaces the default export `sequelizeConnection` and the models are loaded by `initialize()`.
+- The connection is PostgreSQL only: `DB_TYPE` and the half-supported MySQL and SQLite branches are gone (use `--db sqlite`). `@types/sqlite3` left the TypeScript template.
+- The commands written into new projects and docs use `npx @10565/quicknode-cli@3`.
+- The size budget of the published package is 400 KB (was 300 KB), recorded in ADR-001 D4.
+- `qn create` asks for the database in a terminal (`--yes` and `--preset` skip the question).
+
+### Added
+
+- `quicknode.json` in new projects: template, database, package manager, test runner, layer folders, template version and the hash of every generated file. `qn generate`, `qn add`, `qn check`, `qn doctor` and `qn upgrade` read it; projects without it are still detected by their layout.
+- `qn create --db postgres|sqlite|none`: templates made of a small base plus one database add-on. SQLite uses `node:sqlite`, built into Node.js (no driver, no Docker); `none` uses in-memory repositories. `qn generate` writes the repository for the project's database.
+- `qn create --preset api-minima|api-postgres` or `--preset ./file.json`, validated before anything is written; flags win over the preset.
+- `qn env`: compares `.env` with `.env.example` by name and, with `--generate-secrets`, adds what is missing with random secrets (`crypto.randomBytes`). It never prints values.
+- `qn upgrade`: applies a newer template. Files you did not change are updated, changed files get a diff and a `.qn-new` copy, `package.json` only gets newer versions of the dependencies it has; `--dry-run` first, confirmation (or `--yes`) to apply.
+- Error codes `E_CONFIG_INVALID`, `E_PRESET_INVALID`, `E_ENV_EXAMPLE_MISSING`, `E_CONFIRM_REQUIRED` and `E_CLI_OUTDATED`; MCP tools `qn_env` and `qn_upgrade` (dry run unless `"apply": true`).
+- `qn doctor` skips Docker when the project has no PostgreSQL and says when `qn upgrade` has something new.
 
 ## 2.0.0 // upcoming
 
@@ -56,6 +76,6 @@ Versions follow [semantic versioning](https://semver.org/). Release notes with t
 
 ---
 
-Updated on 2026-11-15 · valid for v2.x · https://daksonc.github.io/QuickNode/changelog/
+Updated on 2026-11-15 · valid for v3.x · https://daksonc.github.io/QuickNode/changelog/
 
 > Release notes of QuickNode CLI from v1.0.0 to v2: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.

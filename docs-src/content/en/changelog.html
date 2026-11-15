@@ -1,6 +1,26 @@
 <h1 tabindex="-1">Changelog</h1>
-<p class="answer">Version {{version}} rewrites QuickNode CLI with zero runtime dependencies, makes <code>qn create</code> safe by default, publishes with provenance and adds <code>qn generate</code>, <code>qn check</code>, <code>qn add</code>, <code>qn doctor</code>, <code>qn ui</code> and this site; it requires Node.js {{node}}+.</p>
+<p class="answer">Version {{version}} records how each project was created in <code>quicknode.json</code>, adds <code>--db postgres|sqlite|none</code> and presets to <code>qn create</code>, and brings <code>qn env</code> and <code>qn upgrade</code>; version 2.0.0 rewrote QuickNode CLI with zero runtime dependencies and a safe <code>qn create</code>. Both require Node.js {{node}}+.</p>
 <p>Versions follow <a href="https://semver.org/" rel="noopener noreferrer">semantic versioning</a>. Release notes with the build provenance are on <a href="{{repo}}/releases" rel="noopener noreferrer">GitHub Releases</a>.</p>
+
+<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// upcoming</span></h2>
+<h3>Breaking changes</h3>
+<ul class="list" role="list">
+  <li>The generated database code has one shape for every database: <code>src/infrastructure/database/connection</code> exports <code>databaseConnection</code> with <code>initialize()</code>, <code>ping()</code> and <code>close()</code>. In JavaScript projects it replaces the default export <code>sequelizeConnection</code> and the models are loaded by <code>initialize()</code>.</li>
+  <li>The connection is PostgreSQL only: <code>DB_TYPE</code> and the half-supported MySQL and SQLite branches are gone (use <code>--db sqlite</code>). <code>@types/sqlite3</code> left the TypeScript template.</li>
+  <li>The commands written into new projects and docs use <code>npx {{package}}@3</code>.</li>
+  <li>The size budget of the published package is 400 KB (was 300 KB), recorded in ADR-001 D4.</li>
+  <li><code>qn create</code> asks for the database in a terminal (<code>--yes</code> and <code>--preset</code> skip the question).</li>
+</ul>
+<h3>Added</h3>
+<ul class="list" role="list">
+  <li><code>quicknode.json</code> in new projects: template, database, package manager, test runner, layer folders, template version and the hash of every generated file. <code>qn generate</code>, <code>qn add</code>, <code>qn check</code>, <code>qn doctor</code> and <code>qn upgrade</code> read it; projects without it are still detected by their layout.</li>
+  <li><code>qn create --db postgres|sqlite|none</code>: templates made of a small base plus one database add-on. SQLite uses <code>node:sqlite</code>, built into Node.js (no driver, no Docker); <code>none</code> uses in-memory repositories. <code>qn generate</code> writes the repository for the project's database.</li>
+  <li><code>qn create --preset api-minima|api-postgres</code> or <code>--preset ./file.json</code>, validated before anything is written; flags win over the preset.</li>
+  <li><code>qn env</code>: compares <code>.env</code> with <code>.env.example</code> by name and, with <code>--generate-secrets</code>, adds what is missing with random secrets (<code>crypto.randomBytes</code>). It never prints values.</li>
+  <li><code>qn upgrade</code>: applies a newer template. Files you did not change are updated, changed files get a diff and a <code>.qn-new</code> copy, <code>package.json</code> only gets newer versions of the dependencies it has; <code>--dry-run</code> first, confirmation (or <code>--yes</code>) to apply.</li>
+  <li>Error codes <code>E_CONFIG_INVALID</code>, <code>E_PRESET_INVALID</code>, <code>E_ENV_EXAMPLE_MISSING</code>, <code>E_CONFIRM_REQUIRED</code> and <code>E_CLI_OUTDATED</code>; MCP tools <code>qn_env</code> and <code>qn_upgrade</code> (dry run unless <code>"apply": true</code>).</li>
+  <li><code>qn doctor</code> skips Docker when the project has no PostgreSQL and says when <code>qn upgrade</code> has something new.</li>
+</ul>
 
 <h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// upcoming</span></h2>
 <h3>Breaking changes</h3>

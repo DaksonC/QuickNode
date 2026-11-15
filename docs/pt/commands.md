@@ -1,6 +1,6 @@
 # Referência de comandos
 
-O QuickNode CLI cria um projeto com `qn create`, faz ele crescer com `qn generate` e `qn add`, verifica com `qn check` e `qn doctor`, se descreve com `qn schema`, atende assistentes de IA com `qn mcp` e abre esta documentação com `qn ui`; rode `qn help <comando>` para ver a mesma referência offline.
+O QuickNode CLI cria um projeto com `qn create`, faz ele crescer com `qn generate` e `qn add`, verifica com `qn check`, `qn doctor` e `qn env`, atualiza o template com `qn upgrade`, se descreve com `qn schema`, atende assistentes de IA com `qn mcp` e abre esta documentação com `qn ui`; rode `qn help <comando>` para ver a mesma referência offline.
 
 Esta página é gerada da definição que a CLI usa para ler os argumentos (`src/spec.ts`), então sempre corresponde à versão instalada. Os textos de ajuda da CLI ficam em inglês.
 
@@ -23,13 +23,15 @@ $ qn create [name] [options]
 - **`-t, --typescript`**: Usa o template TypeScript (também -ts)
 - **`-j, --javascript`**: Usa o template JavaScript (também -js)
 - **`-f, --force`**: Grava num diretório não vazio, sobrescrevendo os arquivos em conflito
-- **`-y, --yes`**: Aceita os padrões sem perguntar (nome, TypeScript)
+- **`-y, --yes`**: Aceita os padrões sem perguntar (nome, TypeScript, PostgreSQL)
 - **`--dry-run`**: Mostra o que seria criado sem gravar nada
 - **`--install`**: Roda npm install depois de criar o projeto
 - **`--git`**: Inicializa um repositório git
 - **`--no-credits`**: Deixa de fora do README a linha "Generated with QuickNode"
 - **`--pm <npm|pnpm|yarn>`**: Gerenciador de pacotes usado nos scripts, na documentação e no --install (padrão: npm)
 - **`--test <jest|node>`**: Executor de testes (padrão: jest; node usa o node:test nativo)
+- **`--db <postgres|sqlite|none>`**: Banco: postgres (Docker), sqlite (node:sqlite, sem driver) ou none (repositórios em memória)
+- **`--preset <name|file.json>`**: Parte de um preset (api-minima, api-postgres) ou de um arquivo JSON local; as flags vencem o preset
 
 ### Exemplos
 
@@ -37,6 +39,9 @@ $ qn create [name] [options]
 $ qn create my-api
 $ qn create my-api -ts --git --install
 $ qn create my-api --pm pnpm --test node
+$ qn create my-api --db sqlite
+$ qn create my-api --preset api-minima
+$ qn create my-api --preset ./team-preset.json
 $ qn create . --javascript --force
 $ qn create my-api --dry-run
 $ qn create my-api --yes --json
@@ -54,24 +59,29 @@ Arguments:
   name  Project folder and package name ("." for the current directory)
 
 Options:
-  -t, --typescript          Use the TypeScript template (also -ts)
-  -j, --javascript          Use the JavaScript template (also -js)
-  -f, --force               Write into a non-empty directory, overwriting conflicting files
-  -y, --yes                 Accept defaults without prompting (name, TypeScript)
-      --dry-run             Show what would be created without writing anything
-      --install             Run npm install after creating the project
-      --git                 Initialize a git repository
-      --no-credits          Leave the "Generated with QuickNode" line out of the README
-      --pm <npm|pnpm|yarn>  Package manager used in scripts, docs and --install (default: npm)
-      --test <jest|node>    Test runner (default: jest; node uses the built-in node:test)
-  -h, --help                Show help
-  -v, --version             Show the version
-      --json                Print a JSON result to stdout (no prompts, no colors)
+  -t, --typescript                 Use the TypeScript template (also -ts)
+  -j, --javascript                 Use the JavaScript template (also -js)
+  -f, --force                      Write into a non-empty directory, overwriting conflicting files
+  -y, --yes                        Accept defaults without prompting (name, TypeScript, PostgreSQL)
+      --dry-run                    Show what would be created without writing anything
+      --install                    Run npm install after creating the project
+      --git                        Initialize a git repository
+      --no-credits                 Leave the "Generated with QuickNode" line out of the README
+      --pm <npm|pnpm|yarn>         Package manager used in scripts, docs and --install (default: npm)
+      --test <jest|node>           Test runner (default: jest; node uses the built-in node:test)
+      --db <postgres|sqlite|none>  Database: postgres (Docker), sqlite (node:sqlite, no driver) or none (in-memory repositories)
+      --preset <name|file.json>    Start from a preset (api-minima, api-postgres) or a local JSON file; flags win over it
+  -h, --help                       Show help
+  -v, --version                    Show the version
+      --json                       Print a JSON result to stdout (no prompts, no colors)
 
 Examples:
   qn create my-api
   qn create my-api -ts --git --install
   qn create my-api --pm pnpm --test node
+  qn create my-api --db sqlite
+  qn create my-api --preset api-minima
+  qn create my-api --preset ./team-preset.json
   qn create . --javascript --force
   qn create my-api --dry-run
   qn create my-api --yes --json
@@ -280,6 +290,104 @@ Examples:
 Docs: https://daksonc.github.io/QuickNode/
 ```
 
+## qn env
+
+Compara o .env com o .env.example e gera os segredos que faltam (os valores nunca são impressos).
+
+### Uso
+
+```
+$ qn env [options]
+```
+
+### Opções
+
+- **`--generate-secrets`**: Grava no .env as variáveis que faltam, com valores aleatórios para segredos e placeholders change-me
+- **`--dry-run`**: Com --generate-secrets, mostra o que mudaria sem gravar
+- **`-f, --force`**: Com --generate-secrets, troca também os segredos que já têm valor
+
+### Exemplos
+
+```
+$ qn env
+$ qn env --generate-secrets
+$ qn env --generate-secrets --dry-run
+$ qn env --json
+```
+
+Mesmo texto de `qn help env`
+
+```
+$ qn help env
+qn env [options]
+
+Compare .env with .env.example and generate missing secrets (values are never printed)
+
+Options:
+      --generate-secrets  Write missing variables to .env, with random values for secrets and change-me placeholders
+      --dry-run           With --generate-secrets, show what would change without writing
+  -f, --force             With --generate-secrets, also replace secrets that already have a value
+  -h, --help              Show help
+  -v, --version           Show the version
+      --json              Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn env
+  qn env --generate-secrets
+  qn env --generate-secrets --dry-run
+  qn env --json
+
+Docs: https://daksonc.github.io/QuickNode/
+```
+
+## qn upgrade
+
+Aplica as melhorias de um template mais novo: atualiza os arquivos que você não alterou e mostra o diff dos outros.
+
+### Uso
+
+```
+$ qn upgrade [options]
+```
+
+### Opções
+
+- **`--dry-run`**: Mostra o plano e os diffs sem gravar nada
+- **`-y, --yes`**: Aplica sem perguntar (obrigatório sem terminal)
+- **`-f, --force`**: Sobrescreve também os arquivos que você alterou (o diff é mostrado antes)
+
+### Exemplos
+
+```
+$ qn upgrade --dry-run
+$ qn upgrade
+$ qn upgrade --yes --json
+```
+
+Mesmo texto de `qn help upgrade`
+
+```
+$ qn help upgrade
+qn upgrade [options]
+
+Apply the improvements of a newer template: updates files you did not change, diffs the rest
+
+Options:
+      --dry-run  Show the plan and the diffs without writing anything
+  -y, --yes      Apply without asking (required without a terminal)
+  -f, --force    Also overwrite files you changed (their diff is shown first)
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn upgrade --dry-run
+  qn upgrade
+  qn upgrade --yes --json
+
+Docs: https://daksonc.github.io/QuickNode/
+```
+
 ## qn schema
 
 Imprime em JSON a especificação completa de comandos, flags, valores e códigos de erro.
@@ -333,7 +441,7 @@ $ qn mcp
 
 ```
 $ qn mcp
-$ npx @10565/quicknode-cli@2 mcp
+$ npx @10565/quicknode-cli@3 mcp
 ```
 
 Mesmo texto de `qn help mcp`
@@ -351,7 +459,7 @@ Options:
 
 Examples:
   qn mcp
-  npx @10565/quicknode-cli@2 mcp
+  npx @10565/quicknode-cli@3 mcp
 
 Docs: https://daksonc.github.io/QuickNode/
 ```
@@ -370,7 +478,7 @@ Apelido: `qn docs`
 
 ### Argumento
 
-- **`[topic]`**: Página a abrir (valores aceitos: `start`, `commands`, `create`, `ui`, `structure`, `tutorial`, `generate`, `agents`, `when`, `errors`, `check`, `add`, `doctor`, `faq`, `compare`, `changelog`, `adr`)
+- **`[topic]`**: Página a abrir (valores aceitos: `start`, `commands`, `create`, `ui`, `structure`, `tutorial`, `generate`, `agents`, `when`, `errors`, `check`, `add`, `doctor`, `env`, `upgrade`, `faq`, `compare`, `changelog`, `adr`)
 
 ### Opções
 
@@ -395,7 +503,7 @@ qn ui [topic] [options]
 Open the documentation in the browser (alias: qn docs)
 
 Arguments:
-  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, agents, when, errors, check, add, doctor, faq, compare, changelog, adr)
+  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, agents, when, errors, check, add, doctor, env, upgrade, faq, compare, changelog, adr)
 
 Options:
   -p, --print         Only print the link, do not open the browser
@@ -449,11 +557,16 @@ $ qn create my-api --json
 - **`E_PATH_BLOCKED` (exit 1)**: qn create: um caminho do projeto está ocupado por um arquivo ou pasta de outro tipo
 - **`E_FILES_EXIST` (exit 1)**: qn generate / qn add: existem arquivos com outro conteúdo (use --force para sobrescrever)
 - **`E_NOT_A_PROJECT` (exit 1)**: O comando precisa rodar dentro de um projeto criado com qn create
+- **`E_CONFIG_INVALID` (exit 1)**: quicknode.json não é um JSON válido ou tem chaves ou valores desconhecidos
+- **`E_PRESET_INVALID` (exit 1)**: qn create --preset: preset desconhecido, arquivo ilegível ou chaves ou valores desconhecidos
+- **`E_ENV_EXAMPLE_MISSING` (exit 1)**: qn env: o projeto não tem .env.example para comparar com o .env
+- **`E_CONFIRM_REQUIRED` (exit 1)**: qn upgrade: precisa de confirmação e não há terminal (passe --yes)
+- **`E_CLI_OUTDATED` (exit 1)**: qn upgrade: o projeto foi criado por uma CLI mais nova que esta
 - **`E_ABORTED` (exit 1)**: Uma pergunta interativa foi cancelada
 - **`E_INTERNAL` (exit 1)**: Erro inesperado (rode de novo com DEBUG=1 e reporte)
 
 ---
 
-Atualizado em 2026-11-15 · válido para a v2.x · https://daksonc.github.io/QuickNode/pt/commands/
+Atualizado em 2026-11-15 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/commands/
 
 > Todos os comandos e flags do QuickNode CLI, gerados da mesma definição que a CLI usa: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, códigos de saída e de erro.

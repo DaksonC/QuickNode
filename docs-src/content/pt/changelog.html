@@ -1,6 +1,26 @@
 <h1 tabindex="-1">Changelog</h1>
-<p class="answer">A versão {{version}} reescreve o QuickNode CLI sem dependências de runtime, torna o <code>qn create</code> seguro por padrão, publica com provenance e traz o <code>qn generate</code>, o <code>qn check</code>, o <code>qn add</code>, o <code>qn doctor</code>, o <code>qn ui</code> e este site; ela exige Node.js {{node}}+.</p>
+<p class="answer">A versão {{version}} registra como cada projeto foi criado no <code>quicknode.json</code>, traz <code>--db postgres|sqlite|none</code> e presets no <code>qn create</code>, e os comandos <code>qn env</code> e <code>qn upgrade</code>; a versão 2.0.0 reescreveu o QuickNode CLI sem dependências de runtime e com um <code>qn create</code> seguro. As duas exigem Node.js {{node}}+.</p>
 <p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="{{repo}}/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
+
+<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// em breve</span></h2>
+<h3>Mudanças incompatíveis</h3>
+<ul class="list" role="list">
+  <li>O código de banco gerado tem o mesmo formato em todos os bancos: <code>src/infrastructure/database/connection</code> exporta <code>databaseConnection</code> com <code>initialize()</code>, <code>ping()</code> e <code>close()</code>. Nos projetos JavaScript ele substitui o export padrão <code>sequelizeConnection</code>, e os models são carregados pelo <code>initialize()</code>.</li>
+  <li>A conexão é só PostgreSQL: saem o <code>DB_TYPE</code> e os ramos de MySQL e SQLite que funcionavam pela metade (use <code>--db sqlite</code>). O <code>@types/sqlite3</code> saiu do template TypeScript.</li>
+  <li>Os comandos escritos nos projetos novos e na documentação usam <code>npx {{package}}@3</code>.</li>
+  <li>O orçamento de tamanho do pacote publicado passa a 400 KB (era 300 KB), registrado na D4 do ADR-001.</li>
+  <li>O <code>qn create</code> pergunta o banco no terminal (<code>--yes</code> e <code>--preset</code> pulam a pergunta).</li>
+</ul>
+<h3>Adicionado</h3>
+<ul class="list" role="list">
+  <li><code>quicknode.json</code> nos projetos novos: template, banco, gerenciador de pacotes, executor de testes, pastas das camadas, versão do template e o hash de cada arquivo gerado. O <code>qn generate</code>, o <code>qn add</code>, o <code>qn check</code>, o <code>qn doctor</code> e o <code>qn upgrade</code> leem esse arquivo; projetos sem ele continuam detectados pelo layout.</li>
+  <li><code>qn create --db postgres|sqlite|none</code>: templates feitos de uma base mínima mais um add-on de banco. O SQLite usa o <code>node:sqlite</code>, nativo do Node.js (sem driver, sem Docker); o <code>none</code> usa repositórios em memória. O <code>qn generate</code> escreve o repositório do banco do projeto.</li>
+  <li><code>qn create --preset api-minima|api-postgres</code> ou <code>--preset ./arquivo.json</code>, validado antes de gravar qualquer coisa; as flags vencem o preset.</li>
+  <li><code>qn env</code>: compara o <code>.env</code> com o <code>.env.example</code> pelos nomes e, com <code>--generate-secrets</code>, adiciona o que falta com segredos aleatórios (<code>crypto.randomBytes</code>). Nunca imprime valores.</li>
+  <li><code>qn upgrade</code>: aplica um template mais novo. Arquivos que você não alterou são atualizados, os alterados recebem um diff e uma cópia <code>.qn-new</code>, e o <code>package.json</code> só recebe versões mais novas das dependências que já tem; primeiro <code>--dry-run</code>, depois confirmação (ou <code>--yes</code>) para aplicar.</li>
+  <li>Códigos de erro <code>E_CONFIG_INVALID</code>, <code>E_PRESET_INVALID</code>, <code>E_ENV_EXAMPLE_MISSING</code>, <code>E_CONFIRM_REQUIRED</code> e <code>E_CLI_OUTDATED</code>; ferramentas MCP <code>qn_env</code> e <code>qn_upgrade</code> (simulação, a menos que <code>"apply": true</code>).</li>
+  <li>O <code>qn doctor</code> pula o Docker quando o projeto não usa PostgreSQL e avisa quando o <code>qn upgrade</code> tem novidade.</li>
+</ul>
 
 <h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// em breve</span></h2>
 <h3>Mudanças incompatíveis</h3>

@@ -48,3 +48,6 @@ pids
 *.pid.lock
 tmp/
 temp/
+
+# Agent evaluation reports (npm run eval:agents)
+eval/results/

@@ -100,7 +100,7 @@ describe('assertWritable', () => {
   it('refuses a non-empty target without force', () => {
     assert.throws(
       () => assertWritable(plan({ existingEntries: ['a'], conflicts: ['a'] })),
-      (error) => error instanceof TargetNotEmptyError && error.code === 'TARGET_NOT_EMPTY'
+      (error) => error instanceof TargetNotEmptyError && error.code === 'E_DIR_NOT_EMPTY'
     );
   });
 

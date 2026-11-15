@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { constants, type Stats } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { QnError } from './errors.js';
 
 /** Template entries that are never copied into a generated project. */
 const IGNORED = new Set(['node_modules', 'package-lock.json', '.env', 'dist', 'coverage', '.DS_Store']);
@@ -15,9 +16,7 @@ export const STAGING_PREFIX = '.qn-staging-';
 /** Entries in the target directory that do not count as "non empty". */
 const IGNORED_IN_TARGET = new Set(['.git']);
 
-export class TargetNotEmptyError extends Error {
-  readonly code = 'TARGET_NOT_EMPTY';
-
+export class TargetNotEmptyError extends QnError {
   constructor(
     readonly targetDir: string,
     /** Project files that already exist in the target (would be overwritten). */
@@ -25,21 +24,21 @@ export class TargetNotEmptyError extends Error {
     /** Entries already present in the target (excluding .git). */
     readonly entries: string[]
   ) {
-    super(`Directory ${targetDir} is not empty. Use --force to write into it anyway.`);
-    this.name = 'TargetNotEmptyError';
+    super('E_DIR_NOT_EMPTY', `Directory ${targetDir} is not empty. Use --force to write into it anyway.`);
   }
 }
 
-export class PathBlockedError extends Error {
-  readonly code = 'PATH_BLOCKED';
-
+export class PathBlockedError extends QnError {
   constructor(
     readonly targetDir: string,
     /** Project files blocked by a file/directory of another type in the target. */
     readonly paths: string[]
   ) {
-    super(`Cannot write into ${targetDir}: some paths are blocked by an existing file or directory.`);
-    this.name = 'PathBlockedError';
+    super(
+      'E_PATH_BLOCKED',
+      `Cannot write into ${targetDir}: some paths are blocked by an existing file or directory.`,
+      'rename or remove the listed paths, or choose another folder'
+    );
   }
 }
 
@@ -147,7 +146,7 @@ export async function planScaffold({ templateDir, targetDir, preserve = [] }: Pl
   const targetStats = await lstatOrUndefined(targetDir);
 
   if (targetStats && !targetStats.isDirectory()) {
-    throw new Error(`${targetDir} exists and is not a directory.`);
+    throw new QnError('E_PATH_BLOCKED', `${targetDir} exists and is not a directory.`, 'choose another project name');
   }
 
   const existingEntries = targetStats

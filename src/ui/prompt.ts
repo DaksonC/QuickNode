@@ -1,3 +1,4 @@
+import { QnError } from '../core/errors.js';
 import { createInterface } from 'node:readline/promises';
 
 export interface Choice<T> {
@@ -13,12 +14,9 @@ export interface Prompter {
   close(): void;
 }
 
-export class PromptAbortedError extends Error {
-  readonly code = 'ABORTED';
-
+export class PromptAbortedError extends QnError {
   constructor() {
-    super('Aborted.');
-    this.name = 'PromptAbortedError';
+    super('E_ABORTED', 'Aborted.');
   }
 }
 

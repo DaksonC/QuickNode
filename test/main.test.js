@@ -45,10 +45,11 @@ describe('help and version', () => {
 
   it('prints version and help as JSON with --json', async (t) => {
     const cwd = await makeTmp(t);
-    assert.deepEqual(JSON.parse((await qn(cwd, '--json', '--version')).stdout), { ok: true, version: getVersion() });
+    assert.deepEqual(JSON.parse((await qn(cwd, '--json', '--version')).stdout), { schemaVersion: 1, ok: true, version: getVersion() });
     const help = JSON.parse((await qn(cwd, 'create', '--json', '-h')).stdout);
     assert.equal(help.ok, true);
-    assert.match(help.help, /--dry-run/);
+    assert.equal(help.command.name, 'create');
+    assert.equal(help.command.options['dry-run'].type, 'boolean');
   });
 
   it('fails with a usage error for unknown commands', async (t) => {
@@ -131,11 +132,11 @@ describe('create', () => {
     assert.equal(code, EXIT_ERROR);
     const { ok, error } = JSON.parse(stdout);
     assert.equal(ok, false);
-    assert.equal(error.code, 'TARGET_NOT_EMPTY');
+    assert.equal(error.code, 'E_DIR_NOT_EMPTY');
     assert.deepEqual(error.conflicts, ['package.json']);
 
     const usage = JSON.parse((await qn(cwd, 'create', '--json')).stdout);
-    assert.equal(usage.error.code, 'USAGE');
+    assert.equal(usage.error.code, 'E_USAGE');
   });
 
   it('--force keeps an existing .env and says so', async (t) => {

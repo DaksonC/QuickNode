@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { unifiedDiff } from './diff.js';
+import { QnError } from './errors.js';
 import { readIfExists } from './fs.js';
 import { insertBeforeMarker, replaceRegion, type MarkerStatus } from './markers.js';
 
@@ -23,12 +24,9 @@ export interface FileChange {
   after: string;
 }
 
-export class ConflictError extends Error {
-  readonly code = 'FILES_EXIST';
-
+export class ConflictError extends QnError {
   constructor(readonly paths: string[]) {
-    super('Some files already exist with different content. Use --force to overwrite them.');
-    this.name = 'ConflictError';
+    super('E_FILES_EXIST', 'Some files already exist with different content. Use --force to overwrite them.');
   }
 }
 

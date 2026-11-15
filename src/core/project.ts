@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import type { PackageManager } from '../spec.js';
+import { QnError } from './errors.js';
 import type { TemplateName } from './paths.js';
 
 export type TestRunner = 'jest' | 'node';
@@ -25,14 +26,13 @@ export interface PackageJson {
   [key: string]: unknown;
 }
 
-export class NotQuickNodeProjectError extends Error {
-  readonly code = 'NOT_QUICKNODE_PROJECT';
-
+export class NotQuickNodeProjectError extends QnError {
   constructor(readonly cwd: string) {
     super(
-      `No QuickNode project found in ${cwd} or its parent folders (expected package.json, src/domain and src/infrastructure). Create one with "qn create".`
+      'E_NOT_A_PROJECT',
+      `No QuickNode project found in ${cwd} or its parent folders (expected package.json, src/domain and src/infrastructure).`,
+      'cd into the project folder, or create one: qn create my-api --typescript --yes'
     );
-    this.name = 'NotQuickNodeProjectError';
   }
 }
 

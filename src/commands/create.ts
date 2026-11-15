@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createEnvFile, ENV_FILE, generatesEnvFile } from '../core/env.js';
+import { shellQuote } from '../core/errors.js';
 import { readIfExists } from '../core/fs.js';
 import { templateDir, type TemplateName } from '../core/paths.js';
 import { projectNameError, resolveProject } from '../core/project-name.js';
@@ -88,7 +89,13 @@ export function createInputFromFlags(
 async function resolveName(input: CreateInput, prompter?: Prompter): Promise<string> {
   if (input.name !== undefined) return input.name;
   if (input.yes) return DEFAULT_PROJECT_NAME;
-  if (!prompter) throw new UsageError('A project name is required (or pass --yes to use the default).', 'create');
+  if (!prompter) {
+    throw new UsageError(
+      'A project name is required (or pass --yes to use the default).',
+      'create',
+      `qn create my-api ${input.template ? `--${input.template}` : '--typescript'}`
+    );
+  }
   return prompter.text('Project name (use "." for the current directory)', DEFAULT_PROJECT_NAME, (value) =>
     value === '.' ? undefined : projectNameError(value)
   );
@@ -97,7 +104,13 @@ async function resolveName(input: CreateInput, prompter?: Prompter): Promise<str
 async function resolveTemplate(input: CreateInput, prompter?: Prompter): Promise<TemplateName> {
   if (input.template) return input.template;
   if (input.yes) return DEFAULT_TEMPLATE;
-  if (!prompter) throw new UsageError('Choose a template with --typescript or --javascript (or pass --yes).', 'create');
+  if (!prompter) {
+    throw new UsageError(
+      'Choose a template with --typescript or --javascript (or pass --yes).',
+      'create',
+      `qn create ${shellQuote(input.name ?? 'my-api')} --typescript`
+    );
+  }
   return prompter.choose<TemplateName>('Template', [
     { label: 'TypeScript', value: 'typescript' },
     { label: 'JavaScript', value: 'javascript' }

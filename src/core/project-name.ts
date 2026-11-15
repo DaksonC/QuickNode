@@ -1,5 +1,6 @@
 import { builtinModules } from 'node:module';
 import path from 'node:path';
+import { UsageError } from '../spec.js';
 
 const MAX_LENGTH = 214;
 export const DEFAULT_PACKAGE_NAME = 'quicknode-app';
@@ -52,14 +53,14 @@ export function resolveProject(name: string, cwd: string = process.cwd()): Resol
 
   const reason = projectNameError(name);
   if (reason) {
-    throw new Error(`Invalid project name "${name}": ${reason}.`);
+    throw new UsageError(`Invalid project name "${name}": ${reason}.`, 'create', 'qn create my-api --typescript');
   }
 
   // Unreachable after projectNameError; kept as defense in depth.
   const targetDir = path.resolve(cwd, name);
   const relative = path.relative(cwd, targetDir);
   if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) {
-    throw new Error(`Project directory must be inside ${cwd}.`);
+    throw new UsageError(`Project directory must be inside ${cwd}.`, 'create', 'qn create my-api --typescript');
   }
 
   return { packageName: name, targetDir, inCurrentDir: false };

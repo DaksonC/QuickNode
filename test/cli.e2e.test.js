@@ -33,7 +33,7 @@ describe('qn executable', () => {
   it('exits with an error and does not write on path traversal', async (t) => {
     const cwd = await makeTmp(t, 'qn-e2e-');
     await assert.rejects(qn(cwd, 'create', '../escaped', '-ts'), (error) => {
-      assert.equal(error.code, 1);
+      assert.equal(error.code, 2);
       assert.match(error.stderr, /Invalid project name/);
       return true;
     });

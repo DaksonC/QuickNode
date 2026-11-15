@@ -1,13 +1,16 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { PassThrough } from 'node:stream';
 import { addInputFromFlags, addRecipes } from './commands/add.js';
 import { checkProject } from './commands/check.js';
 import { createInputFromFlags, createProject, type CreateResult } from './commands/create.js';
 import { doctor } from './commands/doctor.js';
 import { generate, generateInputFromFlags } from './commands/generate.js';
+import { runMcpServer } from './commands/mcp.js';
+import { buildSchema, commandSchema } from './commands/schema.js';
 import { DOCS_URL, openDocs, uiInputFromFlags, type UiContext } from './commands/ui.js';
 import { ConflictError } from './core/changes.js';
+import { describeError, type ErrorReport } from './core/error-report.js';
+import { ERROR_CODES, JSON_SCHEMA_VERSION, QnError } from './core/errors.js';
 import { packageRoot } from './core/paths.js';
 import { PathBlockedError, TargetNotEmptyError } from './core/scaffold.js';
 import {
@@ -21,7 +24,7 @@ import {
   type OptionSpec
 } from './spec.js';
 import { renderBanner } from './ui/banner.js';
-import { createPrompter, PromptAbortedError } from './ui/prompt.js';
+import { createPrompter } from './ui/prompt.js';
 import { renderAdd, renderCheck, renderCreate, renderDoctor, renderGenerate } from './ui/render.js';
 import { createStyle, type Style } from './ui/style.js';
 
@@ -58,7 +61,8 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
   const out = createStyle(io.stdout);
   const err = createStyle(io.stderr);
   let json = wantsJson(argv);
-  const writeJson = (value: unknown) => io.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+  const writeJson = (value: object) =>
+    io.stdout.write(`${JSON.stringify({ schemaVersion: JSON_SCHEMA_VERSION, ...value }, null, 2)}\n`);
 
   try {
     const parsed = parseCommandLine(argv);
@@ -69,9 +73,12 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
       return EXIT_OK;
     }
     if (parsed.kind === 'help') {
-      const help = renderHelp(parsed.command, json ? createStyle(new PassThrough()) : out, !json && Boolean(io.stdout.isTTY));
-      if (json) writeJson({ ok: true, help });
-      else io.stdout.write(help);
+      // As JSON, help is the specification itself (ADR-001, D9): agents discover instead of guessing.
+      if (json) {
+        writeJson(parsed.command ? { ok: true, command: commandSchema(parsed.command) } : { ok: true, ...buildSchema(getVersion()) });
+      } else {
+        io.stdout.write(renderHelp(parsed.command, out, Boolean(io.stdout.isTTY)));
+      }
       return EXIT_OK;
     }
 
@@ -84,6 +91,16 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
     };
 
     switch (parsed.command) {
+      case 'schema': {
+        if (positionals.length > 0) throw new UsageError('qn schema takes no arguments.', 'schema');
+        // Always JSON: the schema is meant for programs.
+        writeJson({ ok: true, ...buildSchema(getVersion()) });
+        return EXIT_OK;
+      }
+      case 'mcp': {
+        if (positionals.length > 0) throw new UsageError('qn mcp takes no arguments.', 'mcp');
+        return runMcpServer({ stdin: io.stdin, stdout: io.stdout, cwd: io.cwd, version: getVersion() });
+      }
       case 'ui': {
         const result = await openDocs(uiInputFromFlags(positionals, values), {
           env: io.env ?? process.env,
@@ -134,22 +151,11 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
     const stepsOk = result.git?.ok !== false && result.install?.ok !== false;
     return finish({ ok: stepsOk, ...result }, renderCreate(result, out, DOCS_URL));
   } catch (error) {
-    if (json) {
-      writeJson({ ok: false, error: serializeError(error) });
-    } else {
-      io.stderr.write(renderError(error, err));
-    }
-    return error instanceof UsageError ? EXIT_USAGE : EXIT_ERROR;
+    const problem = describeError(error, argv);
+    if (json) writeJson({ ok: false, error: problem });
+    else io.stderr.write(renderError(error, problem, err));
+    return ERROR_CODES[problem.code].exitCode;
   }
-}
-
-function serializeError(error: unknown): Record<string, unknown> {
-  if (!(error instanceof Error)) return { code: 'ERROR', message: String(error) };
-  const { code = 'ERROR' } = error as { code?: string };
-  const details: Record<string, unknown> = {};
-  if (error instanceof TargetNotEmptyError) Object.assign(details, { conflicts: error.conflicts, entries: error.entries });
-  if (error instanceof PathBlockedError || error instanceof ConflictError) Object.assign(details, { paths: error.paths });
-  return { code, message: error.message, ...details };
 }
 
 function listFiles(files: string[]): string[] {
@@ -158,9 +164,8 @@ function listFiles(files: string[]): string[] {
   return lines;
 }
 
-function renderError(error: unknown, style: Style): string {
-  const message = error instanceof Error ? error.message : String(error);
-  const lines = [style.error(`✖ ${message}`)];
+function renderError(error: unknown, problem: ErrorReport, style: Style): string {
+  const lines = [style.error(`✖ ${problem.message}`)];
 
   if (error instanceof TargetNotEmptyError) {
     const hasConflicts = error.conflicts.length > 0;
@@ -168,11 +173,11 @@ function renderError(error: unknown, style: Style): string {
     lines.push(...listFiles(hasConflicts ? error.conflicts : error.entries));
   } else if (error instanceof PathBlockedError || error instanceof ConflictError) {
     lines.push(...listFiles(error.paths));
-  } else if (error instanceof UsageError) {
-    lines.push(style.muted(`Run "qn ${error.command ? `${error.command} ` : ''}--help" for usage.`));
-  } else if (!(error instanceof PromptAbortedError) && process.env.DEBUG && error instanceof Error && error.stack) {
+  } else if (!(error instanceof QnError) && process.env.DEBUG && error instanceof Error && error.stack) {
     lines.push(style.muted(error.stack));
   }
+  if (problem.fix) lines.push(style.muted(`Fix: ${problem.fix}`));
+  lines.push(style.muted(`[${problem.code}]`));
   return `${lines.join('\n')}\n`;
 }
 

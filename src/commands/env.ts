@@ -106,8 +106,10 @@ export async function envCommand(input: EnvInput, cwd: string): Promise<EnvResul
   // The state the result describes: after the command, or as it is now on a dry run.
   const state = input.dryRun ? env : after;
   const comparison = state === undefined ? undefined : compareEnv(state, example);
+  // Like the other commands, a dry run succeeds when the real run would leave .env complete.
+  const outcome = after === undefined ? undefined : compareEnv(after, example);
   return {
-    ok: comparison !== undefined && comparison.missing.length === 0 && comparison.placeholders.length === 0,
+    ok: outcome !== undefined && outcome.missing.length === 0 && outcome.placeholders.length === 0,
     dryRun: input.dryRun,
     root,
     envExists: state !== undefined,

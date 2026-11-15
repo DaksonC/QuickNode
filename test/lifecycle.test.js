@@ -138,6 +138,8 @@ describe('create --db', () => {
         assert.doesNotMatch(env, /DB_PASSWORD/);
         const { code } = await runQn(project, 'generate', 'crud', 'order-item');
         assert.equal(code, 0);
+        const again = json(await runQn(project, 'generate', 'crud', 'order-item', '--json'));
+        assert.deepEqual(again.files.filter((file) => file.action !== 'unchanged'), [], `${db}: generate is idempotent`);
         const factory = await read(project, 'src/infrastructure/database', `repository-factory.${ext}`);
         assert.match(factory, db === 'sqlite' ? /SqliteOrderItemRepository/ : /InMemoryOrderItemRepository/);
         assert.equal(await exists(project, 'src/infrastructure/database/entities'), false);
@@ -179,7 +181,7 @@ describe('qn env', () => {
     await fs.writeFile(path.join(project, '.env'), (await read(project, '.env')).replace(/^DB_PASSWORD=.*$/m, 'DB_PASSWORD=change-me').replace(/^PORT=.*\n/m, ''));
 
     const dry = json(await runQn(project, 'env', '--generate-secrets', '--dry-run', '--json'));
-    assert.deepEqual([dry.generated, dry.added, dry.written, dry.ok], [['DB_PASSWORD'], ['PORT'], false, false]);
+    assert.deepEqual([dry.generated, dry.added, dry.written, dry.ok, dry.missing], [['DB_PASSWORD'], ['PORT'], false, true, ['PORT']]);
     assert.match(await read(project, '.env'), /^DB_PASSWORD=change-me$/m);
 
     const applied = await runQn(project, 'env', '--generate-secrets');

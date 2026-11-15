@@ -151,7 +151,8 @@ export function renderEnv(result: EnvResult, style: Style): string {
   if (result.missing.length > 0) lines.push(style.error(`✖ Missing in .env: ${list(result.missing)}`));
   if (result.placeholders.length > 0) lines.push(style.error(`✖ Placeholder values in .env: ${list(result.placeholders)}`));
   if (result.extra.length > 0) lines.push(style.accent(`! Not in .env.example: ${list(result.extra)}`));
-  if (result.ok && result.extra.length === 0) lines.push(style.success('✔ .env has every variable of .env.example'));
+  const complete = result.envExists && result.missing.length === 0 && result.placeholders.length === 0;
+  if (complete && result.extra.length === 0) lines.push(style.success('✔ .env has every variable of .env.example'));
   if (!result.ok && !result.dryRun) lines.push('', style.muted('Fix: qn env --generate-secrets (values are never printed)'));
   return `${lines.join('\n')}\n`;
 }

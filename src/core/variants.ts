@@ -1,4 +1,5 @@
 import type { PackageManager } from '../spec.js';
+import { toJson } from './fs.js';
 import type { TemplateName } from './paths.js';
 import type { PackageJson, TestRunner } from './project.js';
 import type { RenderedProject } from './render.js';
@@ -62,7 +63,7 @@ export function applyTestRunner(files: RenderedProject, language: TemplateName, 
     const packageJson = JSON.parse(manifest.content) as PackageJson;
     packageJson.scripts = { ...packageJson.scripts, ...nodeTestScripts(language) };
     for (const name of JEST_PACKAGES) delete packageJson.devDependencies?.[name];
-    manifest.content = `${JSON.stringify(packageJson, null, 2)}\n`;
+    manifest.content = toJson(packageJson);
   }
   files.delete('jest.config.js');
   for (const [file, entry] of files) {

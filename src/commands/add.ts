@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ChangePlan, type PlannedFile } from '../core/changes.js';
 import { ENV_EXAMPLE_FILE } from '../core/env.js';
-import { isNotFound, readIfExists } from '../core/fs.js';
+import { readIfExists, toJson } from '../core/fs.js';
 import { packageRoot } from '../core/paths.js';
 import { assertDefaultLayers, detectProject, type PackageJson } from '../core/project.js';
 import {
@@ -14,7 +14,7 @@ import {
   type RecipeName
 } from '../core/recipes.js';
 import { renderFor } from '../core/render.js';
-import { listTemplateFiles } from '../core/scaffold.js';
+import { listTemplateFiles } from '../core/templates.js';
 import { adaptTestFile, formatImports } from '../core/source-format.js';
 import { rewriteForPackageManager } from '../core/variants.js';
 import { RECIPES, UsageError } from '../spec.js';
@@ -54,25 +54,6 @@ export function addInputFromFlags(positionals: string[], values: Record<string, 
 }
 
 const recipeDir = (name: string) => path.join(packageRoot(), 'templates', 'recipes', name);
-
-async function listIfExists(dir: string): Promise<string[]> {
-  try {
-    return await listTemplateFiles(dir);
-  } catch (error) {
-    if (isNotFound(error)) return [];
-    throw error;
-  }
-}
-
-/** Template files may be stored without their dot (see scaffold.ts). */
-async function readTemplateFile(dir: string, file: string): Promise<string> {
-  try {
-    return await fs.readFile(path.join(dir, file), 'utf8');
-  } catch (error) {
-    if (!isNotFound(error) || !path.basename(file).startsWith('.')) throw error;
-    return fs.readFile(path.join(dir, path.dirname(file), path.basename(file).slice(1)), 'utf8');
-  }
-}
 
 /** Adds the missing entries of `wanted` to `current`; never changes a value that exists. */
 function mergeMissing(
@@ -143,11 +124,11 @@ class RecipePlanner {
     if (recipe.ownFiles) {
       const dir = recipeDir(resolveRecipe(this.name));
       for (const base of [path.join(dir, 'common'), path.join(dir, ctx.project.language)]) {
-        for (const file of await listIfExists(base)) sources.push([base, file]);
+        for (const file of await listTemplateFiles(base)) sources.push([base, file]);
       }
     }
     for (const [base, file] of sources) {
-      const content = prepareContent(await readTemplateFile(base, file), file, ctx);
+      const content = prepareContent(await fs.readFile(path.join(base, file), 'utf8'), file, ctx);
       await this.track(file, () => this.plan.write(file, content));
     }
   }
@@ -204,7 +185,7 @@ class RecipePlanner {
           if (next[field] === undefined) delete next[field];
         }
         // Keep the user's formatting when nothing is added.
-        return JSON.stringify(next) === JSON.stringify(json) ? content : `${JSON.stringify(next, null, 2)}\n`;
+        return JSON.stringify(next) === JSON.stringify(json) ? content : toJson(next);
       })
     );
   }

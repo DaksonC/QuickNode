@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { DATABASES, PACKAGE_MANAGERS, TEST_RUNNERS } from '../spec.js';
-import { QnError, type ErrorCode } from './errors.js';
+import { DATABASES, PACKAGE_MANAGERS, TEMPLATES, TEST_RUNNERS } from '../spec.js';
+import { QnError } from './errors.js';
+import { compareCodeUnits, isNotFound, toJson } from './fs.js';
 import type { ProjectOptions } from './render.js';
+import { assertBoolean, assertChoice, assertKeys, type Fail } from './validate.js';
 
 /** File at the project root that records how the project was created (ADR-001, D6). */
 export const CONFIG_FILE = 'quicknode.json';
 export const CONFIG_SCHEMA_VERSION = 1;
-export const TEMPLATES = ['typescript', 'javascript'] as const;
 
 export interface Layers {
   domain: string;
@@ -29,27 +30,6 @@ export class ConfigError extends QnError {
   constructor(message: string) {
     super('E_CONFIG_INVALID', `${CONFIG_FILE}: ${message}`, `fix ${CONFIG_FILE} by hand, or delete it to fall back to detection by layout`);
   }
-}
-
-type Fail = (message: string) => never;
-
-/** Checks that `value` is a plain object with only `allowed` keys. */
-export function assertKeys(value: unknown, allowed: readonly string[], fail: Fail): asserts value is Record<string, unknown> {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) fail('must be a JSON object');
-  const unknown = Object.keys(value as object).filter((key) => !allowed.includes(key));
-  if (unknown.length > 0) fail(`unknown key(s) ${unknown.join(', ')} (allowed: ${allowed.join(', ')})`);
-}
-
-/** Checks an optional string field against a closed list. */
-export function assertChoice(object: Record<string, unknown>, key: string, choices: readonly string[], fail: Fail): void {
-  const value = object[key];
-  if (value !== undefined && (typeof value !== 'string' || !choices.includes(value))) {
-    fail(`"${key}" must be one of ${choices.join(', ')}`);
-  }
-}
-
-export function assertBoolean(object: Record<string, unknown>, key: string, fail: Fail): void {
-  if (object[key] !== undefined && typeof object[key] !== 'boolean') fail(`"${key}" must be true or false`);
 }
 
 /** A relative path inside the project, with "/" separators. */
@@ -127,7 +107,7 @@ export function readConfig(root: string): QuickNodeConfig | undefined {
   try {
     text = readFileSync(path.join(root, CONFIG_FILE), 'utf8');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    if (isNotFound(error)) return undefined;
     throw error;
   }
   return parseConfig(text);
@@ -135,7 +115,7 @@ export function readConfig(root: string): QuickNodeConfig | undefined {
 
 /** quicknode.json content, with keys in a stable order and files sorted. */
 export function serializeConfig(config: QuickNodeConfig): string {
-  const files = Object.fromEntries(Object.entries(config.files).sort(([a], [b]) => (a < b ? -1 : 1)));
+  const files = Object.fromEntries(Object.entries(config.files).sort(([a], [b]) => compareCodeUnits(a, b)));
   const ordered = {
     schemaVersion: config.schemaVersion,
     templateVersion: config.templateVersion,
@@ -147,12 +127,5 @@ export function serializeConfig(config: QuickNodeConfig): string {
     layers: config.layers,
     files
   };
-  return `${JSON.stringify(ordered, null, 2)}\n`;
-}
-
-/** An error for invalid input that names the file it came from. */
-export function failWith(code: ErrorCode, prefix: string, fix?: string): Fail {
-  return (message) => {
-    throw new QnError(code, `${prefix}: ${message}`, fix);
-  };
+  return toJson(ordered);
 }

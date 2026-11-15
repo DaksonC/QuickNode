@@ -146,7 +146,7 @@ $ qn create [name] [options]
 - **`-f, --force`**: Write into a non-empty directory, overwriting conflicting files
 - **`-y, --yes`**: Accept defaults without prompting (name, TypeScript, PostgreSQL)
 - **`--dry-run`**: Show what would be created without writing anything
-- **`--install`**: Run npm install after creating the project
+- **`--install`**: Install the dependencies with the --pm package manager after creating the project
 - **`--git`**: Initialize a git repository
 - **`--no-credits`**: Leave the "Generated with QuickNode" line out of the README
 - **`--pm <npm|pnpm|yarn>`**: Package manager used in scripts, docs and --install (default: npm)
@@ -185,7 +185,7 @@ Options:
   -f, --force                      Write into a non-empty directory, overwriting conflicting files
   -y, --yes                        Accept defaults without prompting (name, TypeScript, PostgreSQL)
       --dry-run                    Show what would be created without writing anything
-      --install                    Run npm install after creating the project
+      --install                    Install the dependencies with the --pm package manager after creating the project
       --git                        Initialize a git repository
       --no-credits                 Leave the "Generated with QuickNode" line out of the README
       --pm <npm|pnpm|yarn>         Package manager used in scripts, docs and --install (default: npm)
@@ -988,7 +988,7 @@ Every code and exit code is listed in the [command reference](https://daksonc.gi
 
 ## How do I connect it as an MCP server?
 
-`qn mcp` runs a Model Context Protocol server on stdio, inside the same package and with no dependencies. Its tools are `qn_schema`, `qn_check`, `qn_doctor`, `qn_generate`, `qn_add` and `qn_create`.
+`qn mcp` runs a Model Context Protocol server on stdio, inside the same package and with no dependencies. Its tools are `qn_schema`, `qn_check`, `qn_doctor`, `qn_generate`, `qn_add`, `qn_env`, `qn_upgrade` and `qn_create`. The ones that write files only plan unless called with `"apply": true`.
 
 ```
 {

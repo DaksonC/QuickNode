@@ -33,7 +33,7 @@ import {
   type OptionSpec
 } from './spec.js';
 import { renderBanner } from './ui/banner.js';
-import { createPrompter } from './ui/prompt.js';
+import { createPrompter, type Prompter } from './ui/prompt.js';
 import { renderAdd, renderCheck, renderCreate, renderDoctor, renderEnv, renderGenerate, renderUpgrade } from './ui/render.js';
 import { createStyle, type Style } from './ui/style.js';
 
@@ -137,10 +137,8 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
       }
       case 'upgrade': {
         const input = upgradeInputFromFlags(positionals, values);
-        const interactive = !json && !input.yes && Boolean(io.stdin.isTTY && io.stderr.isTTY);
-        const prompter = interactive ? createPrompter(io.stdin, io.stderr) : undefined;
-        try {
-          const result = await upgrade(input, {
+        const result = await withPrompter(io, json || input.yes, (prompter) =>
+          upgrade(input, {
             cwd: io.cwd,
             confirm: prompter
               ? async (plan) => {
@@ -149,11 +147,9 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
                   return prompter.confirm('Apply these changes?');
                 }
               : undefined
-          });
-          return finish(result, renderUpgrade(result, out));
-        } finally {
-          prompter?.close();
-        }
+          })
+        );
+        return finish(result, renderUpgrade(result, out));
       }
       case 'doctor': {
         if (positionals.length > 0) throw new UsageError('qn doctor takes no arguments.', 'doctor');
@@ -163,19 +159,13 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
     }
 
     const input = createInputFromFlags(positionals, values);
-    const interactive = !json && !input.yes && Boolean(io.stdin.isTTY && io.stderr.isTTY);
-    const prompter = interactive ? createPrompter(io.stdin, io.stderr) : undefined;
-
-    let result: CreateResult;
-    try {
-      result = await createProject(input, {
+    const result: CreateResult = await withPrompter(io, json || Boolean(input.yes), (prompter) =>
+      createProject(input, {
         cwd: io.cwd,
         prompter,
         progress: json ? undefined : (message) => io.stderr.write(`${err.muted(`› ${message}`)}\n`)
-      });
-    } finally {
-      prompter?.close();
-    }
+      })
+    );
 
     const stepsOk = result.git?.ok !== false && result.install?.ok !== false;
     return finish({ ok: stepsOk, ...result }, renderCreate(result, out, DOCS_URL));
@@ -192,6 +182,19 @@ export async function main(argv: string[], io: IO = defaultIO()): Promise<number
     if (json) writeJson({ ok: false, error: problem });
     else io.stderr.write(renderError(error, problem, err));
     return ERROR_CODES[problem.code].exitCode;
+  }
+}
+
+/**
+ * Runs `task` with a prompter when a person can answer (stdin and stderr are
+ * terminals and `noPrompts` is false), and closes it afterwards.
+ */
+async function withPrompter<T>(io: IO, noPrompts: boolean, task: (prompter?: Prompter) => Promise<T>): Promise<T> {
+  const prompter = !noPrompts && io.stdin.isTTY && io.stderr.isTTY ? createPrompter(io.stdin, io.stderr) : undefined;
+  try {
+    return await task(prompter);
+  } finally {
+    prompter?.close();
   }
 }
 

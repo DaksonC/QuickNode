@@ -20,18 +20,31 @@ export const isSecretKey = (key: string) =>
 /** A new random value for a secret variable. */
 export const generateSecret = (key: string) => (SECRET_GENERATORS[key] ?? (() => randomBytes(32).toString('base64url')))();
 
+/** `KEY=value` (optionally `export KEY=value`); a trailing \r of CRLF files is left out of the value. */
+const ENV_LINE = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*?)\r?$/;
+
+/** The value of an env line without surrounding spaces or matching quotes. */
+const unquote = (raw: string) => raw.trim().replace(/^(['"])(.*)\1$/, '$2');
+
+/** The same env line with a new value (an `export ` prefix and the spacing before = are kept). */
+const withValue = (line: string, value: string) => `${line.slice(0, line.indexOf('=') + 1)}${value}`;
+
+/** Line ending of a file: CRLF when it has any, so edits keep the file's own style. */
+const lineEnding = (content: string) => (content.includes('\r\n') ? '\r\n' : '\n');
+
 /**
  * Fills the secret variables of an `.env.example` content with random values.
  * Other lines are kept as they are.
  */
 export function fillSecrets(exampleContent: string): string {
+  const eol = lineEnding(exampleContent);
   return exampleContent
-    .split('\n')
+    .split(/\r?\n/)
     .map((line) => {
-      const match = /^([A-Z0-9_]+)=/.exec(line);
-      return match && isSecretKey(match[1]) ? `${match[1]}=${generateSecret(match[1])}` : line;
+      const key = ENV_LINE.exec(line)?.[1];
+      return key && isSecretKey(key) ? withValue(line, generateSecret(key)) : line;
     })
-    .join('\n');
+    .join(eol);
 }
 
 export const ENV_FILE = '.env';
@@ -39,14 +52,12 @@ export const ENV_EXAMPLE_FILE = '.env.example';
 /** .env holds secrets: readable by the owner only. */
 export const ENV_FILE_MODE = 0o600;
 
-const ENV_LINE = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/;
-
 /** KEY=value pairs of a dotenv file, in order (comments and blank lines ignored). */
 export function parseEnv(content: string): Map<string, string> {
   const entries = new Map<string, string>();
   for (const line of content.split(/\r?\n/)) {
     const match = ENV_LINE.exec(line);
-    if (match) entries.set(match[1], match[2].trim().replace(/^(['"])(.*)\1$/, '$2'));
+    if (match) entries.set(match[1], unquote(match[2]));
   }
   return entries;
 }
@@ -91,13 +102,13 @@ export interface SecretsUpdate {
 export function completeEnv(env: string, example: string, rotate = false): SecretsUpdate {
   const generated: string[] = [];
   const added: string[] = [];
-  const lines = env.split('\n').map((line) => {
+  const eol = lineEnding(env);
+  const lines = env.split(/\r?\n/).map((line) => {
     const match = ENV_LINE.exec(line);
     if (!match || !isSecretKey(match[1])) return line;
-    const value = match[2].trim().replace(/^(['"])(.*)\1$/, '$2');
-    if (!rotate && !isPlaceholder(match[1], value)) return line;
+    if (!rotate && !isPlaceholder(match[1], unquote(match[2]))) return line;
     generated.push(match[1]);
-    return `${match[1]}=${generateSecret(match[1])}`;
+    return withValue(line, generateSecret(match[1]));
   });
 
   const present = parseEnv(env);
@@ -113,9 +124,10 @@ export function completeEnv(env: string, example: string, rotate = false): Secre
     }
   }
 
-  let content = lines.join('\n');
+  let content = lines.join(eol);
   if (appended.length > 0) {
-    content = `${content.replace(/\n*$/, '\n')}\n# Added by qn env from ${ENV_EXAMPLE_FILE}\n${appended.join('\n')}\n`;
+    const block = [`# Added by qn env from ${ENV_EXAMPLE_FILE}`, ...appended].join(eol);
+    content = `${content.replace(/(\r?\n)*$/, eol)}${eol}${block}${eol}`;
   }
   return { content, generated, added };
 }

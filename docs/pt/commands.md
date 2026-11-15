@@ -25,7 +25,7 @@ $ qn create [name] [options]
 - **`-f, --force`**: Grava num diretório não vazio, sobrescrevendo os arquivos em conflito
 - **`-y, --yes`**: Aceita os padrões sem perguntar (nome, TypeScript, PostgreSQL)
 - **`--dry-run`**: Mostra o que seria criado sem gravar nada
-- **`--install`**: Roda npm install depois de criar o projeto
+- **`--install`**: Instala as dependências com o gerenciador do --pm depois de criar o projeto
 - **`--git`**: Inicializa um repositório git
 - **`--no-credits`**: Deixa de fora do README a linha "Generated with QuickNode"
 - **`--pm <npm|pnpm|yarn>`**: Gerenciador de pacotes usado nos scripts, na documentação e no --install (padrão: npm)
@@ -64,7 +64,7 @@ Options:
   -f, --force                      Write into a non-empty directory, overwriting conflicting files
   -y, --yes                        Accept defaults without prompting (name, TypeScript, PostgreSQL)
       --dry-run                    Show what would be created without writing anything
-      --install                    Run npm install after creating the project
+      --install                    Install the dependencies with the --pm package manager after creating the project
       --git                        Initialize a git repository
       --no-credits                 Leave the "Generated with QuickNode" line out of the README
       --pm <npm|pnpm|yarn>         Package manager used in scripts, docs and --install (default: npm)

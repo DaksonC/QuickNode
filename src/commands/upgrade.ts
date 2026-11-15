@@ -1,9 +1,8 @@
-import path from 'node:path';
 import { ChangePlan } from '../core/changes.js';
 import { compareVersions, CONFIG_FILE, CONFIG_SCHEMA_VERSION, serializeConfig, type QuickNodeConfig } from '../core/config.js';
 import { unifiedDiff } from '../core/diff.js';
 import { QnError } from '../core/errors.js';
-import { readIfExists } from '../core/fs.js';
+import { compareCodeUnits, toJson } from '../core/fs.js';
 import { cliVersion } from '../core/paths.js';
 import { assertDefaultLayers, detectProject, type PackageJson } from '../core/project.js';
 import { hashContent, projectOptions, renderFor } from '../core/render.js';
@@ -127,10 +126,9 @@ export async function upgrade(input: UpgradeInput, ctx: UpgradeContext): Promise
   const files: UpgradeFile[] = [];
   const notes: string[] = [];
   const hashes: Record<string, string> = {};
-  const read = (file: string) => readIfExists(path.join(project.root, ...file.split('/')));
 
   for (const [file, { content, executable }] of template) {
-    const current = await read(file);
+    const current = await plan.read(file);
     const generated = recorded[file];
     const pristine = current !== undefined && generated !== undefined && hashContent(current) === generated;
     // Same hash as when the project was generated: this template version did not change the file.
@@ -143,7 +141,7 @@ export async function upgrade(input: UpgradeInput, ctx: UpgradeContext): Promise
         continue;
       }
       await plan.write(file, content, { mode: executable ? 0o755 : 0o644 });
-      files.push({ path: file, action: 'create', ...(input.dryRun ? { diff: unifiedDiff(file, undefined, content) } : {}) });
+      files.push({ path: file, action: 'create' });
       hashes[file] = hashContent(content);
     } else if (current === content || templateUnchanged) {
       // Nothing new from the template; the person's own changes (if any) stay as they are.
@@ -151,16 +149,16 @@ export async function upgrade(input: UpgradeInput, ctx: UpgradeContext): Promise
       hashes[file] = hashContent(content);
     } else if (pristine) {
       await plan.write(file, content, { overwrite: true });
-      files.push({ path: file, action: 'update', ...(input.dryRun ? { diff: unifiedDiff(file, current, content) } : {}) });
+      files.push({ path: file, action: 'update' });
       hashes[file] = hashContent(content);
     } else if (file === 'package.json') {
       const { packageJson, raised } = upgradeVersions(JSON.parse(current) as PackageJson, JSON.parse(content) as PackageJson);
-      const merged = `${JSON.stringify(packageJson, null, 2)}\n`;
+      const merged = toJson(packageJson);
       if (raised.length === 0) {
         files.push({ path: file, action: 'unchanged' });
       } else {
         await plan.write(file, merged, { overwrite: true });
-        files.push({ path: file, action: 'update', ...(input.dryRun ? { diff: unifiedDiff(file, current, merged) } : {}) });
+        files.push({ path: file, action: 'update' });
         notes.push(`package.json: raised ${raised.join(', ')}; run "${project.packageManager} install".`);
       }
       // Still the user's own package.json: the next upgrade merges versions again.
@@ -181,9 +179,11 @@ export async function upgrade(input: UpgradeInput, ctx: UpgradeContext): Promise
     }
   }
 
-  for (const file of Object.keys(recorded)) {
-    if (template.has(file) || (await read(file)) === undefined) continue;
+  for (const [file, hash] of Object.entries(recorded)) {
+    if (template.has(file) || (await plan.read(file)) === undefined) continue;
     files.push({ path: file, action: 'obsolete' });
+    // Kept, so the next upgrade still tells it apart from the person's own files.
+    hashes[file] = hash;
     notes.push(`${file} is no longer part of the template; it was kept (delete it if nothing uses it).`);
   }
 
@@ -201,7 +201,13 @@ export async function upgrade(input: UpgradeInput, ctx: UpgradeContext): Promise
   }
   if (!project.config) notes.push(`${CONFIG_FILE} is created: commit it, so the next upgrade knows which files you changed.`);
 
-  files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  // Diffs of created and updated files only on dry runs (the plan computes them); changed files always have theirs.
+  const planned = new Map(plan.summary(input.dryRun).map((change) => [change.path, change.diff]));
+  for (const file of files) {
+    const diff = planned.get(file.path);
+    if ((file.action === 'create' || file.action === 'update') && diff) file.diff = diff;
+  }
+  files.sort((a, b) => compareCodeUnits(a.path, b.path));
   const pending = plan.list().filter((change) => change.action === 'create' || change.action === 'update');
   const result: UpgradeResult = { ok: true, dryRun: input.dryRun, applied: false, root: project.root, from, to, files, notes };
   if (input.dryRun || pending.length === 0) return result;

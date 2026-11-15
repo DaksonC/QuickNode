@@ -3,6 +3,7 @@ import path from 'node:path';
 import { CONFIG_FILE, CONFIG_SCHEMA_VERSION, DEFAULT_LAYERS, serializeConfig } from '../core/config.js';
 import { createEnvFile, ENV_FILE, generatesEnvFile } from '../core/env.js';
 import { shellQuote } from '../core/errors.js';
+import { toPosix } from '../core/fs.js';
 import { cliVersion, type TemplateName } from '../core/paths.js';
 import { loadPreset } from '../core/presets.js';
 import { projectNameError, resolveProject } from '../core/project-name.js';
@@ -201,7 +202,7 @@ export async function createProject(rawInput: CreateInput, ctx: CreateContext): 
     testRunner: options.test,
     ...(input.preset === undefined ? {} : { preset: input.preset }),
     files,
-    overwritten: plan.conflicts.map((file) => file.split(path.sep).join('/')),
+    overwritten: plan.conflicts.map(toPosix),
     env,
     steps: [...(input.git ? (['git init'] as const) : []), ...(input.install ? [installCommand(options.pm) as Step] : [])]
   };

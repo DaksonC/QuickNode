@@ -5,7 +5,7 @@ import { describeError } from '../core/error-report.js';
 import { isInside, realpathNearest } from '../core/fs.js';
 import { detectProject } from '../core/project.js';
 import type { RecipeName } from '../core/recipes.js';
-import { CRUD_PARTS, DATABASES, GENERATOR_TYPES, PACKAGE_MANAGERS, PRESETS, RECIPES, TEST_RUNNERS, UsageError } from '../spec.js';
+import { CRUD_PARTS, DATABASES, GENERATOR_TYPES, PACKAGE_MANAGERS, PRESETS, RECIPES, TEMPLATES, TEST_RUNNERS, UsageError } from '../spec.js';
 import { addRecipes } from './add.js';
 import { checkProject } from './check.js';
 import { createInputFromFlags, createProject } from './create.js';
@@ -171,8 +171,8 @@ export const TOOLS: Record<string, Tool> = {
       properties: {
         generateSecrets: { type: 'boolean', default: false, description: 'Complete .env: missing variables and random secrets' },
         ...pathProperty,
-        apply: applyProperties.apply,
-        force: { type: 'boolean', default: false, description: 'With generateSecrets, also replace secrets that already have a value' }
+        ...applyProperties,
+        force: { ...applyProperties.force, description: 'With generateSecrets, also replace secrets that already have a value' }
       }
     },
     readOnly: false,
@@ -189,8 +189,8 @@ export const TOOLS: Record<string, Tool> = {
       type: 'object',
       properties: {
         ...pathProperty,
-        apply: { type: 'boolean', default: false, description: 'Write the planned changes (the person confirmed them). Without it the tool only returns the plan.' },
-        force: { type: 'boolean', default: false, description: 'Also overwrite the files the person changed' }
+        ...applyProperties,
+        force: { ...applyProperties.force, description: 'Also overwrite the files the person changed' }
       }
     },
     readOnly: false,
@@ -199,13 +199,13 @@ export const TOOLS: Record<string, Tool> = {
   },
   qn_create: {
     description:
-      'Create a new Node.js API with clean architecture (Express, PostgreSQL, tests, lint). Dependencies are not installed and git is not initialized: tell the person to run the install. Dry run unless apply is true.',
+      'Create a new Node.js API with clean architecture (Express; PostgreSQL, SQLite or no database; tests, lint). Dependencies are not installed and git is not initialized: tell the person to run the install. Dry run unless apply is true.',
     inputSchema: {
       type: 'object',
       required: ['name'],
       properties: {
         name: { type: 'string', description: 'Project folder and package name, created inside the server folder ("." for the server folder)' },
-        template: { type: 'string', enum: ['typescript', 'javascript'], default: 'typescript' },
+        template: { type: 'string', enum: [...TEMPLATES], default: 'typescript' },
         pm: { type: 'string', enum: [...PACKAGE_MANAGERS], default: 'npm' },
         test: { type: 'string', enum: [...TEST_RUNNERS], default: 'jest' },
         db: { type: 'string', enum: [...DATABASES], default: 'postgres' },
@@ -220,7 +220,7 @@ export const TOOLS: Record<string, Tool> = {
       // Only given arguments become flags, so a preset fills the rest. Local preset files are not read here.
       const optional = <T extends string>(key: string, choices: readonly T[]) =>
         args[key] === undefined ? undefined : choiceArg(args, key, choices);
-      const template = optional('template', ['typescript', 'javascript'] as const);
+      const template = optional('template', TEMPLATES);
       const input = createInputFromFlags([name], {
         ...(template ? { [template]: true } : {}),
         pm: optional('pm', PACKAGE_MANAGERS),

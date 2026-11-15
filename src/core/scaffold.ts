@@ -3,9 +3,9 @@ import type { Stats } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { QnError } from './errors.js';
+import { compareCodeUnits } from './fs.js';
+import { listFiles } from './templates.js';
 
-/** Template entries that are never copied into a generated project. */
-const IGNORED = new Set(['node_modules', 'package-lock.json', '.env', 'dist', 'coverage', '.DS_Store']);
 /** Prefix of the temporary folder the project is generated in. */
 export const STAGING_PREFIX = '.qn-staging-';
 /** Entries in the target directory that do not count as "non empty". */
@@ -60,11 +60,6 @@ export interface ScaffoldPlan {
   preserved: string[];
 }
 
-/** Locale-independent ordering, so plans and messages are stable everywhere. */
-function compareCodeUnits(a: string, b: string): number {
-  return a < b ? -1 : a > b ? 1 : 0;
-}
-
 /** lstat that returns undefined when the path does not exist. */
 async function lstatOrUndefined(target: string): Promise<Stats | undefined> {
   try {
@@ -75,35 +70,6 @@ async function lstatOrUndefined(target: string): Promise<Stats | undefined> {
     if (code === 'ENOENT' || code === 'ENOTDIR') return undefined;
     throw error;
   }
-}
-
-/** Lists files under `root` recursively, skipping `ignored` names. Rejects symlinks. */
-async function listFiles(root: string, ignored: ReadonlySet<string>): Promise<string[]> {
-  const files: string[] = [];
-
-  async function walk(relativeDir: string): Promise<void> {
-    const entries = await fs.readdir(path.join(root, relativeDir), { withFileTypes: true });
-    for (const entry of entries.sort((a, b) => compareCodeUnits(a.name, b.name))) {
-      if (ignored.has(entry.name)) continue;
-      const relativePath = path.join(relativeDir, entry.name);
-      if (entry.isSymbolicLink()) {
-        throw new Error(`Template contains a symbolic link, which is not allowed: ${relativePath}`);
-      }
-      if (entry.isDirectory()) await walk(relativePath);
-      else if (entry.isFile()) files.push(relativePath);
-    }
-  }
-
-  await walk('');
-  return files;
-}
-
-/**
- * Lists the files of a template. Symlinks are rejected so a template can never
- * make the CLI read or write outside of it.
- */
-export function listTemplateFiles(templateDir: string): Promise<string[]> {
-  return listFiles(templateDir, IGNORED);
 }
 
 /** Leftovers of an interrupted run, or our own staging folder. */
@@ -211,7 +177,7 @@ export async function writeScaffold(plan: ScaffoldPlan, { populate }: WriteOptio
 
 /** Moves every staged file into the existing `targetDir`, skipping `preserved` ones. */
 async function moveInto(stagingDir: string, targetDir: string, preserved: Set<string>): Promise<void> {
-  for (const file of await listFiles(stagingDir, new Set())) {
+  for (const file of await listFiles(stagingDir)) {
     if (preserved.has(file)) continue;
     const destination = path.join(targetDir, file);
     await fs.mkdir(path.dirname(destination), { recursive: true });

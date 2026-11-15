@@ -2,7 +2,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export type TemplateName = 'typescript' | 'javascript';
+import type { TemplateName } from '../spec.js';
+
+export type { TemplateName };
 
 /**
  * Root of the installed package (the folder holding package.json and

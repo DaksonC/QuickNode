@@ -1,4 +1,3 @@
-import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ChangePlan, type PlannedFile } from '../core/changes.js';
@@ -6,7 +5,7 @@ import type { MarkerStatus } from '../core/markers.js';
 import { generatorDir, type TemplateName } from '../core/paths.js';
 import { readIfExists } from '../core/fs.js';
 import { assertDefaultLayers, detectProject } from '../core/project.js';
-import { listTemplateFiles } from '../core/scaffold.js';
+import { listTemplateFiles } from '../core/templates.js';
 import { adaptTestFile, formatImports } from '../core/source-format.js';
 import { CRUD_PARTS, GENERATOR_TYPES, UsageError } from '../spec.js';
 
@@ -221,7 +220,6 @@ export async function generate(input: GenerateInput, cwd: string): Promise<Gener
 
   for (const unit of units) {
     for (const unitDir of [path.join(sourceDir, unit), path.join(dbDir, unit)]) {
-      if (!existsSync(unitDir)) continue;
       for (const file of await listTemplateFiles(unitDir)) {
         let content = formatImports(fillPlaceholders(await fs.readFile(path.join(unitDir, file), 'utf8'), names));
         if (unit === 'test') content = adaptTestFile(content, project.testRunner, project.language);

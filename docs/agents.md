@@ -48,7 +48,7 @@ Every code and exit code is listed in the [command reference](https://daksonc.gi
 
 ## How do I connect it as an MCP server?
 
-`qn mcp` runs a Model Context Protocol server on stdio, inside the same package and with no dependencies. Its tools are `qn_schema`, `qn_check`, `qn_doctor`, `qn_generate`, `qn_add` and `qn_create`.
+`qn mcp` runs a Model Context Protocol server on stdio, inside the same package and with no dependencies. Its tools are `qn_schema`, `qn_check`, `qn_doctor`, `qn_generate`, `qn_add`, `qn_env`, `qn_upgrade` and `qn_create`. The ones that write files only plan unless called with `"apply": true`.
 
 ```
 {

@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { DATABASES, PACKAGE_MANAGERS, PRESETS, TEST_RUNNERS, type Database, type PackageManager } from '../spec.js';
-import { assertBoolean, assertChoice, assertKeys, failWith, TEMPLATES } from './config.js';
+import { DATABASES, PACKAGE_MANAGERS, PRESETS, TEMPLATES, TEST_RUNNERS, type Database, type PackageManager } from '../spec.js';
 import { QnError } from './errors.js';
 import type { TemplateName } from './paths.js';
 import type { TestRunner } from './project.js';
+import { assertBoolean, assertChoice, assertKeys, failWith } from './validate.js';
 
 /** What a preset may set: the same choices as the flags of `qn create`. */
 export interface PresetValues {

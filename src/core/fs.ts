@@ -36,3 +36,14 @@ export function realpathNearest(target: string): string {
   }
   return path.join(realpathSync(existing), ...rest);
 }
+
+/** A relative path with "/" separators, as written in quicknode.json, plans and JSON output. */
+export const toPosix = (file: string) => file.split(path.sep).join('/');
+
+/** Locale-independent ordering, so plans, files and messages are stable everywhere. */
+export function compareCodeUnits(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/** JSON as written to package.json, quicknode.json and other project files. */
+export const toJson = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;

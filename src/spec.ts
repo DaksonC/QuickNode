@@ -70,6 +70,10 @@ export type DocsTopic = keyof typeof DOCS_TOPICS;
 
 export const DOCS_LANGUAGES = ['en', 'pt'] as const;
 
+/** Languages of `qn create`: one template folder each (templates/<name>). */
+export const TEMPLATES = ['typescript', 'javascript'] as const;
+export type TemplateName = (typeof TEMPLATES)[number];
+
 export const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn'] as const;
 export type PackageManager = (typeof PACKAGE_MANAGERS)[number];
 export const TEST_RUNNERS = ['jest', 'node'] as const;
@@ -130,7 +134,7 @@ export const COMMANDS: Record<string, CommandSpec> = {
       force: { type: 'boolean', short: 'f', description: 'Write into a non-empty directory, overwriting conflicting files' },
       yes: { type: 'boolean', short: 'y', description: 'Accept defaults without prompting (name, TypeScript, PostgreSQL)' },
       'dry-run': { type: 'boolean', description: 'Show what would be created without writing anything' },
-      install: { type: 'boolean', description: 'Run npm install after creating the project' },
+      install: { type: 'boolean', description: 'Install the dependencies with the --pm package manager after creating the project' },
       git: { type: 'boolean', description: 'Initialize a git repository' },
       'no-credits': { type: 'boolean', description: 'Leave the "Generated with QuickNode" line out of the README' },
       pm: { type: 'string', description: 'Package manager used in scripts, docs and --install (default: npm)', choices: PACKAGE_MANAGERS, default: 'npm' },

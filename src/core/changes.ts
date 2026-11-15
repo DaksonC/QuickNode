@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { unifiedDiff } from './diff.js';
 import { QnError } from './errors.js';
-import { isInside, readIfExists, realpathNearest } from './fs.js';
+import { compareCodeUnits, isInside, readIfExists, realpathNearest, toPosix } from './fs.js';
 import { insertBeforeMarker, replaceRegion, type MarkerStatus } from './markers.js';
 
 /**
@@ -39,7 +39,6 @@ export interface PlannedFile {
   diff?: string;
 }
 
-const toPosix = (file: string) => file.split(path.sep).join('/');
 
 /**
  * Collects the changes of one command before anything is written, so the same
@@ -113,7 +112,7 @@ export class ChangePlan {
   }
 
   list(): FileChange[] {
-    return [...this.changes.values()].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    return [...this.changes.values()].sort((a, b) => compareCodeUnits(a.path, b.path));
   }
 
   conflicts(): string[] {

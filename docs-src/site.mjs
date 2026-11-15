@@ -390,7 +390,7 @@ export const COMMANDS_PT = {
         force: 'Grava num diretório não vazio, sobrescrevendo os arquivos em conflito',
         yes: 'Aceita os padrões sem perguntar (nome, TypeScript, PostgreSQL)',
         'dry-run': 'Mostra o que seria criado sem gravar nada',
-        install: 'Roda npm install depois de criar o projeto',
+        install: 'Instala as dependências com o gerenciador do --pm depois de criar o projeto',
         git: 'Inicializa um repositório git',
         'no-credits': 'Deixa de fora do README a linha "Generated with QuickNode"',
         pm: 'Gerenciador de pacotes usado nos scripts, na documentação e no --install (padrão: npm)',

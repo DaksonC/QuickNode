@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ChangePlan } from '../core/changes.js';
 import {
@@ -98,6 +99,8 @@ export async function envCommand(input: EnvInput, cwd: string): Promise<EnvResul
     const plan = new ChangePlan(root);
     await plan.write(ENV_FILE, after, { mode: ENV_FILE_MODE, overwrite: true });
     await plan.apply();
+    // An existing .env keeps its mode on write: secrets were added, so make it owner-only.
+    await fs.chmod(path.join(root, ENV_FILE), ENV_FILE_MODE);
   }
 
   // The state the result describes: after the command, or as it is now on a dry run.

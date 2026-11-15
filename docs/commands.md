@@ -25,7 +25,7 @@ $ qn create [name] [options]
 - **`-f, --force`**: Write into a non-empty directory, overwriting conflicting files
 - **`-y, --yes`**: Accept defaults without prompting (name, TypeScript, PostgreSQL)
 - **`--dry-run`**: Show what would be created without writing anything
-- **`--install`**: Run npm install after creating the project
+- **`--install`**: Install the dependencies with the --pm package manager after creating the project
 - **`--git`**: Initialize a git repository
 - **`--no-credits`**: Leave the "Generated with QuickNode" line out of the README
 - **`--pm <npm|pnpm|yarn>`**: Package manager used in scripts, docs and --install (default: npm)
@@ -64,7 +64,7 @@ Options:
   -f, --force                      Write into a non-empty directory, overwriting conflicting files
   -y, --yes                        Accept defaults without prompting (name, TypeScript, PostgreSQL)
       --dry-run                    Show what would be created without writing anything
-      --install                    Run npm install after creating the project
+      --install                    Install the dependencies with the --pm package manager after creating the project
       --git                        Initialize a git repository
       --no-credits                 Leave the "Generated with QuickNode" line out of the README
       --pm <npm|pnpm|yarn>         Package manager used in scripts, docs and --install (default: npm)

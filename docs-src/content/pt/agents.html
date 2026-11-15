@@ -36,7 +36,7 @@ $ npx {{package}}@3 check --json</code></pre>
 <p>Todos os códigos de erro e de saída estão na <a href="{{home}}commands/#errors">referência de comandos</a>.</p>
 
 <h2 id="mcp" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como conecto como servidor MCP?</h2>
-<p>O <code>qn mcp</code> roda um servidor Model Context Protocol no stdio, dentro do mesmo pacote e sem dependências. As ferramentas são <code>qn_schema</code>, <code>qn_check</code>, <code>qn_doctor</code>, <code>qn_generate</code>, <code>qn_add</code> e <code>qn_create</code>.</p>
+<p>O <code>qn mcp</code> roda um servidor Model Context Protocol no stdio, dentro do mesmo pacote e sem dependências. As ferramentas são <code>qn_schema</code>, <code>qn_check</code>, <code>qn_doctor</code>, <code>qn_generate</code>, <code>qn_add</code>, <code>qn_env</code>, <code>qn_upgrade</code> e <code>qn_create</code>. As que gravam arquivos só planejam, a menos que recebam <code>"apply": true</code>.</p>
 <pre class="term"><code>{
   "mcpServers": {
     "quicknode": { "command": "npx", "args": ["{{package}}@3", "mcp"] }

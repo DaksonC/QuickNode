@@ -1,12 +1,11 @@
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Database, PackageManager } from '../spec.js';
-import { readIfExists } from './fs.js';
+import { compareCodeUnits, readIfExists, toJson, toPosix } from './fs.js';
 import { packageRoot, type TemplateName } from './paths.js';
 import type { PackageJson, QuickNodeProject, TestRunner } from './project.js';
-import { listTemplateFiles } from './scaffold.js';
+import { listTemplateFiles } from './templates.js';
 import { applyPackageManager, applyTestRunner } from './variants.js';
 
 /** The choices of `qn create` that shape the generated files (recorded in quicknode.json). */
@@ -40,7 +39,6 @@ const ENV_EXAMPLE = '.env.example';
 const TOKEN = /\{\{qn:([A-Za-z]+)\}\}/g;
 const CREDITS_BLOCK = /\n*<!-- quicknode:credits -->[\s\S]*?<!-- \/quicknode:credits -->\n?/;
 
-const toPosix = (file: string) => file.split(path.sep).join('/');
 const templatesRoot = () => path.join(packageRoot(), 'templates');
 
 /**
@@ -61,7 +59,7 @@ function layersOf({ template, db }: Pick<ProjectOptions, 'template' | 'db'>) {
 /** Adds the fields of a package.json fragment (versions and scripts of a layer). */
 function mergePackageJson(base: PackageJson, fragment: PackageJson): PackageJson {
   const sorted = (entries: Record<string, string>) =>
-    Object.fromEntries(Object.entries(entries).sort(([a], [b]) => (a < b ? -1 : 1)));
+    Object.fromEntries(Object.entries(entries).sort(([a], [b]) => compareCodeUnits(a, b)));
   const merged: PackageJson = { ...base, scripts: { ...base.scripts, ...fragment.scripts } };
   for (const field of ['dependencies', 'devDependencies'] as const) {
     if (fragment[field]) merged[field] = sorted({ ...base[field], ...fragment[field] });
@@ -99,7 +97,6 @@ export async function renderProject(options: ProjectOptions & { packageName: str
       }
       remove.push(...(meta.remove ?? []));
     }
-    if (!existsSync(layer.dir)) continue;
     for (const source of await listTemplateFiles(layer.dir)) {
       const name = path.basename(source);
       if (name === LAYER_META) continue;
@@ -124,7 +121,7 @@ export async function renderProject(options: ProjectOptions & { packageName: str
   for (const file of remove) files.delete(file);
   if (packageJson) {
     packageJson.name = options.packageName;
-    files.set('package.json', { content: `${JSON.stringify(packageJson, null, 2)}\n`, executable: false });
+    files.set('package.json', { content: toJson(packageJson), executable: false });
   }
   const env = files.get(ENV_EXAMPLE);
   if (env && envFragment) env.content = `${envFragment.replace(/\n*$/, '\n')}\n${env.content}`;
@@ -140,7 +137,7 @@ export async function renderProject(options: ProjectOptions & { packageName: str
   applyPackageManager(files, options.pm);
   applyTestRunner(files, options.template, options.test);
 
-  return new Map([...files].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+  return new Map([...files].sort(([a], [b]) => compareCodeUnits(a, b)));
 }
 
 /** The options a project was created with: from quicknode.json, or detected. */

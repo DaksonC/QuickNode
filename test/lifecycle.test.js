@@ -206,6 +206,19 @@ describe('qn env', () => {
     assert.equal((await runQn(empty, 'env', '--dry-run')).code, 2);
   });
 
+  it('completes a CRLF .env, keeps its line endings and makes a rewritten .env owner-only', async (t) => {
+    const project = await makeProject(t, 'javascript');
+    const crlf = 'PORT=3000\r\nNODE_ENV=development\r\nexport JWT_SECRET=change-me\r\n';
+    await fs.writeFile(path.join(project, '.env'), crlf, { mode: 0o644 });
+    await fs.chmod(path.join(project, '.env'), 0o644);
+    const result = json(await runQn(project, 'env', '--generate-secrets', '--json'));
+    assert.deepEqual([result.generated, result.ok], [['JWT_SECRET', 'DB_PASSWORD'], true]);
+    const env = await read(project, '.env');
+    assert.match(env, /^export JWT_SECRET=(?!change-me)\S+\r$/m);
+    assert.doesNotMatch(env.replace(/\r\n/g, ''), /\n/, 'every line ends with CRLF');
+    if (process.platform !== 'win32') assert.equal((await fs.stat(path.join(project, '.env'))).mode & 0o777, 0o600);
+  });
+
   it('completeEnv keeps comments and other lines', () => {
     const { content, generated, added } = completeEnv('# mine\nJWT_SECRET=\nPORT=1\n', 'PORT=3000\nJWT_SECRET=change-me\nAPI_TOKEN=change-me\nLOG=info\n');
     assert.match(content, /^# mine\nJWT_SECRET=\S{20,}\nPORT=1\n/);
@@ -282,6 +295,7 @@ describe('qn upgrade', () => {
     assert.equal(await exists(project, 'docs', 'adr', 'README.md'), false);
     assert.equal(await exists(project, 'old-file.txt'), true);
     assert.equal(await read(project, newFile), content);
+    assert.equal((await config(project)).files['old-file.txt'], hashContent('x'), 'obsolete files keep their hash');
   });
 
   it('raises only the versions of dependencies the project already has', () => {

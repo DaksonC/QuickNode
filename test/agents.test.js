@@ -199,6 +199,13 @@ describe('docs for LLMs', () => {
     );
   });
 
+  it('lists every MCP tool on the agents page, in both languages', async () => {
+    for (const page of ['docs/agents.md', 'docs/pt/agents.md']) {
+      const text = await read(page);
+      for (const tool of Object.keys(TOOLS)) assert.ok(text.includes(tool), `${page} lacks ${tool}`);
+    }
+  });
+
   it('publishes llms.txt, llms-full.txt and a .md of every page', async () => {
     const docs = path.resolve('docs');
     const llms = await fs.readFile(path.join(docs, 'llms.txt'), 'utf8');

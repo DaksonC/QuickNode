@@ -48,7 +48,7 @@ Todos os códigos de erro e de saída estão na [referência de comandos](https:
 
 ## Como conecto como servidor MCP?
 
-O `qn mcp` roda um servidor Model Context Protocol no stdio, dentro do mesmo pacote e sem dependências. As ferramentas são `qn_schema`, `qn_check`, `qn_doctor`, `qn_generate`, `qn_add` e `qn_create`.
+O `qn mcp` roda um servidor Model Context Protocol no stdio, dentro do mesmo pacote e sem dependências. As ferramentas são `qn_schema`, `qn_check`, `qn_doctor`, `qn_generate`, `qn_add`, `qn_env`, `qn_upgrade` e `qn_create`. As que gravam arquivos só planejam, a menos que recebam `"apply": true`.
 
 ```
 {

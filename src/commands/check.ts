@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
-import { isInside, isNotFound } from '../core/fs.js';
+import { isInside, isNotFound, toPosix } from '../core/fs.js';
 import { findImports } from '../core/imports.js';
 import { detectProject } from '../core/project.js';
 
@@ -74,7 +74,6 @@ const HTTP_SCOPES = ['@nestjs/', '@fastify/', '@koa/'];
 const ORM_SCOPES = ['@mikro-orm/'];
 
 const builtins = new Set(builtinModules);
-const toPosix = (file: string) => file.split(path.sep).join('/');
 
 /** "express/lib/router" -> "express", "@scope/pkg/sub" -> "@scope/pkg". */
 function packageName(specifier: string): string {

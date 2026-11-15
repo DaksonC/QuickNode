@@ -4,13 +4,13 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 import {
   assertWritable,
-  listTemplateFiles,
   PathBlockedError,
   planScaffold,
   STAGING_PREFIX,
   TargetNotEmptyError,
   writeScaffold
 } from '../dist/core/scaffold.js';
+import { listTemplateFiles } from '../dist/core/templates.js';
 import { exists, makeTmp, read, write } from './helpers.js';
 
 /** A small template plus an "app" target path inside a temp dir. */
@@ -53,6 +53,11 @@ describe('listTemplateFiles', () => {
       'package.json',
       path.join('src', 'server.js')
     ]);
+  });
+
+  it('lists nothing for a folder that does not exist', async (t) => {
+    const { root } = await setup(t);
+    assert.deepEqual(await listTemplateFiles(path.join(root, 'missing')), []);
   });
 
   it('rejects symbolic links', async (t) => {

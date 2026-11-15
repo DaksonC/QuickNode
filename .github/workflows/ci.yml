@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [22.x, 24.x]
 
     steps:
       - name: 📦 Checkout code
@@ -32,8 +32,11 @@ jobs:
       - name: 🔍 Run linting
         run: npm run lint
 
-      - name: 🧪 Build and run tests
-        run: npm test
+      - name: 🧪 Build and run tests (coverage >= 80%)
+        run: npm run test:coverage
+
+      - name: 📦 Zero runtime dependencies
+        run: node -e 'const d=require("./package.json").dependencies; if (d && Object.keys(d).length) { console.error("Runtime dependencies are not allowed (ADR-001):", d); process.exit(1) }'
 
       - name: 🛡️ Audit CLI dependencies
         run: npm audit --omit=dev --audit-level=high

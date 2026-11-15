@@ -53,6 +53,11 @@ describe('documentation site', () => {
     for (const spec of Object.values(COMMANDS)) {
       assert.ok(COMMANDS_PT.commands[spec.name], `Portuguese text for ${spec.name}`);
       assert.deepEqual(Object.keys(COMMANDS_PT.commands[spec.name].options).sort(), Object.keys(spec.options).sort());
+      assert.deepEqual(
+        Object.keys(COMMANDS_PT.commands[spec.name].arguments ?? {}).sort(),
+        (spec.arguments ?? []).map((argument) => argument.name).sort(),
+        `Portuguese arguments of ${spec.name}`
+      );
     }
     assert.deepEqual(Object.keys(COMMANDS_PT.global).sort(), Object.keys(GLOBAL_OPTIONS).sort());
   });

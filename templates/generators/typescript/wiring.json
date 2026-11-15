@@ -1,0 +1,38 @@
+{
+  "entity": [
+    {
+      "file": "src/infrastructure/database/connection.ts",
+      "marker": "imports",
+      "snippet": "import { __Name__Entity } from './entities/__name__-entity';"
+    },
+    {
+      "file": "src/infrastructure/database/connection.ts",
+      "marker": "entities",
+      "snippet": "__Name__Entity,"
+    }
+  ],
+  "repository": [
+    {
+      "file": "src/infrastructure/database/repository-factory.ts",
+      "marker": "imports",
+      "snippet": "import { __Name__Repository } from '../../domain/repositories/__name__-repository';\nimport { TypeOrm__Name__Repository } from './repositories/__name__-repository';"
+    },
+    {
+      "file": "src/infrastructure/database/repository-factory.ts",
+      "marker": "factories",
+      "snippet": "static create__Name__Repository(): __Name__Repository {\n  return TypeOrm__Name__Repository.create();\n}\n"
+    }
+  ],
+  "controller": [
+    {
+      "file": "src/server.ts",
+      "marker": "imports",
+      "snippet": "import { register__Name__Module } from './infrastructure/modules/__name__-module';"
+    },
+    {
+      "file": "src/server.ts",
+      "marker": "modules",
+      "snippet": "register__Name__Module(app);"
+    }
+  ]
+}

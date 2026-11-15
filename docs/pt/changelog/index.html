@@ -159,7 +159,7 @@
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui changelog</p>
     <p class="meta">Atualizado em <time datetime="2026-11-14">2026-11-14</time> · válido para a v2.x</p>
 <h1 tabindex="-1">Changelog</h1>
-<p class="answer">A versão 2.0.0 reescreve o QuickNode CLI sem dependências de runtime, torna o <code>qn create</code> seguro por padrão, publica com provenance e traz o <code>qn ui</code> e este site; ela exige Node.js 22.13+.</p>
+<p class="answer">A versão 2.0.0 reescreve o QuickNode CLI sem dependências de runtime, torna o <code>qn create</code> seguro por padrão, publica com provenance e traz o <code>qn generate</code>, o <code>qn check</code>, o <code>qn add</code>, o <code>qn doctor</code>, o <code>qn ui</code> e este site; ela exige Node.js 22.13+.</p>
 <p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="https://github.com/DaksonC/QuickNode/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
 
 <h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// em breve</span></h2>
@@ -171,7 +171,12 @@
 </ul>
 <h3>Adicionado</h3>
 <ul class="list" role="list">
-  <li><code>--dry-run</code>, <code>--yes</code>, <code>--force</code>, <code>--json</code>, <code>--git</code>, <code>--install</code> e <code>--no-credits</code> no <code>qn create</code>.</li>
+  <li><code>qn generate &lt;tipo&gt; &lt;nome&gt;</code> (apelido <code>qn g</code>): entidade, repositório, casos de uso com teste, controller e rota de uma funcionalidade nas camadas certas, já ligados; <code>--only</code>, <code>--no-test</code>, <code>--dry-run</code>.</li>
+  <li><code>qn check</code>: falha quando <code>src/domain</code> importa infrastructure, Express, um ORM ou outro pacote; saída legível ou <code>--json</code>, código de saída 1 para o CI.</li>
+  <li><code>qn add &lt;receita&gt;</code>: auth (JWT com <code>node:crypto</code>), healthcheck, rate-limit, graceful-shutdown, docker, ci, agents, eslint, husky, swagger e tests, idempotentes, com <code>--dry-run</code> mostrando o diff.</li>
+  <li><code>qn doctor</code>: verifica Node.js, <code>.env</code>, Docker, <code>npm audit</code> e a regra de dependência.</li>
+  <li><code>AGENTS.md</code> e <code>CLAUDE.md</code> nos projetos novos, para assistentes de código com IA; script <code>npm run check</code>.</li>
+  <li><code>--dry-run</code>, <code>--yes</code>, <code>--force</code>, <code>--json</code>, <code>--git</code>, <code>--install</code>, <code>--no-credits</code>, <code>--pm npm|pnpm|yarn</code> e <code>--test jest|node</code> no <code>qn create</code>.</li>
   <li><code>qn ui [tópico]</code> (apelido <code>qn docs</code>) abre esta documentação; <code>qn help &lt;comando&gt;</code> com exemplos.</li>
   <li><code>DB_PASSWORD</code> e <code>JWT_SECRET</code> aleatórios num <code>.env</code> ignorado pelo git.</li>
   <li>Site de documentação bilíngue, com a referência de comandos gerada a partir da CLI.</li>
@@ -182,6 +187,7 @@
   <li>Zero dependências de runtime: chalk, commander, figlet, fs-extra, inquirer e ora trocados por APIs do Node.js (de 56 pacotes instalados para 1).</li>
   <li>Templates sem lockfiles congelados e com dependências atualizadas: 0 vulnerabilidades altas ou críticas na data da versão; ESLint 10, Husky 9, Postgres preso a 127.0.0.1.</li>
   <li>Pacote publicado de 1,6 MB para menos de 300 KB.</li>
+  <li>Projetos gerados: cada funcionalidade é ligada em <code>infrastructure/modules</code>; os DTOs do TypeScript saíram do domínio para <code>infrastructure/http/dtos</code>; os testes usam repositórios em memória e <code>node:assert</code>, então rodam no Jest e no <code>node:test</code>.</li>
 </ul>
 <h3>Corrigido</h3>
 <ul class="list" role="list">

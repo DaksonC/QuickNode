@@ -49,9 +49,63 @@ window.QN_DATA = Object.freeze({
         },
         "no-credits": {
           "type": "boolean"
+        },
+        "pm": {
+          "type": "string"
+        },
+        "test": {
+          "type": "string"
         }
       },
-      "help": "qn create [name] [options]\n\nCreate a new project with clean architecture\n\nArguments:\n  name  Project folder and package name (\".\" for the current directory)\n\nOptions:\n  -t, --typescript  Use the TypeScript template (also -ts)\n  -j, --javascript  Use the JavaScript template (also -js)\n  -f, --force       Write into a non-empty directory, overwriting conflicting files\n  -y, --yes         Accept defaults without prompting (name, TypeScript)\n      --dry-run     Show what would be created without writing anything\n      --install     Run npm install after creating the project\n      --git         Initialize a git repository\n      --no-credits  Leave the \"Generated with QuickNode\" line out of the README\n  -h, --help        Show help\n  -v, --version     Show the version\n      --json        Print a JSON result to stdout (no prompts, no colors)\n\nExamples:\n  qn create my-api\n  qn create my-api -ts --git --install\n  qn create . --javascript --force\n  qn create my-api --dry-run\n  qn create my-api --yes --json\n\nDocs: https://daksonc.github.io/QuickNode/"
+      "help": "qn create [name] [options]\n\nCreate a new project with clean architecture\n\nArguments:\n  name  Project folder and package name (\".\" for the current directory)\n\nOptions:\n  -t, --typescript          Use the TypeScript template (also -ts)\n  -j, --javascript          Use the JavaScript template (also -js)\n  -f, --force               Write into a non-empty directory, overwriting conflicting files\n  -y, --yes                 Accept defaults without prompting (name, TypeScript)\n      --dry-run             Show what would be created without writing anything\n      --install             Run npm install after creating the project\n      --git                 Initialize a git repository\n      --no-credits          Leave the \"Generated with QuickNode\" line out of the README\n      --pm <npm|pnpm|yarn>  Package manager used in scripts, docs and --install (default: npm)\n      --test <jest|node>    Test runner (default: jest; node uses the built-in node:test)\n  -h, --help                Show help\n  -v, --version             Show the version\n      --json                Print a JSON result to stdout (no prompts, no colors)\n\nExamples:\n  qn create my-api\n  qn create my-api -ts --git --install\n  qn create my-api --pm pnpm --test node\n  qn create . --javascript --force\n  qn create my-api --dry-run\n  qn create my-api --yes --json\n\nDocs: https://daksonc.github.io/QuickNode/"
+    },
+    "generate": {
+      "aliases": [
+        "g"
+      ],
+      "options": {
+        "only": {
+          "type": "string"
+        },
+        "no-test": {
+          "type": "boolean"
+        },
+        "dry-run": {
+          "type": "boolean"
+        },
+        "force": {
+          "type": "boolean",
+          "short": "f"
+        }
+      },
+      "help": "qn generate <type> <name> [options]\n\nGenerate a feature in the clean architecture layers, already wired (alias: qn g)\n\nArguments:\n  type  What to generate (crud = all the parts) (crud, entity, usecase, repository, controller)\n  name  Feature name, e.g. product or order-item\n\nOptions:\n      --only <parts>  With crud, generate only these parts (comma-separated: entity, repository, usecase, controller)\n      --no-test       Do not generate the use case test\n      --dry-run       Show the files to create or change without writing anything\n  -f, --force         Overwrite existing files with different content\n  -h, --help          Show help\n  -v, --version       Show the version\n      --json          Print a JSON result to stdout (no prompts, no colors)\n\nExamples:\n  qn generate crud product\n  qn g crud order-item --dry-run\n  qn g crud product --only entity,repository\n  qn g usecase product --no-test\n  qn g crud product --json\n\nDocs: https://daksonc.github.io/QuickNode/"
+    },
+    "check": {
+      "aliases": [],
+      "options": {},
+      "help": "qn check [options]\n\nCheck the dependency rule: domain must not import infrastructure, frameworks or ORMs\n\nOptions:\n  -h, --help     Show help\n  -v, --version  Show the version\n      --json     Print a JSON result to stdout (no prompts, no colors)\n\nExamples:\n  qn check\n  qn check --json\n\nDocs: https://daksonc.github.io/QuickNode/"
+    },
+    "add": {
+      "aliases": [],
+      "options": {
+        "dry-run": {
+          "type": "boolean"
+        },
+        "force": {
+          "type": "boolean",
+          "short": "f"
+        }
+      },
+      "help": "qn add <recipe...> [options]\n\nAdd a tool to an existing project (idempotent)\n\nArguments:\n  recipe...  Recipes to apply (agents, auth, ci, docker, eslint, github-actions, graceful-shutdown, healthcheck, husky, rate-limit, swagger, tests)\n\nOptions:\n      --dry-run  Show the diff without writing anything\n  -f, --force    Overwrite existing files with different content\n  -h, --help     Show help\n  -v, --version  Show the version\n      --json     Print a JSON result to stdout (no prompts, no colors)\n\nExamples:\n  qn add docker\n  qn add auth rate-limit --dry-run\n  qn add ci --json\n  qn add agents\n\nDocs: https://daksonc.github.io/QuickNode/"
+    },
+    "doctor": {
+      "aliases": [],
+      "options": {
+        "offline": {
+          "type": "boolean"
+        }
+      },
+      "help": "qn doctor [options]\n\nCheck Node.js, .env, Docker, vulnerabilities and the dependency rule\n\nOptions:\n      --offline  Skip npm audit (no network)\n  -h, --help     Show help\n  -v, --version  Show the version\n      --json     Print a JSON result to stdout (no prompts, no colors)\n\nExamples:\n  qn doctor\n  qn doctor --offline\n  qn doctor --json\n\nDocs: https://daksonc.github.io/QuickNode/"
     },
     "ui": {
       "aliases": [
@@ -66,10 +120,10 @@ window.QN_DATA = Object.freeze({
           "type": "string"
         }
       },
-      "help": "qn ui [topic] [options]\n\nOpen the documentation in the browser (alias: qn docs)\n\nArguments:\n  topic  Page to open (start, commands, create, ui, structure, tutorial, add, faq, compare, changelog, adr)\n\nOptions:\n  -p, --print         Only print the link, do not open the browser\n      --lang <en|pt>  Language of the page (default: from LANG)\n  -h, --help          Show help\n  -v, --version       Show the version\n      --json          Print a JSON result to stdout (no prompts, no colors)\n\nExamples:\n  qn ui\n  qn docs create\n  qn ui structure --lang pt\n  qn ui faq --print\n\nDocs: https://daksonc.github.io/QuickNode/"
+      "help": "qn ui [topic] [options]\n\nOpen the documentation in the browser (alias: qn docs)\n\nArguments:\n  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, check, add, doctor, faq, compare, changelog, adr)\n\nOptions:\n  -p, --print         Only print the link, do not open the browser\n      --lang <en|pt>  Language of the page (default: from LANG)\n  -h, --help          Show help\n  -v, --version       Show the version\n      --json          Print a JSON result to stdout (no prompts, no colors)\n\nExamples:\n  qn ui\n  qn docs create\n  qn ui structure --lang pt\n  qn ui faq --print\n\nDocs: https://daksonc.github.io/QuickNode/"
     }
   },
-  "help": "Usage: qn <command> [options]\n\nCommands:\n  create    Create a new project with clean architecture\n  ui, docs  Open the documentation in the browser\n  help      Show help for a command\n\nOptions:\n  -h, --help     Show help\n  -v, --version  Show the version\n      --json     Print a JSON result to stdout (no prompts, no colors)\n\nRun \"qn <command> --help\" for details. Docs: https://daksonc.github.io/QuickNode/",
+  "help": "Usage: qn <command> [options]\n\nCommands:\n  create       Create a new project with clean architecture\n  generate, g  Generate a feature in the clean architecture layers, already wired\n  check        Check the dependency rule: domain must not import infrastructure, frameworks or ORMs\n  add          Add a tool to an existing project (idempotent)\n  doctor       Check Node.js, .env, Docker, vulnerabilities and the dependency rule\n  ui, docs     Open the documentation in the browser\n  help         Show help for a command\n\nOptions:\n  -h, --help     Show help\n  -v, --version  Show the version\n      --json     Print a JSON result to stdout (no prompts, no colors)\n\nRun \"qn <command> --help\" for details. Docs: https://daksonc.github.io/QuickNode/",
   "topics": {
     "start": "start/",
     "commands": "commands/",
@@ -77,14 +131,17 @@ window.QN_DATA = Object.freeze({
     "ui": "commands/#ui",
     "structure": "structure/",
     "tutorial": "tutorial/",
+    "generate": "commands/#generate",
+    "check": "commands/#check",
     "add": "add/",
+    "doctor": "commands/#doctor",
     "faq": "faq/",
     "compare": "compare/",
     "changelog": "changelog/",
     "adr": "adr/"
   },
   "dryRun": {
-    "typescript": "Dry run: nothing was written.\nWould create NAME (TypeScript) in ./NAME (33 files):\n  + .dockerignore\n  + .env.example\n  + .husky/commit-msg\n  + .husky/install.mjs\n  + .husky/pre-commit\n  + .prettierignore\n  + .prettierrc.json\n  + README.md\n  + commitlint.config.js\n  + docker-compose.yml\n  + eslint.config.mjs\n  + .gitignore\n  + jest.config.js\n  + package.json\n  + src/__tests__/use-cases/user-use-cases.test.ts\n  + src/domain/entities/user.ts\n  + src/domain/repositories/user-repository.ts\n  + src/domain/use-cases/user-use-cases.ts\n  + src/infrastructure/config/load-env.ts\n  + src/infrastructure/controllers/user-controller.ts\n  + src/infrastructure/database/connection.ts\n  + src/infrastructure/database/entities/user-entity.ts\n  + src/infrastructure/database/repositories/user-repository.ts\n  + src/infrastructure/database/repository-factory.ts\n  + src/infrastructure/database/seeder.ts\n  + src/infrastructure/docs/swagger.ts\n  + src/infrastructure/logging/logger.ts\n  + src/infrastructure/middleware/error-handler.ts\n  + src/infrastructure/middleware/validation.ts\n  + src/infrastructure/routes/user-routes.ts\n  + src/server.ts\n  + tsconfig.json\n  + .env",
-    "javascript": "Dry run: nothing was written.\nWould create NAME (JavaScript) in ./NAME (32 files):\n  + .dockerignore\n  + .env.example\n  + .husky/commit-msg\n  + .husky/install.mjs\n  + .husky/pre-commit\n  + .prettierignore\n  + .prettierrc.json\n  + README.md\n  + commitlint.config.js\n  + docker-compose.yml\n  + eslint.config.mjs\n  + .gitignore\n  + jest.config.js\n  + package.json\n  + src/__tests__/user.test.js\n  + src/domain/entities/user.js\n  + src/domain/repositories/user-repository.js\n  + src/domain/use-cases/user-use-cases.js\n  + src/infrastructure/config/load-env.js\n  + src/infrastructure/controllers/user-controller.js\n  + src/infrastructure/database/connection.js\n  + src/infrastructure/database/models/index.js\n  + src/infrastructure/database/models/user-model.js\n  + src/infrastructure/database/repositories/user-repository.js\n  + src/infrastructure/database/repository-factory.js\n  + src/infrastructure/database/seeder.js\n  + src/infrastructure/docs/swagger.js\n  + src/infrastructure/logging/logger.js\n  + src/infrastructure/middleware/error-handler.js\n  + src/infrastructure/routes/user-routes.js\n  + src/server.js\n  + .env"
+    "typescript": "Dry run: nothing was written.\nWould create NAME (TypeScript) in ./NAME (37 files):\n  + .dockerignore\n  + .env.example\n  + .husky/commit-msg\n  + .husky/install.mjs\n  + .husky/pre-commit\n  + .prettierignore\n  + .prettierrc.json\n  + AGENTS.md\n  + CLAUDE.md\n  + README.md\n  + commitlint.config.js\n  + docker-compose.yml\n  + eslint.config.mjs\n  + .gitignore\n  + jest.config.js\n  + package.json\n  + src/__tests__/use-cases/user-use-cases.test.ts\n  + src/domain/entities/user.ts\n  + src/domain/repositories/user-repository.ts\n  + src/domain/use-cases/user-use-cases.ts\n  + src/infrastructure/config/load-env.ts\n  + src/infrastructure/controllers/user-controller.ts\n  + src/infrastructure/database/connection.ts\n  + src/infrastructure/database/entities/user-entity.ts\n  + src/infrastructure/database/repositories/user-repository.ts\n  + src/infrastructure/database/repository-factory.ts\n  + src/infrastructure/database/seeder.ts\n  + src/infrastructure/docs/swagger.ts\n  + src/infrastructure/http/dtos/user-dtos.ts\n  + src/infrastructure/logging/logger.ts\n  + src/infrastructure/middleware/error-handler.ts\n  + src/infrastructure/middleware/validation.ts\n  + src/infrastructure/modules/user-module.ts\n  + src/infrastructure/routes/user-routes.ts\n  + src/server.ts\n  + tsconfig.json\n  + .env",
+    "javascript": "Dry run: nothing was written.\nWould create NAME (JavaScript) in ./NAME (35 files):\n  + .dockerignore\n  + .env.example\n  + .husky/commit-msg\n  + .husky/install.mjs\n  + .husky/pre-commit\n  + .prettierignore\n  + .prettierrc.json\n  + AGENTS.md\n  + CLAUDE.md\n  + README.md\n  + commitlint.config.js\n  + docker-compose.yml\n  + eslint.config.mjs\n  + .gitignore\n  + jest.config.js\n  + package.json\n  + src/__tests__/user.test.js\n  + src/domain/entities/user.js\n  + src/domain/repositories/user-repository.js\n  + src/domain/use-cases/user-use-cases.js\n  + src/infrastructure/config/load-env.js\n  + src/infrastructure/controllers/user-controller.js\n  + src/infrastructure/database/connection.js\n  + src/infrastructure/database/models/index.js\n  + src/infrastructure/database/models/user-model.js\n  + src/infrastructure/database/repositories/user-repository.js\n  + src/infrastructure/database/repository-factory.js\n  + src/infrastructure/database/seeder.js\n  + src/infrastructure/docs/swagger.js\n  + src/infrastructure/logging/logger.js\n  + src/infrastructure/middleware/error-handler.js\n  + src/infrastructure/modules/user-module.js\n  + src/infrastructure/routes/user-routes.js\n  + src/server.js\n  + .env"
   }
 });

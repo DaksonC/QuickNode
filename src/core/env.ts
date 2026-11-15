@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { readIfExists } from './fs.js';
 
 /** Variables that receive a random value in the generated `.env`. */
 const SECRET_GENERATORS: Record<string, () => string> = {
@@ -37,13 +38,8 @@ export function generatesEnvFile(projectFiles: string[]): boolean {
  * secrets. Returns false (and writes nothing) when there is no `.env.example`.
  */
 export async function createEnvFile(projectDir: string): Promise<boolean> {
-  let example: string;
-  try {
-    example = await fs.readFile(path.join(projectDir, ENV_EXAMPLE_FILE), 'utf8');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
-    throw error;
-  }
+  const example = await readIfExists(path.join(projectDir, ENV_EXAMPLE_FILE));
+  if (example === undefined) return false;
 
   await fs.writeFile(path.join(projectDir, ENV_FILE), fillSecrets(example), { mode: 0o600 });
   return true;

@@ -1,5 +1,6 @@
 const sequelizeConnection = require('../connection');
 const defineUserModel = require('./user-model');
+// qn:imports
 
 /**
  * Models Registry
@@ -23,6 +24,7 @@ class ModelsRegistry {
 
     // Define all models
     this.models.User = defineUserModel(sequelize);
+    // qn:models
 
     // Add associations here when needed
     // Example: this.models.User.hasMany(this.models.Post);

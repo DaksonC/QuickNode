@@ -36,6 +36,7 @@ src/
 │   ├── docs/             # API documentation setup
 │   ├── logging/          # Logging configuration
 │   ├── middleware/       # Express middleware
+│   ├── modules/          # Wiring of each feature (repository -> controller -> routes)
 │   └── routes/           # Route definitions
 └── server.js             # Application entry point
 ```
@@ -215,6 +216,7 @@ Once the server is running, visit:
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run lint` - Lint JavaScript files
+- `npm run check` - Check the dependency rule of the clean architecture (`qn check`)
 - `npm run lint:fix` - Lint and fix JavaScript files
 - `npm run format` - Format code with Prettier
 - `npm run docker:up` - Start PostgreSQL container
@@ -258,6 +260,20 @@ This template follows Clean Architecture principles:
 - **Domain Layer**: Contains business entities, repository interfaces, and use cases
 - **Infrastructure Layer**: Contains framework-specific code, database implementations, and external service integrations
 - **Dependency Inversion**: High-level modules don't depend on low-level modules; both depend on abstractions
+
+## ➕ Adding New Features
+
+Generate a feature with every layer already wired, then add its fields:
+
+```bash
+npx @10565/quicknode-cli generate crud product --dry-run   # preview
+npx @10565/quicknode-cli generate crud product             # entity, repository, use cases + test, controller, route
+npx @10565/quicknode-cli add docker ci                     # recipes: auth, healthcheck, rate-limit, docker, ci...
+npm run check                                              # dependency rule (qn check)
+```
+
+`AGENTS.md` (copied in `CLAUDE.md`) explains the layers and these commands to AI coding assistants.
+The generator inserts code before marker comments such as `// qn:modules`: keep them.
 
 ## 📄 License
 

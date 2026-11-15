@@ -1,5 +1,12 @@
 import { DataSource } from 'typeorm';
 import { UserEntity } from './entities/user-entity';
+// qn:imports
+
+/** TypeORM entities of every feature (`qn generate` adds new ones here). */
+const entities = [
+  UserEntity,
+  // qn:entities
+];
 
 /**
  * Database Connection Manager for TypeScript
@@ -49,7 +56,7 @@ class DatabaseConnection {
       database: process.env.DB_NAME || 'quicknode_db',
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',
-      entities: [UserEntity],
+      entities,
       migrations: ['src/infrastructure/database/migrations/*.ts'],
       subscribers: ['src/infrastructure/database/subscribers/*.ts'],
     };
@@ -78,7 +85,7 @@ class DatabaseConnection {
       database: process.env.DB_NAME || 'quicknode_db',
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',
-      entities: [UserEntity],
+      entities,
       migrations: ['src/infrastructure/database/migrations/*.ts'],
       subscribers: ['src/infrastructure/database/subscribers/*.ts'],
     };
@@ -98,7 +105,7 @@ class DatabaseConnection {
       database: process.env.SQLITE_PATH || './database.sqlite',
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',
-      entities: [UserEntity],
+      entities,
       migrations: ['src/infrastructure/database/migrations/*.ts'],
       subscribers: ['src/infrastructure/database/subscribers/*.ts'],
     };

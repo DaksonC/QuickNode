@@ -10,6 +10,8 @@ export interface OptionSpec {
   description: string;
   /** Closed list of accepted values (string options only). */
   choices?: readonly string[];
+  /** Placeholder shown in help for free-form string values. */
+  valueName?: string;
 }
 
 export interface ArgumentSpec {
@@ -17,6 +19,8 @@ export interface ArgumentSpec {
   description: string;
   /** Closed list of accepted values. */
   choices?: readonly string[];
+  /** Accepts several values (last argument only). */
+  variadic?: boolean;
 }
 
 export interface CommandSpec {
@@ -25,8 +29,8 @@ export interface CommandSpec {
   aliases?: string[];
   summary: string;
   usage: string;
-  /** Positional argument, if the command takes one. */
-  argument?: ArgumentSpec;
+  /** Positional arguments, in order. */
+  arguments?: ArgumentSpec[];
   options: Record<string, OptionSpec>;
   examples: string[];
 }
@@ -42,7 +46,10 @@ export const DOCS_TOPICS = {
   ui: 'commands/#ui',
   structure: 'structure/',
   tutorial: 'tutorial/',
+  generate: 'commands/#generate',
+  check: 'commands/#check',
   add: 'add/',
+  doctor: 'commands/#doctor',
   faq: 'faq/',
   compare: 'compare/',
   changelog: 'changelog/',
@@ -53,6 +60,30 @@ export type DocsTopic = keyof typeof DOCS_TOPICS;
 
 export const DOCS_LANGUAGES = ['en', 'pt'] as const;
 
+export const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn'] as const;
+export type PackageManager = (typeof PACKAGE_MANAGERS)[number];
+export const TEST_RUNNERS = ['jest', 'node'] as const;
+
+/** Kinds of code `qn generate` writes; crud is all the parts at once. */
+export const GENERATOR_TYPES = ['crud', 'entity', 'usecase', 'repository', 'controller'] as const;
+export const CRUD_PARTS = ['entity', 'repository', 'usecase', 'controller'] as const;
+
+/** Recipes of `qn add` (github-actions is another name for ci). */
+export const RECIPES = [
+  'agents',
+  'auth',
+  'ci',
+  'docker',
+  'eslint',
+  'github-actions',
+  'graceful-shutdown',
+  'healthcheck',
+  'husky',
+  'rate-limit',
+  'swagger',
+  'tests'
+] as const;
+
 export const GLOBAL_OPTIONS: Record<string, OptionSpec> = {
   help: { type: 'boolean', short: 'h', description: 'Show help' },
   version: { type: 'boolean', short: 'v', description: 'Show the version' },
@@ -62,7 +93,7 @@ export const GLOBAL_OPTIONS: Record<string, OptionSpec> = {
 export const COMMANDS: Record<string, CommandSpec> = {
   create: {
     name: 'create',
-    argument: { name: 'name', description: 'Project folder and package name ("." for the current directory)' },
+    arguments: [{ name: 'name', description: 'Project folder and package name ("." for the current directory)' }],
     summary: 'Create a new project with clean architecture',
     usage: 'qn create [name] [options]',
     options: {
@@ -73,22 +104,79 @@ export const COMMANDS: Record<string, CommandSpec> = {
       'dry-run': { type: 'boolean', description: 'Show what would be created without writing anything' },
       install: { type: 'boolean', description: 'Run npm install after creating the project' },
       git: { type: 'boolean', description: 'Initialize a git repository' },
-      'no-credits': { type: 'boolean', description: 'Leave the "Generated with QuickNode" line out of the README' }
+      'no-credits': { type: 'boolean', description: 'Leave the "Generated with QuickNode" line out of the README' },
+      pm: { type: 'string', description: 'Package manager used in scripts, docs and --install (default: npm)', choices: PACKAGE_MANAGERS },
+      test: { type: 'string', description: 'Test runner (default: jest; node uses the built-in node:test)', choices: TEST_RUNNERS }
     },
     examples: [
       'qn create my-api',
       'qn create my-api -ts --git --install',
+      'qn create my-api --pm pnpm --test node',
       'qn create . --javascript --force',
       'qn create my-api --dry-run',
       'qn create my-api --yes --json'
     ]
+  },
+  generate: {
+    name: 'generate',
+    aliases: ['g'],
+    summary: 'Generate a feature in the clean architecture layers, already wired',
+    usage: 'qn generate <type> <name> [options]',
+    arguments: [
+      { name: 'type', description: 'What to generate (crud = all the parts)', choices: GENERATOR_TYPES },
+      { name: 'name', description: 'Feature name, e.g. product or order-item' }
+    ],
+    options: {
+      only: {
+        type: 'string',
+        valueName: 'parts',
+        description: `With crud, generate only these parts (comma-separated: ${CRUD_PARTS.join(', ')})`
+      },
+      'no-test': { type: 'boolean', description: 'Do not generate the use case test' },
+      'dry-run': { type: 'boolean', description: 'Show the files to create or change without writing anything' },
+      force: { type: 'boolean', short: 'f', description: 'Overwrite existing files with different content' }
+    },
+    examples: [
+      'qn generate crud product',
+      'qn g crud order-item --dry-run',
+      'qn g crud product --only entity,repository',
+      'qn g usecase product --no-test',
+      'qn g crud product --json'
+    ]
+  },
+  check: {
+    name: 'check',
+    summary: 'Check the dependency rule: domain must not import infrastructure, frameworks or ORMs',
+    usage: 'qn check [options]',
+    options: {},
+    examples: ['qn check', 'qn check --json']
+  },
+  add: {
+    name: 'add',
+    summary: 'Add a tool to an existing project (idempotent)',
+    usage: 'qn add <recipe...> [options]',
+    arguments: [{ name: 'recipe', description: 'Recipes to apply', choices: RECIPES, variadic: true }],
+    options: {
+      'dry-run': { type: 'boolean', description: 'Show the diff without writing anything' },
+      force: { type: 'boolean', short: 'f', description: 'Overwrite existing files with different content' }
+    },
+    examples: ['qn add docker', 'qn add auth rate-limit --dry-run', 'qn add ci --json', 'qn add agents']
+  },
+  doctor: {
+    name: 'doctor',
+    summary: 'Check Node.js, .env, Docker, vulnerabilities and the dependency rule',
+    usage: 'qn doctor [options]',
+    options: {
+      offline: { type: 'boolean', description: 'Skip npm audit (no network)' }
+    },
+    examples: ['qn doctor', 'qn doctor --offline', 'qn doctor --json']
   },
   ui: {
     name: 'ui',
     aliases: ['docs'],
     summary: 'Open the documentation in the browser',
     usage: 'qn ui [topic] [options]',
-    argument: { name: 'topic', description: 'Page to open', choices: Object.keys(DOCS_TOPICS) },
+    arguments: [{ name: 'topic', description: 'Page to open', choices: Object.keys(DOCS_TOPICS) }],
     options: {
       print: { type: 'boolean', short: 'p', description: 'Only print the link, do not open the browser' },
       lang: { type: 'string', description: 'Language of the page (default: from LANG)', choices: DOCS_LANGUAGES }
@@ -167,11 +255,13 @@ export function parseCommandLine(argv: string[]): ParsedArgs {
 
 /** Rejects values outside the closed lists declared in the spec. */
 function assertChoices(spec: CommandSpec, positionals: string[], values: FlagValues): void {
-  const { argument } = spec;
-  const value = positionals[0];
-  if (argument?.choices && value !== undefined && !argument.choices.includes(value)) {
-    throw new UsageError(`Unknown ${argument.name} "${value}". Choose one of: ${argument.choices.join(', ')}.`, spec.name);
-  }
+  const args = spec.arguments ?? [];
+  positionals.forEach((value, index) => {
+    const argument = args[index] ?? (args.at(-1)?.variadic ? args.at(-1) : undefined);
+    if (argument?.choices && !argument.choices.includes(value)) {
+      throw new UsageError(`Unknown ${argument.name} "${value}". Choose one of: ${argument.choices.join(', ')}.`, spec.name);
+    }
+  });
   for (const [name, option] of Object.entries(spec.options)) {
     const given = values[name];
     if (option.choices && typeof given === 'string' && !option.choices.includes(given)) {

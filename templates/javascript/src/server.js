@@ -4,11 +4,10 @@ const helmet = require('helmet');
 const { logger } = require('./infrastructure/logging/logger');
 const { setupSwagger } = require('./infrastructure/docs/swagger');
 const { errorHandler } = require('./infrastructure/middleware/error-handler');
-const { createUserRoutes } = require('./infrastructure/routes/user-routes');
 const sequelizeConnection = require('./infrastructure/database/connection');
 const modelsRegistry = require('./infrastructure/database/models');
-const { RepositoryFactory } = require('./infrastructure/database/repository-factory');
-const { UserController } = require('./infrastructure/controllers/user-controller');
+const { registerUserModule } = require('./infrastructure/modules/user-module');
+// qn:imports
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +18,7 @@ app.use(helmet());
 // Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// qn:middleware
 
 // Setup Swagger documentation
 setupSwagger(app);
@@ -36,47 +36,40 @@ async function startServer() {
     modelsRegistry.initialize();
     logger.info('✅ Database connection established and models initialized');
 
-    // --- Dependency Injection Setup ---
-    const userRepository = RepositoryFactory.createUserRepository();
-    const userController = new UserController(userRepository);
-    const userRoutes = createUserRoutes(userController);
+    // Feature modules (`qn generate crud <name>` adds new ones here)
+    registerUserModule(app);
+    // qn:modules
 
-    // API routes
-    app.use('/api/v1/users', userRoutes);
-    // --- End of DI Setup ---
+    // 404 handler for unknown routes
+    app.use((req, res) => {
+      res.status(404).json({ error: 'Route not found' });
+    });
 
     // Error handling middleware (should be last)
     app.use(errorHandler);
 
-    // 404 handler
-    app.use('* ', (req, res) => {
-      res.status(404).json({ error: 'Route not found' });
-    });
-
     // Start the server
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
       logger.info(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
     });
+
+    // qn:shutdown:start
+    // Basic shutdown; `qn add graceful-shutdown` replaces this block.
+    const shutdown = signal => {
+      logger.info(`🛑 ${signal} received, shutting down`);
+      server.close(() => {
+        sequelizeConnection.close().finally(() => process.exit(0));
+      });
+    };
+    process.once('SIGTERM', () => shutdown('SIGTERM'));
+    process.once('SIGINT', () => shutdown('SIGINT'));
+    // qn:shutdown:end
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    logger.error('❌ Failed to start server:', error);
+    logger.error({ err: error }, '❌ Failed to start server');
     process.exit(1);
   }
 }
-
-// Handle graceful shutdown
-process.on('SIGINT', async () => {
-  logger.info('🛑 Shutting down gracefully...');
-  await sequelizeConnection.close();
-  process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-  logger.info('🛑 Shutting down gracefully...');
-  await sequelizeConnection.close();
-  process.exit(0);
-});
 
 // Start the server
 startServer();

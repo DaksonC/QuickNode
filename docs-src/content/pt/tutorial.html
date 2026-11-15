@@ -1,15 +1,39 @@
 <h1 tabindex="-1">Como criar uma entidade e um caso de uso</h1>
-<p class="answer">Para adicionar uma funcionalidade a uma API QuickNode, escreva a entidade, a interface de repositório e o caso de uso em <code>src/domain</code>, teste o caso de uso com um repositório falso e depois implemente o repositório, o controller e a rota em <code>src/infrastructure</code>, ligando tudo no <code>server.ts</code>.</p>
-<p>Este guia adiciona um <code>Product</code> ao template TypeScript. O template JavaScript segue os mesmos passos com models do Sequelize. Um comando <code>qn generate crud product</code>, que vai escrever esses arquivos por você, está planejado; até lá, os passos abaixo são a referência.</p>
+<p class="answer">Para adicionar uma funcionalidade a uma API QuickNode, rode <code>qn generate crud product</code> dentro do projeto: ele escreve a entidade, a interface do repositório e a implementação, os casos de uso com teste, o controller e a rota, e liga tudo no servidor.</p>
+<p>Este guia adiciona um <code>Product</code> com preço ao template TypeScript. O template JavaScript recebe os mesmos arquivos, com models do Sequelize e regras do express-validator.</p>
 
-<h2 id="entity" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1. Como escrevo a entidade?</h2>
-<p>Crie <code>src/domain/entities/product.ts</code>. É uma classe simples: sem Express, sem TypeORM.</p>
+<h2 id="generate" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1. Como gero a funcionalidade?</h2>
+<p>Veja antes e depois gere. O nome pode ser escrito como <code>product</code>, <code>order-item</code> ou <code>orderItem</code>:</p>
+<pre class="term"><code>$ npx {{package}} generate crud product --dry-run
+$ npx {{package}} generate crud product</code></pre>
+<p>A forma curta é <code>qn g crud product</code> quando a CLI está instalada globalmente (<code>npm i -g {{package}}</code>). Rodar de novo não muda nada; um arquivo que você editou nunca é sobrescrito sem <code>--force</code>.</p>
+
+<h2 id="files" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2. O que foi criado, e onde?</h2>
+<dl class="opts">
+  <dt>src/domain/entities/product.ts</dt>
+  <dd>A classe <code>Product</code> e o tipo <code>CreateProductData</code>. Sem Express, sem TypeORM.</dd>
+  <dt>src/domain/repositories/product-repository.ts</dt>
+  <dd>A interface <code>ProductRepository</code>: o que o domínio precisa do armazenamento.</dd>
+  <dt>src/domain/use-cases/product-use-cases.ts</dt>
+  <dd>Criar, buscar, listar, atualizar e remover, mais o <code>ProductNotFoundError</code>.</dd>
+  <dt>src/__tests__/use-cases/product-use-cases.test.ts</dt>
+  <dd>Testes dos casos de uso com um repositório em memória: sem banco, sem mocks.</dd>
+  <dt>src/infrastructure/database/…</dt>
+  <dd>A entidade do TypeORM (tabela <code>products</code>), a implementação do repositório e o método de fábrica <code>createProductRepository()</code>.</dd>
+  <dt>src/infrastructure/controllers, routes, http/dtos, modules</dt>
+  <dd>Handlers HTTP (erros do domínio viram 404), rotas em <code>/api/v1/products</code> com comentários do Swagger, DTOs de entrada validados com class-validator e o <code>registerProductModule(app)</code>, que liga repositório → casos de uso → controller → rotas.</dd>
+</dl>
+<p>Os arquivos que já existiam só recebem linhas antes dos comentários-marcadores: a entidade na lista do <code>connection.ts</code> (<code>// qn:entities</code>), o método de fábrica (<code>// qn:factories</code>) e o módulo no <code>server.ts</code> (<code>// qn:modules</code>).</p>
+
+<h2 id="fields" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3. Como adiciono campos?</h2>
+<p>A entidade gerada tem um <code>name</code>. Um preço mexe num arquivo por camada. A entidade, no domínio:</p>
 <pre class="term"><code>export class Product {
   constructor(
     public readonly id: string,
     public readonly name: string,
     public readonly priceInCents: number,
-    public readonly createdAt: Date = new Date()
+    public readonly createdAt: Date = new Date(),
+    public readonly updatedAt: Date = new Date()
   ) {}
 }
 
@@ -17,180 +41,51 @@ export interface CreateProductData {
   name: string;
   priceInCents: number;
 }</code></pre>
+<p>A coluna, em <code>infrastructure/database/entities/product-entity.ts</code>, e a validação, em <code>infrastructure/http/dtos/product-dtos.ts</code>:</p>
+<pre class="term"><code>@Column('int')
+priceInCents!: number;
 
-<h2 id="repository" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2. Como declaro do que o domínio precisa do armazenamento?</h2>
-<p>Crie a interface em <code>src/domain/repositories/product-repository.ts</code>:</p>
-<pre class="term"><code>import { Product, CreateProductData } from '../entities/product.js';
+@IsInt()
+@Min(1)
+priceInCents!: number;</code></pre>
+<p>Depois passe <code>entity.priceInCents</code> no <code>toDomain()</code> da implementação do repositório. O compilador do TypeScript aponta cada lugar em que o campo novo ainda falta.</p>
 
-export interface ProductRepository {
-  findByName(name: string): Promise&lt;Product | null&gt;;
-  create(data: CreateProductData): Promise&lt;Product&gt;;
-  findAll(): Promise&lt;Product[]&gt;;
-}</code></pre>
-
-<h2 id="use-case" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3. Como escrevo o caso de uso?</h2>
-<p>As regras de negócio ficam em <code>src/domain/use-cases/product-use-cases.ts</code>. O caso de uso recebe a interface, nunca a classe do TypeORM:</p>
-<pre class="term"><code>import { Product, CreateProductData } from '../entities/product.js';
-import { ProductRepository } from '../repositories/product-repository.js';
-
-export class CreateProductUseCase {
-  constructor(private products: ProductRepository) {}
+<h2 id="rule" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>4. Onde fica uma regra de negócio?</h2>
+<p>No caso de uso, que só conhece a interface do repositório:</p>
+<pre class="term"><code>export class CreateProductUseCase {
+  constructor(private readonly repository: ProductRepository) {}
 
   async execute(data: CreateProductData): Promise&lt;Product&gt; {
     if (!Number.isInteger(data.priceInCents) || data.priceInCents &lt;= 0) {
       throw new Error('Price must be a positive amount in cents');
     }
-    if (await this.products.findByName(data.name)) {
-      throw new Error('A product with this name already exists');
-    }
-    return this.products.create(data);
-  }
-}
-
-export class ListProductsUseCase {
-  constructor(private products: ProductRepository) {}
-
-  execute(): Promise&lt;Product[]&gt; {
-    return this.products.findAll();
+    return this.repository.create(data);
   }
 }</code></pre>
+<p>E um teste junto dos gerados, com o mesmo repositório em memória:</p>
+<pre class="term"><code>it('rejects a price of zero', async () =&gt; {
+  const createUseCase = new CreateProductUseCase(repository);
 
-<h2 id="test" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>4. Como testo sem banco de dados?</h2>
-<p>Como o caso de uso depende de uma interface, um mock do Jest basta. Crie <code>src/__tests__/use-cases/product-use-cases.test.ts</code>:</p>
-<pre class="term"><code>import { CreateProductUseCase } from '../../domain/use-cases/product-use-cases';
-import { ProductRepository } from '../../domain/repositories/product-repository';
-import { Product } from '../../domain/entities/product';
-
-describe('CreateProductUseCase', () =&gt; {
-  const products: jest.Mocked&lt;ProductRepository&gt; = {
-    findByName: jest.fn(),
-    create: jest.fn(),
-    findAll: jest.fn(),
-  };
-  const createProduct = new CreateProductUseCase(products);
-
-  it('creates a product with a unique name', async () =&gt; {
-    products.findByName.mockResolvedValue(null);
-    products.create.mockResolvedValue(new Product('1', 'Coffee', 1500));
-    await expect(createProduct.execute({ name: 'Coffee', priceInCents: 1500 }))
-      .resolves.toMatchObject({ name: 'Coffee' });
-  });
-
-  it('rejects a price of zero', async () =&gt; {
-    await expect(createProduct.execute({ name: 'Free', priceInCents: 0 }))
-      .rejects.toThrow('Price must be a positive amount in cents');
-  });
+  await assert.rejects(createUseCase.execute({ name: 'Free', priceInCents: 0 }), /positive amount/);
 });</code></pre>
-<pre class="term"><code>$ npm test</code></pre>
 
-<h2 id="database" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>5. Como gravo no PostgreSQL?</h2>
-<p>Mapeie a tabela em <code>src/infrastructure/database/entities/product-entity.ts</code>:</p>
-<pre class="term"><code>import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
-
-@Entity('products')
-export class ProductEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
-
-  @Column('varchar', { length: 255, unique: true })
-  name!: string;
-
-  @Column('int')
-  priceInCents!: number;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-}</code></pre>
-<p>Adicione <code>ProductEntity</code> ao lado de <code>UserEntity</code> em todas as listas <code>entities: [...]</code> do <code>connection.ts</code>. Em desenvolvimento (<code>NODE_ENV=development</code>), o TypeORM cria a tabela ao iniciar; para produção, escreva uma migration.</p>
-<p>Depois implemente a interface em <code>src/infrastructure/database/repositories/product-repository.ts</code>, convertendo linhas em entidades do domínio:</p>
-<pre class="term"><code>import { Repository } from 'typeorm';
-import { ProductRepository } from '../../../domain/repositories/product-repository';
-import { Product, CreateProductData } from '../../../domain/entities/product';
-import { ProductEntity } from '../entities/product-entity';
-import { databaseConnection } from '../connection';
-
-export class PostgreSQLProductRepository implements ProductRepository {
-  private repository: Repository&lt;ProductEntity&gt; =
-    databaseConnection.getDataSource().getRepository(ProductEntity);
-
-  async findByName(name: string): Promise&lt;Product | null&gt; {
-    const row = await this.repository.findOne({ where: { name } });
-    return row ? this.toDomain(row) : null;
-  }
-
-  async create(data: CreateProductData): Promise&lt;Product&gt; {
-    return this.toDomain(await this.repository.save(this.repository.create(data)));
-  }
-
-  async findAll(): Promise&lt;Product[]&gt; {
-    return (await this.repository.find()).map((row) =&gt; this.toDomain(row));
-  }
-
-  private toDomain(row: ProductEntity): Product {
-    return new Product(row.id, row.name, row.priceInCents, row.createdAt);
-  }
-}</code></pre>
-
-<h2 id="http" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>6. Como exponho por HTTP?</h2>
-<p>O controller em <code>src/infrastructure/controllers/product-controller.ts</code> só traduz HTTP para o caso de uso e de volta:</p>
-<pre class="term"><code>import { Request, Response, NextFunction } from 'express';
-import { CreateProductUseCase, ListProductsUseCase } from '../../domain/use-cases/product-use-cases.js';
-import { AppError } from '../middleware/error-handler.js';
-
-export class ProductController {
-  constructor(
-    private createProduct: CreateProductUseCase,
-    private listProducts: ListProductsUseCase
-  ) {}
-
-  async create(req: Request, res: Response, next: NextFunction): Promise&lt;void&gt; {
-    try {
-      const product = await this.createProduct.execute({
-        name: req.body.name,
-        priceInCents: req.body.priceInCents,
-      });
-      res.status(201).json({ success: true, data: product });
-    } catch (error) {
-      next(error instanceof Error ? new AppError(error.message, 400) : error);
-    }
-  }
-
-  async list(_req: Request, res: Response, next: NextFunction): Promise&lt;void&gt; {
-    try {
-      res.json({ success: true, data: await this.listProducts.execute() });
-    } catch (error) {
-      next(error);
-    }
-  }
-}</code></pre>
-<p>E o router em <code>src/infrastructure/routes/product-routes.ts</code>:</p>
-<pre class="term"><code>import { Router } from 'express';
-import { ProductController } from '../controllers/product-controller';
-
-export function createProductRoutes(controller: ProductController): Router {
-  const router = Router();
-  router.get('/', (req, res, next) =&gt; controller.list(req, res, next));
-  router.post('/', (req, res, next) =&gt; controller.create(req, res, next));
-  return router;
-}</code></pre>
-
-<h2 id="wire" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>7. Como ligo tudo?</h2>
-<p>No <code>server.ts</code>, dentro do bloco "Dependency Injection Setup", ao lado da montagem dos usuários (e com os imports no topo do arquivo):</p>
-<pre class="term"><code>const productRepository = new PostgreSQLProductRepository();
-const productController = new ProductController(
-  new CreateProductUseCase(productRepository),
-  new ListProductsUseCase(productRepository)
-);
-app.use('/api/v1/products', createProductRoutes(productController));</code></pre>
-<p>Esse é o único lugar que conhece as classes concretas. Teste:</p>
-<pre class="term"><code>$ npm run dev
+<h2 id="run" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>5. Como testo?</h2>
+<pre class="term"><code>$ npm test
+$ npm run docker:up
+$ npm run dev
 $ curl -X POST localhost:3000/api/v1/products -H 'content-type: application/json' -d '{"name":"Coffee","priceInCents":1500}'
 $ curl localhost:3000/api/v1/products</code></pre>
+<p>Em desenvolvimento (<code>NODE_ENV=development</code>), o TypeORM cria a tabela ao iniciar; para produção, escreva uma migration. Os endpoints também aparecem em <code>/api-docs</code>.</p>
 
-<h2 id="checklist" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como sei que mantive a arquitetura limpa?</h2>
+<h2 id="check" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como sei que mantive a arquitetura limpa?</h2>
+<p>Rode <code>qn check</code> (ou <code>npm run check</code>). Ele falha, com arquivo e linha, quando um arquivo em <code>src/domain</code> importa <code>src/infrastructure</code>, o Express, um ORM ou qualquer outro pacote:</p>
+<pre class="term"><code>$ npx {{package}} check
+✔ Dependency rule respected: 6 domain files checked.</code></pre>
+<p>Ele sai com código 1 quando há violação, então pode rodar no CI (o <code>qn add ci</code> já inclui) e antes de cada commit.</p>
+
+<h2 id="parts" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Dá para gerar só algumas partes?</h2>
 <ul class="list" role="list">
-  <li>Nenhum arquivo em <code>src/domain</code> importa <code>express</code>, <code>typeorm</code> ou algo de <code>src/infrastructure</code>.</li>
-  <li>O teste do caso de uso roda sem Docker.</li>
-  <li>O <code>server.ts</code> é o único arquivo que cria o <code>PostgreSQLProductRepository</code>.</li>
+  <li><code>qn g crud product --only entity,repository</code>: algumas partes do CRUD.</li>
+  <li><code>qn g usecase product</code>, <code>qn g controller product</code>…: uma parte (tipos: <code>entity</code>, <code>repository</code>, <code>usecase</code>, <code>controller</code>). A saída avisa quando uma parte depende de outra que ainda não existe.</li>
+  <li><code>--no-test</code> pula o teste do caso de uso; <code>--json</code> imprime os arquivos e as ligações para scripts e agentes de IA.</li>
 </ul>
-<p>Para documentar os endpoints no Swagger, copie os comentários <code>@swagger</code> do <code>user-routes.ts</code>. Para validar a entrada com express-validator, reaproveite o middleware <code>validate</code> dele.</p>

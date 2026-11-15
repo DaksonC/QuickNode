@@ -23,6 +23,10 @@ npx @10565/quicknode-cli create my-api
 
 - **TypeScript & JavaScript Support**: Choose between TypeScript or JavaScript templates
 - **Clean Architecture**: Domain-driven design with clear separation of concerns
+- **Generators**: `qn generate crud product` writes entity, repository, use cases, test, controller and route, already wired
+- **Dependency rule check**: `qn check` fails (exit code 1) when the domain imports infrastructure, Express or an ORM
+- **Recipes**: `qn add auth|healthcheck|rate-limit|graceful-shutdown|docker|ci|agents|...`, idempotent, with `--dry-run` diffs
+- **Ready for AI agents**: `AGENTS.md`/`CLAUDE.md` in every project; every command works without prompts and with `--json`
 - **Pre-configured Dependencies**: All essential tools ready to use
 - **SQL Databases**: PostgreSQL by default (via Docker), plus MySQL and SQLite — TypeORM (TypeScript) or Sequelize (JavaScript)
 - **API Documentation**: Swagger/OpenAPI 3.0 integration
@@ -95,9 +99,34 @@ qn create my-app --dry-run
 | `--install` | Run `npm install` after creating the project |
 | `--git` | Initialize a git repository (enables the Husky hooks on install) |
 | `--no-credits` | Leave the "Generated with QuickNode" line out of the generated README |
+| `--pm <npm\|pnpm\|yarn>` | Package manager used in scripts, docs, hooks and `--install` (default: npm) |
+| `--test <jest\|node>` | Test runner (default: Jest; `node` uses the built-in `node:test`) |
 | `--json` | Print a JSON result (or error) to stdout; no prompts or colors |
 
 Run `qn help create` (or `qn create --help`) for the full reference.
+
+### Grow the project
+
+Inside a generated project:
+
+```bash
+qn generate crud product --dry-run   # preview the files and the wiring
+qn g crud product                    # entity, repository, use cases + test, controller, route, module
+qn g crud order-item --only entity,repository
+qn g usecase product --no-test       # one part: entity, repository, usecase or controller
+
+qn check                             # dependency rule; exit code 1 on violations (CI, git hooks)
+qn check --json
+
+qn add docker ci                     # recipes: agents, auth, ci (github-actions), docker, eslint,
+qn add auth --dry-run                #   graceful-shutdown, healthcheck, husky, rate-limit, swagger, tests
+
+qn doctor                            # Node.js, .env, Docker, npm audit and qn check (--offline skips the audit)
+```
+
+Generators and recipes insert code before marker comments of the template (`// qn:modules`,
+`// qn:entities`...), never overwrite a changed file without `--force`, and running them twice
+changes nothing.
 
 ### Open the documentation
 
@@ -108,8 +137,8 @@ qn ui structure --lang pt
 qn ui faq --print        # only print the link
 ```
 
-Topics: `start`, `commands`, `create`, `ui`, `structure`, `tutorial`, `add`, `faq`, `compare`,
-`changelog`, `adr`. The link is always printed; a browser is opened only in an interactive
+Topics: `start`, `commands`, `create`, `ui`, `generate`, `check`, `add`, `doctor`, `structure`,
+`tutorial`, `faq`, `compare`, `changelog`, `adr`. The link is always printed; a browser is opened only in an interactive
 desktop session (never in CI, over SSH or in a container), with the system opener and no shell.
 
 ### Scripts and CI

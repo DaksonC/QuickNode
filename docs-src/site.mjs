@@ -82,15 +82,15 @@ export const PAGES = [
     menu: 'commands',
     updated: '2026-11-14',
     en: {
-      title: 'Command reference: qn create, qn ui and every flag',
+      title: 'Command reference: qn create, generate, check, add, doctor and every flag',
       description:
-        'Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, qn ui, --dry-run, --force, --json and exit codes.',
+        'Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, ui, --dry-run, --json and exit codes.',
       crumb: 'Commands'
     },
     pt: {
-      title: 'Referência de comandos: qn create, qn ui e todas as flags',
+      title: 'Referência de comandos: qn create, generate, check, add, doctor e todas as flags',
       description:
-        'Todos os comandos e flags do QuickNode CLI, gerados da mesma definição que a CLI usa: qn create, qn ui, --dry-run, --force, --json e códigos de saída.',
+        'Todos os comandos e flags do QuickNode CLI, gerados da mesma definição que a CLI usa: qn create, generate, check, add, doctor, ui, --dry-run, --json e códigos de saída.',
       crumb: 'Comandos'
     }
   },
@@ -120,13 +120,13 @@ export const PAGES = [
     en: {
       title: 'How to create an entity and a use case in a Node.js clean architecture API',
       description:
-        'Add a Product entity to an Express + TypeScript API: domain entity, repository interface, use case, TypeORM repository, controller, route and test, in the right layers.',
+        'Add a Product to an Express + TypeScript API with qn generate crud: entity, repository, use cases, test, controller and route in the right layers, then fields, rules and qn check.',
       crumb: 'Entity and use case'
     },
     pt: {
       title: 'Como criar uma entidade e um caso de uso numa API Node.js com arquitetura limpa',
       description:
-        'Adicione uma entidade Product a uma API Express + TypeScript: entidade, interface de repositório, caso de uso, repositório TypeORM, controller, rota e teste, nas camadas certas.',
+        'Adicione um Product a uma API Express + TypeScript com qn generate crud: entidade, repositório, casos de uso, teste, controller e rota nas camadas certas, depois campos, regras e qn check.',
       crumb: 'Entidade e caso de uso'
     }
   },
@@ -136,16 +136,16 @@ export const PAGES = [
     menu: 'add',
     updated: '2026-11-14',
     en: {
-      title: 'qn add recipes (coming soon): add tools to an existing project',
+      title: 'qn add recipes: add Docker, JWT auth, CI and more to an existing project',
       description:
-        'Planned qn add recipes for QuickNode projects: Docker, ESLint, Husky, Swagger, GitHub Actions, JWT auth, health checks and more, idempotent and with --dry-run.',
-      crumb: 'qn add (soon)'
+        'qn add recipes for QuickNode projects: JWT auth, health checks, rate limit, graceful shutdown, Docker, GitHub Actions and AI agent instructions, idempotent and with --dry-run.',
+      crumb: 'qn add'
     },
     pt: {
-      title: 'Receitas do qn add (em breve): ferramentas em projetos existentes',
+      title: 'Receitas do qn add: Docker, autenticação JWT, CI e mais num projeto existente',
       description:
-        'Receitas planejadas do qn add para projetos QuickNode: Docker, ESLint, Husky, Swagger, GitHub Actions, autenticação JWT, healthcheck e mais, idempotentes e com --dry-run.',
-      crumb: 'qn add (em breve)'
+        'Receitas do qn add para projetos QuickNode: autenticação JWT, healthcheck, rate limit, encerramento gracioso, Docker, GitHub Actions e instruções para agentes de IA, idempotentes e com --dry-run.',
+      crumb: 'qn add'
     }
   },
   {
@@ -319,7 +319,7 @@ export const COMMANDS_PT = {
   commands: {
     create: {
       summary: 'Cria um projeto novo com arquitetura limpa',
-      argument: 'Pasta e nome do pacote do projeto ("." para o diretório atual)',
+      arguments: { name: 'Pasta e nome do pacote do projeto ("." para o diretório atual)' },
       options: {
         typescript: 'Usa o template TypeScript (também -ts)',
         javascript: 'Usa o template JavaScript (também -js)',
@@ -328,12 +328,45 @@ export const COMMANDS_PT = {
         'dry-run': 'Mostra o que seria criado sem gravar nada',
         install: 'Roda npm install depois de criar o projeto',
         git: 'Inicializa um repositório git',
-        'no-credits': 'Deixa de fora do README a linha "Generated with QuickNode"'
+        'no-credits': 'Deixa de fora do README a linha "Generated with QuickNode"',
+        pm: 'Gerenciador de pacotes usado nos scripts, na documentação e no --install (padrão: npm)',
+        test: 'Executor de testes (padrão: jest; node usa o node:test nativo)'
+      }
+    },
+    generate: {
+      summary: 'Gera uma funcionalidade nas camadas da arquitetura limpa, já ligada',
+      arguments: {
+        type: 'O que gerar (crud = todas as partes)',
+        name: 'Nome da funcionalidade, por exemplo product ou order-item'
+      },
+      options: {
+        only: 'Com crud, gera só estas partes (separadas por vírgula: entity, repository, usecase, controller)',
+        'no-test': 'Não gera o teste do caso de uso',
+        'dry-run': 'Mostra os arquivos a criar ou alterar sem gravar nada',
+        force: 'Sobrescreve arquivos existentes com conteúdo diferente'
+      }
+    },
+    check: {
+      summary: 'Verifica a regra de dependência: o domain não pode importar infrastructure, frameworks nem ORMs',
+      options: {}
+    },
+    add: {
+      summary: 'Adiciona uma ferramenta a um projeto existente (idempotente)',
+      arguments: { recipe: 'Receitas a aplicar' },
+      options: {
+        'dry-run': 'Mostra o diff sem gravar nada',
+        force: 'Sobrescreve arquivos existentes com conteúdo diferente'
+      }
+    },
+    doctor: {
+      summary: 'Verifica Node.js, .env, Docker, vulnerabilidades e a regra de dependência',
+      options: {
+        offline: 'Pula o npm audit (sem rede)'
       }
     },
     ui: {
       summary: 'Abre a documentação no navegador',
-      argument: 'Página a abrir',
+      arguments: { topic: 'Página a abrir' },
       options: {
         print: 'Só imprime o link, sem abrir o navegador',
         lang: 'Idioma da página (padrão: o do LANG)'
@@ -348,6 +381,7 @@ export const REFERENCE_TEXT = {
     usage: 'Usage',
     alias: 'Alias',
     argument: 'Argument',
+    arguments: 'Arguments',
     values: 'accepted values',
     options: 'Options',
     examples: 'Examples',
@@ -355,12 +389,17 @@ export const REFERENCE_TEXT = {
     global: 'Global options',
     globalText: 'Accepted by every command.',
     exit: 'Exit codes',
-    exitCodes: ['success', 'the command failed (for example, the target folder is not empty)', 'invalid usage: unknown command, flag or value']
+    exitCodes: [
+      'success',
+      'the command failed (for example, the target folder is not empty, or qn check found violations)',
+      'invalid usage: unknown command, flag or value'
+    ]
   },
   pt: {
     usage: 'Uso',
     alias: 'Apelido',
     argument: 'Argumento',
+    arguments: 'Argumentos',
     values: 'valores aceitos',
     options: 'Opções',
     examples: 'Exemplos',
@@ -368,6 +407,10 @@ export const REFERENCE_TEXT = {
     global: 'Opções globais',
     globalText: 'Aceitas por todos os comandos.',
     exit: 'Códigos de saída',
-    exitCodes: ['sucesso', 'o comando falhou (por exemplo, a pasta de destino não está vazia)', 'uso inválido: comando, flag ou valor desconhecido']
+    exitCodes: [
+      'sucesso',
+      'o comando falhou (por exemplo, a pasta de destino não está vazia, ou o qn check achou violações)',
+      'uso inválido: comando, flag ou valor desconhecido'
+    ]
   }
 };

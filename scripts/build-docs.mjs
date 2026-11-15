@@ -68,15 +68,22 @@ function optionText(lang, scope, command, name, spec) {
 }
 
 function commandText(lang, command, key) {
-  if (lang === 'en') return key === 'argument' ? COMMANDS[command].argument.description : COMMANDS[command][key];
+  if (lang === 'en') return COMMANDS[command][key];
   const text = COMMANDS_PT.commands[command]?.[key];
   if (!text) throw new Error(`Missing Portuguese ${key} for command ${command}`);
   return text;
 }
 
+function argumentText(lang, command, argument) {
+  if (lang === 'en') return argument.description;
+  const text = COMMANDS_PT.commands[command]?.arguments?.[argument.name];
+  if (!text) throw new Error(`Missing Portuguese text for ${command} argument ${argument.name}`);
+  return text;
+}
+
 function renderOptions(options, lang, scope, command) {
   const rows = Object.entries(options).map(([name, spec]) => {
-    const flag = `${spec.short ? `-${spec.short}, ` : ''}--${name}${spec.type === 'string' ? ` &lt;${esc(spec.choices?.join('|') ?? 'value')}&gt;` : ''}`;
+    const flag = `${spec.short ? `-${spec.short}, ` : ''}--${name}${spec.type === 'string' ? ` &lt;${esc(spec.choices?.join('|') ?? spec.valueName ?? 'value')}&gt;` : ''}`;
     return `  <dt id="${scope === 'global' ? '' : `${command}-`}${esc(name)}"><code>${flag}</code></dt>\n  <dd>${esc(optionText(lang, scope, command, name, spec))}</dd>`;
   });
   return `<dl class="opts">\n${rows.join('\n')}\n</dl>`;
@@ -100,16 +107,18 @@ export function renderReference(lang) {
     if (spec.aliases) {
       parts.push(`<p><span class="key">${t.alias}:</span> ${spec.aliases.map((alias) => `<code>qn ${esc(alias)}</code>`).join(', ')}</p>`);
     }
-    if (spec.argument) {
-      const choices = spec.argument.choices
-        ? ` <span class="dim">(${t.values}: ${spec.argument.choices.map((choice) => `<code>${esc(choice)}</code>`).join(', ')})</span>`
-        : '';
-      parts.push(
-        `<h3>${t.argument}</h3>`,
-        `<dl class="opts">\n  <dt><code>[${esc(spec.argument.name)}]</code></dt>\n  <dd>${esc(commandText(lang, spec.name, 'argument'))}${choices}</dd>\n</dl>`
-      );
+    if (spec.arguments?.length) {
+      const rows = spec.arguments.map((argument) => {
+        const choices = argument.choices
+          ? ` <span class="dim">(${t.values}: ${argument.choices.map((choice) => `<code>${esc(choice)}</code>`).join(', ')})</span>`
+          : '';
+        return `  <dt><code>[${esc(argument.name)}${argument.variadic ? '...' : ''}]</code></dt>\n  <dd>${esc(argumentText(lang, spec.name, argument))}${choices}</dd>`;
+      });
+      parts.push(`<h3>${spec.arguments.length > 1 ? t.arguments : t.argument}</h3>`, `<dl class="opts">\n${rows.join('\n')}\n</dl>`);
     }
-    parts.push(`<h3>${t.options}</h3>`, renderOptions(spec.options, lang, 'command', spec.name));
+    if (Object.keys(spec.options).length > 0) {
+      parts.push(`<h3>${t.options}</h3>`, renderOptions(spec.options, lang, 'command', spec.name));
+    }
     parts.push(`<h3>${t.examples}</h3>`, terminal(spec.examples.map((example) => `$ ${example}`)));
     parts.push(
       '<details>',

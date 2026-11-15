@@ -20,8 +20,9 @@
       help: [
         'Simulated QuickNode CLI: nothing runs or is written in your browser.',
         '  qn --help                  general help',
-        '  qn help <command>          help for create or ui',
+        '  qn help <command>          help and examples of a command',
         '  qn create <name> [-ts|-js] [--dry-run]',
+        '  qn generate, check, add, doctor: run inside a project (shows help)',
         '  qn ui [topic]              go to a page (alias: qn docs)',
         '  qn --version',
         'Page: theme light|dark, fx on|off, lang en|pt, clear'
@@ -32,15 +33,16 @@
       theme: (t) => `${t === 'light' ? 'Light' : 'Dark'} theme on.`,
       themeHint: (next) => ` switch to ${next} theme`,
       usage: (syntax) => `Usage: ${syntax}`,
-      soon: 'qn add is coming soon. See the planned recipes:',
+      inProject: (cmd) => `qn ${cmd} works on a project in your terminal; this simulator has no project, so here is its help:`,
       unknown: (cmd) => `Bad command or file name: ${cmd}. Type help.`
     },
     pt: {
       help: [
         'QuickNode CLI simulado: nada roda nem é gravado no seu navegador.',
         '  qn --help                  ajuda geral',
-        '  qn help <comando>          ajuda do create ou do ui',
+        '  qn help <comando>          ajuda e exemplos de um comando',
         '  qn create <nome> [-ts|-js] [--dry-run]',
+        '  qn generate, check, add, doctor: rodam dentro de um projeto (mostra a ajuda)',
         '  qn ui [tópico]             vai para uma página (apelido: qn docs)',
         '  qn --version',
         'Página: theme light|dark, fx on|off, lang en|pt, clear'
@@ -51,7 +53,7 @@
       theme: (t) => `Tema ${t === 'light' ? 'claro' : 'escuro'} ativado.`,
       themeHint: (next) => ` mudar para o tema ${next === 'light' ? 'claro' : 'escuro'}`,
       usage: (syntax) => `Uso: ${syntax}`,
-      soon: 'O qn add vem em breve. Veja as receitas planejadas:',
+      inProject: (cmd) => `O qn ${cmd} trabalha num projeto no seu terminal; o simulador não tem projeto, então aqui vai a ajuda dele:`,
       unknown: (cmd) => `Comando ou nome de arquivo inválido: ${cmd}. Digite help.`
     }
   }[lang];
@@ -198,10 +200,10 @@
       const cmd = commandName(rest[0]);
       return { text: cmd ? DATA.commands[cmd].help : `✖ Unknown command "${rest[0]}".\nRun "qn --help" for usage.` };
     }
-    if (first === 'add') return { text: STRINGS.soon, url: `${siteRoot()}${lang === 'pt' ? 'pt/' : ''}${DATA.topics.add}`, wait: true };
     const cmd = commandName(first);
     if (cmd === 'create') return { text: simulateCreate(rest) };
     if (cmd === 'ui') return simulateUi(rest);
+    if (cmd) return { text: `${STRINGS.inProject(cmd)}\n\n${DATA.commands[cmd].help}` };
     return { text: `✖ Unknown command "${first}".\nRun "qn --help" for usage.` };
   }
 

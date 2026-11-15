@@ -13,7 +13,7 @@
     <tr><th scope="row">Architecture</th><td>Clean architecture: domain and infrastructure layers</td><td>NestJS modules, controllers and providers</td><td>Up to you</td></tr>
     <tr><th scope="row">Framework lock-in</th><td>Low: domain code is plain TypeScript/JavaScript</td><td>High: decorators and the Nest DI container everywhere</td><td>Depends on the template</td></tr>
     <tr><th scope="row">CLI dependencies</th><td>Zero runtime dependencies</td><td>Many (bundles build tooling)</td><td>None (git or a download)</td></tr>
-    <tr><th scope="row">Code generators after creation</th><td>Not yet (<code>qn generate</code> planned)</td><td>Yes: <code>nest generate</code> for resources, modules, services</td><td>No</td></tr>
+    <tr><th scope="row">Code generators after creation</th><td>Yes: <code>qn generate crud</code> writes every layer, already wired; <code>qn check</code> enforces the dependency rule</td><td>Yes: <code>nest generate</code> for resources, modules, services</td><td>No</td></tr>
     <tr><th scope="row">Database ready</th><td>PostgreSQL with Docker Compose, TypeORM or Sequelize</td><td>No: added through Nest modules</td><td>Depends on the template</td></tr>
     <tr><th scope="row">Tests, lint, Git hooks</th><td>Jest, ESLint, Prettier, Husky, commitlint</td><td>Jest, ESLint, Prettier</td><td>Depends on the template</td></tr>
     <tr><th scope="row">Maturity and community</th><td>Small, young project, one maintainer</td><td>Mature, large community and documentation</td><td>n/a</td></tr>

@@ -14,7 +14,8 @@ import { AppError } from '../middleware/error-handler';
 
 /** Validates a request body against a DTO class (400 when invalid). */
 async function parse<T extends object>(Dto: new () => T, body: unknown): Promise<T> {
-  const dto = plainToInstance(Dto, body);
+  // Express 5 leaves req.body undefined when the request has no JSON body.
+  const dto = plainToInstance(Dto, body ?? {});
   const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
   if (errors.length > 0) {
     const details = errors.map(error => Object.values(error.constraints ?? {}).join(', '));

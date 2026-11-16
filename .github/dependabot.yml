@@ -1,18 +1,27 @@
 # Keeps the CLI tooling, the generated-project templates and the pinned actions current
 # (ADR-001, D3/D5). The templates have no lockfile, so Dependabot raises the ranges in
 # their package.json; CI then generates each template and runs install, audit, lint,
-# test and build on the PR.
+# test and build on the PR. PRs target develop, which reaches main through the release PR.
 version: 2
 
 updates:
   - package-ecosystem: npm
     directory: /
+    target-branch: develop
     schedule:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'chore(deps)'
+    ignore:
+      # The @types/node major follows the lowest supported Node (engines >=22.13.0): newer
+      # types would accept APIs that Node 22 does not have. Drop this when the floor moves.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # TypeScript 7 (new compiler) breaks the build; adopt it in a dedicated PR.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
     groups:
       dev-tooling:
         update-types: [minor, patch]
@@ -23,6 +32,7 @@ updates:
       - /templates/javascript
       - /templates/db/postgres/typescript
       - /templates/db/postgres/javascript
+    target-branch: develop
     schedule:
       interval: weekly
       day: monday
@@ -36,6 +46,7 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    target-branch: develop
     schedule:
       interval: weekly
       day: monday

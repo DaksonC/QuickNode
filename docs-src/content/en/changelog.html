@@ -2,7 +2,7 @@
 <p class="answer">Version {{version}} records how each project was created in <code>quicknode.json</code>, adds <code>--db postgres|sqlite|none</code> and presets to <code>qn create</code>, and brings <code>qn env</code> and <code>qn upgrade</code>; it also ships the rewrite planned as 2.0.0, which was never published: zero runtime dependencies and a safe <code>qn create</code>. It requires Node.js {{node}}+.</p>
 <p>Versions follow <a href="https://semver.org/" rel="noopener noreferrer">semantic versioning</a>. Release notes with the build provenance are on <a href="{{repo}}/releases" rel="noopener noreferrer">GitHub Releases</a>.</p>
 
-<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// upcoming</span></h2>
+<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// 2026-11-16</span></h2>
 <h3>Breaking changes</h3>
 <ul class="list" role="list">
   <li>The generated database code has one shape for every database: <code>src/infrastructure/database/connection</code> exports <code>databaseConnection</code> with <code>initialize()</code>, <code>ping()</code> and <code>close()</code>. In JavaScript projects it replaces the default export <code>sequelizeConnection</code> and the models are loaded by <code>initialize()</code>.</li>

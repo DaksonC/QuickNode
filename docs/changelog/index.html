@@ -49,7 +49,7 @@
       "description": "Release notes of QuickNode CLI from v1.0.0 to v3: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.",
       "url": "https://daksonc.github.io/QuickNode/changelog/",
       "inLanguage": "en",
-      "dateModified": "2026-11-15",
+      "dateModified": "2026-11-16",
       "author": {
         "@type": "Person",
         "name": "Dakson Chaves Cruz",
@@ -159,12 +159,12 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Breadcrumb"><ol class="crumbs" role="list"><li><a href="../">Home</a></li><li aria-current="page">Changelog</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui changelog</p>
-    <p class="meta">Updated on <time datetime="2026-11-15">2026-11-15</time> · valid for v3.x</p>
+    <p class="meta">Updated on <time datetime="2026-11-16">2026-11-16</time> · valid for v3.x</p>
 <h1 tabindex="-1">Changelog</h1>
 <p class="answer">Version 3.0.0 records how each project was created in <code>quicknode.json</code>, adds <code>--db postgres|sqlite|none</code> and presets to <code>qn create</code>, and brings <code>qn env</code> and <code>qn upgrade</code>; it also ships the rewrite planned as 2.0.0, which was never published: zero runtime dependencies and a safe <code>qn create</code>. It requires Node.js 22.13+.</p>
 <p>Versions follow <a href="https://semver.org/" rel="noopener noreferrer">semantic versioning</a>. Release notes with the build provenance are on <a href="https://github.com/DaksonC/QuickNode/releases" rel="noopener noreferrer">GitHub Releases</a>.</p>
 
-<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// upcoming</span></h2>
+<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// 2026-11-16</span></h2>
 <h3>Breaking changes</h3>
 <ul class="list" role="list">
   <li>The generated database code has one shape for every database: <code>src/infrastructure/database/connection</code> exports <code>databaseConnection</code> with <code>initialize()</code>, <code>ping()</code> and <code>close()</code>. In JavaScript projects it replaces the default export <code>sequelizeConnection</code> and the models are loaded by <code>initialize()</code>.</li>

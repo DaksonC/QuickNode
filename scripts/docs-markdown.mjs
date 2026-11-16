@@ -8,17 +8,28 @@
 const ENTITIES = { '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&nbsp;': ' ', '&amp;': '&' };
 const decode = (text) => text.replace(/&(lt|gt|quot|#39|nbsp|amp);/g, (entity) => ENTITIES[entity]);
 
+/** Removes every tag, repeating until none is left, so nested leftovers like "<<b>x>" go too. */
+function stripTags(html) {
+  let previous;
+  do {
+    previous = html;
+    html = html.replace(/<[^>]*>/g, '');
+  } while (html !== previous);
+  return html;
+}
+
 /** Inline markup: links (made absolute), code, emphasis; other tags are dropped. */
 function inline(html, base) {
   return decode(
-    html
-      .replace(/<span class="(?:prompt|ps)"[^>]*>[\s\S]*?<\/span>/g, '')
-      .replace(/<a [^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g, (_, href, text) => `[${inline(text, base)}](${new URL(decode(href), base).href})`)
-      .replace(/<code>([\s\S]*?)<\/code>/g, (_, code) => `\`${code.replace(/<[^>]+>/g, '')}\``)
-      .replace(/<(strong|b)>([\s\S]*?)<\/\1>/g, '**$2**')
-      .replace(/<(em|i)>([\s\S]*?)<\/\1>/g, '*$2*')
-      .replace(/<br\s*\/?>/g, '\n')
-      .replace(/<[^>]+>/g, '')
+    stripTags(
+      html
+        .replace(/<span class="(?:prompt|ps)"[^>]*>[\s\S]*?<\/span>/g, '')
+        .replace(/<a [^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g, (_, href, text) => `[${inline(text, base)}](${new URL(decode(href), base).href})`)
+        .replace(/<code>([\s\S]*?)<\/code>/g, (_, code) => `\`${stripTags(code)}\``)
+        .replace(/<(strong|b)>([\s\S]*?)<\/\1>/g, '**$2**')
+        .replace(/<(em|i)>([\s\S]*?)<\/\1>/g, '*$2*')
+        .replace(/<br\s*\/?>/g, '\n')
+    )
   )
     .replace(/[ \t]*\n[ \t]*/g, ' ')
     .replace(/\s{2,}/g, ' ')
@@ -27,7 +38,7 @@ function inline(html, base) {
 
 /** Code blocks: "$ " prompts back as text, markup removed, entities decoded. */
 function codeBlock(body) {
-  const text = decode(body.replace(/<span class="ps"[^>]*>[\s\S]*?<\/span>/g, '$ ').replace(/<[^>]+>/g, ''));
+  const text = decode(stripTags(body.replace(/<span class="ps"[^>]*>[\s\S]*?<\/span>/g, '$ ')));
   const fence = text.includes('```') ? '````' : '```';
   return `${fence}\n${text.replace(/\n+$/, '')}\n${fence}`;
 }
@@ -46,7 +57,7 @@ const matchAll = (html, pattern) => [...html.matchAll(pattern)].map((match) => m
 
 function table(html, base) {
   const rows = matchAll(html, /<tr>([\s\S]*?)<\/tr>/g).map((row) =>
-    matchAll(row, /<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/g).map((cell) => inline(cell, base).replace(/\|/g, '\\|'))
+    matchAll(row, /<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/g).map((cell) => inline(cell, base).replace(/[\\|]/g, '\\$&'))
   );
   if (rows.length === 0) return '';
   const caption = /<caption>([\s\S]*?)<\/caption>/.exec(html);

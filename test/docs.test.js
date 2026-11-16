@@ -138,7 +138,7 @@ describe('documentation site', () => {
         attr(html, /<link rel="(?:stylesheet|preload|icon)" href="([^"]+)"/g)
       );
       for (const url of resources) assert.doesNotMatch(url, /^(https?:)?\/\//, `${file}: ${url}`);
-      assert.doesNotMatch(html, /<script>|<script (?!src=|type="application\/ld\+json")/, file);
+      assert.doesNotMatch(html, /<script>|<script (?!src=|type="application\/ld\+json")/i, file);
       assert.doesNotMatch(html, / style="| on[a-z]+="/, file);
       assert.match(html, /http-equiv="Content-Security-Policy" content="default-src 'self'/, file);
     }
@@ -154,7 +154,7 @@ describe('documentation site', () => {
         const resolved = target === '' ? file : path.posix.join(dir, target);
         const targetFile = resolved.endsWith('.txt') ? resolved : path.posix.join(resolved.replace(/index\.html$/, ''), 'index.html');
         const content = files.get(targetFile) ?? read(targetFile).toString();
-        if (anchor) assert.match(content, new RegExp(`id="${anchor.replace(/\./g, '\\.')}"`), `${file} -> ${href}`);
+        if (anchor) assert.match(content, new RegExp(`id="${anchor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`), `${file} -> ${href}`);
       }
     }
   });

@@ -1,8 +1,18 @@
 # Changelog
 
-A versão 3.1.0 registra como cada projeto foi criado no `quicknode.json`, traz `--db postgres|sqlite|none` e presets no `qn create`, e os comandos `qn env` e `qn upgrade`; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um `qn create` seguro. Exige Node.js 22.13+.
+A versão 3.2.0 registra como cada projeto foi criado no `quicknode.json`, traz `--db postgres|sqlite|none` e presets no `qn create`, e os comandos `qn env` e `qn upgrade`; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um `qn create` seguro. Exige Node.js 22.13+.
 
 As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/). As notas de versão com a procedência do build ficam nas [Releases do GitHub](https://github.com/DaksonC/QuickNode/releases).
+
+## 3.2.0 // 2026-11-16
+
+### Alterado
+
+- Projetos novos usam helmet 8 (o `Strict-Transport-Security` passa a durar um ano, eram 180 dias), pino 10 e jest-extended 7; também express-validator, swagger-jsdoc, Jest e tsx mais novos. O `qn upgrade` oferece essas versões a projetos existentes.
+
+### Corrigido
+
+- Template TypeScript: quando o servidor não conseguia iniciar, o erro sumia do log (`logger.error(mensagem, erro)` não é como o pino recebe um erro); agora ele é registrado como `err`.
 
 ## 3.1.0 // 2026-11-16
 

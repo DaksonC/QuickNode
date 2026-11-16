@@ -70,7 +70,19 @@ if [[ -f "CHANGELOG.md" ]]; then
     git add CHANGELOG.md
 fi
 
-git add package.json package-lock.json
+# The docs site states the version it applies to; a test fails when it is older than the package.
+echo -e "${YELLOW}📚 Updating the docs site version...${NC}"
+node -e '
+  const fs = require("fs");
+  const file = "docs-src/site.mjs";
+  const version = require("./package.json").version;
+  const source = fs.readFileSync(file, "utf8");
+  const updated = source.replace(/^(  version: )'"'"'[^'"'"']*'"'"',$/m, `$1'"'"'${version}'"'"',`);
+  if (updated === source && !source.includes(`version: '"'"'${version}'"'"'`)) { console.error(`SITE.version not found in ${file}`); process.exit(1) }
+  fs.writeFileSync(file, updated);
+'
+npm run docs:build
+git add package.json package-lock.json docs-src/site.mjs docs
 git commit -m "chore: bump version to ${NEW_VERSION}"
 git push origin "$CURRENT_BRANCH"
 

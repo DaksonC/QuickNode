@@ -1,6 +1,6 @@
 # Changelog
 
-A versão 3.1.0 registra como cada projeto foi criado no `quicknode.json`, traz `--db postgres|sqlite|none` e presets no `qn create`, e os comandos `qn env` e `qn upgrade`; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um `qn create` seguro. Exige Node.js 22.13+.
+A versão 3.2.0 registra como cada projeto foi criado no `quicknode.json`, traz `--db postgres|sqlite|none` e presets no `qn create`, e os comandos `qn env` e `qn upgrade`; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um `qn create` seguro. Exige Node.js 22.13+.
 
 As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/). As notas de versão com a procedência do build ficam nas [Releases do GitHub](https://github.com/DaksonC/QuickNode/releases).
 

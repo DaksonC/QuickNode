@@ -1,4 +1,6 @@
-# QuickNode CLI
+# QuickNode CLI <img width="40" height="40" alt="favicon" src="https://github.com/user-attachments/assets/5b8338b0-3f58-4b4b-b22d-b8bdf4fee4a5" /> 
+
+
 
 [![NPM version](https://img.shields.io/npm/v/@10565/quicknode-cli.svg)](https://www.npmjs.com/package/@10565/quicknode-cli)
 [![npm downloads](https://img.shields.io/npm/dt/@10565/quicknode-cli.svg)](https://www.npmjs.com/package/@10565/quicknode-cli)

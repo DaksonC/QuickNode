@@ -1,0 +1,29 @@
+<h1 tabindex="-1">Quando usar o QuickNode CLI, e quando não usar</h1>
+<p class="answer">Use o QuickNode CLI para começar uma API REST com Express em TypeScript ou JavaScript com arquitetura limpa, PostgreSQL, testes e lint, e para manter essa arquitetura enquanto ela cresce; não use para front-end, monorepos, projetos NestJS ou bancos que não sejam SQL.</p>
+
+<h2 id="use" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quando ele serve bem?</h2>
+<ul class="list" role="list">
+  <li>Uma API HTTP nova em Node.js {{node}}+ com Express, em TypeScript (TypeORM) ou JavaScript (Sequelize).</li>
+  <li>Você quer as camadas de domínio e infraestrutura desde o primeiro dia, e uma verificação (<code>qn check</code>) que as mantém separadas no CI.</li>
+  <li>Você adiciona funcionalidades com frequência e quer cada uma na camada certa: o <code>qn generate crud</code> escreve e liga tudo.</li>
+  <li>PostgreSQL (com Docker Compose), ou MySQL e SQLite pelo mesmo ORM.</li>
+  <li>Uma cadeia de suprimentos pequena importa: a CLI tem zero dependências de runtime e funciona offline.</li>
+  <li>Um agente de IA faz parte do trabalho: todo comando roda sem perguntas, com <code>--json</code>, <code>qn schema</code> e um servidor MCP.</li>
+</ul>
+
+<h2 id="dont" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quando escolher outra coisa?</h2>
+<ul class="list" role="list">
+  <li>Front-end, frameworks full-stack ou sites estáticos: o QuickNode só cria APIs de back-end.</li>
+  <li>Monorepos com vários serviços num repositório: cada projeto QuickNode é um único pacote.</li>
+  <li>Você quer módulos, decorators e o container de DI do NestJS: use o <a href="https://docs.nestjs.com/cli/overview" rel="noopener noreferrer">Nest CLI</a>.</li>
+  <li>Fastify, Koa ou outro framework HTTP, Prisma ou MongoDB: hoje não são suportados.</li>
+  <li>GraphQL ou gRPC como interface principal: os templates são REST com OpenAPI.</li>
+  <li>Você precisa de uma comunidade grande e madura e de garantias de suporte de longo prazo: é um projeto novo, com um mantenedor.</li>
+</ul>
+
+<h2 id="unsure" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como decido rápido?</h2>
+<ol>
+  <li>Veja sem gravar nada: <code>npx {{package}}@3 create my-api --typescript --dry-run</code>.</li>
+  <li>Leia a <a href="{{home}}structure/">estrutura do projeto</a> e a <a href="{{home}}compare/">comparação com o Nest CLI e um template manual</a>.</li>
+  <li>Se as camadas e ferramentas atendem, crie o projeto; se não, nada foi gravado.</li>
+</ol>

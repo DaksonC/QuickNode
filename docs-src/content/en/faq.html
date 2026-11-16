@@ -1,0 +1,35 @@
+<h1 tabindex="-1">Frequently asked questions</h1>
+<p class="answer">Short answers about installing, running and trusting QuickNode CLI; each heading is a question.</p>
+
+<h2 id="node" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Which Node.js version do I need?</h2>
+<p>Node.js {{node}} or newer, for both the CLI and the generated projects. Node 18 and 20 are out of support; on them the CLI prints the required version and exits.</p>
+
+<h2 id="existing" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Can I create a project in a folder that already has files?</h2>
+<p>Only with <code>--force</code>. Without it, <code>qn create</code> stops and lists what is in the folder. With it, files with the same name are overwritten (run <code>--dry-run --force</code> first to see which), an existing <code>.env</code> is always kept, and <code>.git</code> is ignored.</p>
+
+<h2 id="secrets" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Where do the database password and the JWT secret come from?</h2>
+<p><code>qn create</code> writes <code>.env</code> from <code>.env.example</code> with a random <code>DB_PASSWORD</code> and <code>JWT_SECRET</code> (Node's <code>crypto.randomBytes</code>). The file is git-ignored, readable only by you (permission 600), and the secrets are never printed. Docker Compose reads the password from it.</p>
+
+<h2 id="offline" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Does it work offline?</h2>
+<p>Yes, once the package is installed. Templates ship inside the package; nothing is downloaded while a project is generated. Only <code>--install</code> (which runs <code>npm install</code>) needs the network.</p>
+
+<h2 id="telemetry" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Does QuickNode collect any data?</h2>
+<p>No. There is no telemetry in the CLI and no analytics, cookies or third-party resources on this site.</p>
+
+<h2 id="name" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Is this the QuickNode blockchain platform?</h2>
+<p>No. QuickNode CLI ({{package}}) is an open source scaffolding tool for Node.js APIs and has no relation to QuickNode, the blockchain infrastructure provider. Always install it by its full scoped name, <code>{{package}}</code>.</p>
+
+<h2 id="scripts" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Is it safe to run with npx?</h2>
+<p>The package has zero runtime dependencies and no install scripts (no <code>preinstall</code>, <code>postinstall</code> or <code>prepare</code>). Versions are published from GitHub Actions with npm provenance, so you can check that a tarball was built from this repository: <code>npm audit signatures</code>. External programs run only when you ask for them (<code>--git</code>, <code>--install</code>), without a shell.</p>
+
+<h2 id="ci" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Will it hang in CI or when an AI agent runs it?</h2>
+<p>No. Without a terminal it never prompts: pass <code>--yes</code> or the flags you need, and add <code>--json</code> for a structured result. <code>qn ui</code> only prints the link in CI, over SSH and inside containers.</p>
+
+<h2 id="credits" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Can I remove the "Generated with QuickNode" line?</h2>
+<p>Yes: it is a single line at the end of the generated README. Delete it, or create the project with <code>--no-credits</code>. It never appears in code, HTTP headers or API responses.</p>
+
+<h2 id="database" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Which databases are supported?</h2>
+<p>PostgreSQL works out of the box, through TypeORM (TypeScript) or Sequelize (JavaScript), with Docker Compose for development. <code>.env.example</code> also lists MySQL and SQLite: in the JavaScript template they need only their driver (<code>npm install mysql2</code> or <code>sqlite3</code>); in the TypeScript template their repositories are not implemented yet.</p>
+
+<h2 id="contribute" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>How do I report a bug or a vulnerability?</h2>
+<p>Bugs and ideas: <a href="{{repo}}/issues" rel="noopener noreferrer">GitHub issues</a>. Vulnerabilities: privately, as described in <a href="{{repo}}/blob/main/SECURITY.md" rel="noopener noreferrer">SECURITY.md</a>.</p>

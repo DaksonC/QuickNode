@@ -3,8 +3,20 @@ const {
   GetUserUseCase,
   UpdateUserUseCase,
   DeleteUserUseCase,
-  ListUsersUseCase
+  ListUsersUseCase,
+  UserConflictError,
+  UserNotFoundError,
+  UserValidationError,
 } = require('../../domain/use-cases/user-use-cases');
+const { AppError } = require('../middleware/error-handler');
+
+/** Maps domain errors to HTTP errors; anything else stays a 500. */
+function toHttpError(error) {
+  if (error instanceof UserNotFoundError) return new AppError(error.message, 404);
+  if (error instanceof UserConflictError) return new AppError(error.message, 409);
+  if (error instanceof UserValidationError) return new AppError(error.message, 400);
+  return error;
+}
 
 /**
  * User Controller
@@ -25,20 +37,20 @@ class UserController {
   async createUser(req, res, next) {
     try {
       const { name, email, age } = req.body;
-      
+
       const user = await this.createUserUseCase.execute({
         name,
         email,
-        age
+        age,
       });
-      
+
       res.status(201).json({
         success: true,
         data: user,
-        message: 'User created successfully'
+        message: 'User created successfully',
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 
@@ -48,15 +60,15 @@ class UserController {
   async getUserById(req, res, next) {
     try {
       const { id } = req.params;
-      
+
       const user = await this.getUserUseCase.execute(id);
-      
+
       res.json({
         success: true,
-        data: user
+        data: user,
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 
@@ -67,16 +79,16 @@ class UserController {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      
+
       const user = await this.updateUserUseCase.execute(id, updateData);
-      
+
       res.json({
         success: true,
         data: user,
-        message: 'User updated successfully'
+        message: 'User updated successfully',
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 
@@ -86,15 +98,15 @@ class UserController {
   async deleteUser(req, res, next) {
     try {
       const { id } = req.params;
-      
+
       const result = await this.deleteUserUseCase.execute(id);
-      
+
       res.json({
         success: true,
-        message: result.message
+        message: result.message,
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 
@@ -105,23 +117,23 @@ class UserController {
     try {
       const limit = parseInt(req.query.limit) || 10;
       const offset = parseInt(req.query.offset) || 0;
-      
+
       const users = await this.listUsersUseCase.execute(limit, offset);
-      
+
       // Users response without sensitive data
       const usersResponse = users;
-      
+
       res.json({
         success: true,
         data: usersResponse,
         pagination: {
           limit,
           offset,
-          count: usersResponse.length
-        }
+          count: usersResponse.length,
+        },
       });
     } catch (error) {
-      next(error);
+      next(toHttpError(error));
     }
   }
 }

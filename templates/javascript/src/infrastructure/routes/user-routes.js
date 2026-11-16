@@ -7,7 +7,7 @@ const validate = (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({
       error: 'Validation failed',
-      details: errors.array()
+      details: errors.array(),
     });
   }
   next();
@@ -88,10 +88,9 @@ function createUserRoutes(userController) {
    *       404:
    *         description: The user was not found
    */
-  router.get('/:id', 
-    [
-      param('id').notEmpty().withMessage('User ID is required')
-    ],
+  router.get(
+    '/:id',
+    [param('id').notEmpty().withMessage('User ID is required')],
     validate,
     (req, res, next) => userController.getUserById(req, res, next)
   );
@@ -136,14 +135,11 @@ function createUserRoutes(userController) {
         .withMessage('Name is required')
         .isLength({ min: 2, max: 100 })
         .withMessage('Name must be between 2 and 100 characters'),
-      body('email')
-        .isEmail()
-        .withMessage('Please provide a valid email')
-        .normalizeEmail(),
+      body('email').isEmail().withMessage('Please provide a valid email').normalizeEmail(),
       body('age')
         .optional()
         .isInt({ min: 0, max: 150 })
-        .withMessage('Age must be a number between 0 and 150')
+        .withMessage('Age must be a number between 0 and 150'),
     ],
     validate,
     (req, res, next) => userController.createUser(req, res, next)
@@ -180,12 +176,19 @@ function createUserRoutes(userController) {
    *       404:
    *         description: The user was not found
    */
-  router.put('/:id',
+  router.put(
+    '/:id',
     [
       param('id').notEmpty().withMessage('User ID is required'),
       body('email').optional().isEmail().withMessage('Valid email is required'),
-      body('name').optional().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
-      body('age').optional().isInt({ min: 0, max: 150 }).withMessage('Age must be a number between 0 and 150')
+      body('name')
+        .optional()
+        .isLength({ min: 2 })
+        .withMessage('Name must be at least 2 characters'),
+      body('age')
+        .optional()
+        .isInt({ min: 0, max: 150 })
+        .withMessage('Age must be a number between 0 and 150'),
     ],
     validate,
     (req, res, next) => userController.updateUser(req, res, next)
@@ -208,10 +211,9 @@ function createUserRoutes(userController) {
    *       404:
    *         description: The user was not found
    */
-  router.delete('/:id',
-    [
-      param('id').notEmpty().withMessage('User ID is required')
-    ],
+  router.delete(
+    '/:id',
+    [param('id').notEmpty().withMessage('User ID is required')],
     validate,
     (req, res, next) => userController.deleteUser(req, res, next)
   );

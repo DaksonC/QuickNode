@@ -1,0 +1,50 @@
+<h1 tabindex="-1">Primeiros passos</h1>
+<p class="answer">Para começar uma API Node.js com arquitetura limpa, rode <code>npx {{package}} create minha-api</code> com Node.js {{node}} ou mais novo e depois <code>npm install</code>, <code>npm run docker:up</code> e <code>npm run dev</code>.</p>
+
+<h2 id="requirements" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Do que eu preciso?</h2>
+<ul class="list" role="list">
+  <li><span class="key">Node.js {{node}} ou mais novo</span> (confira com <code>node --version</code>). Versões antigas recebem um erro claro em vez de travar.</li>
+  <li><span class="key">Docker</span> com Docker Compose, para o PostgreSQL do projeto gerado (ou um PostgreSQL seu, configurado no <code>.env</code>). Dispensável com <code>--db sqlite</code> (<code>node:sqlite</code>, nativo do Node.js) ou <code>--db none</code> (repositórios em memória).</li>
+  <li><span class="key">Git</span>, só se quiser que o <code>--git</code> inicialize um repositório.</li>
+</ul>
+
+<h2 id="steps" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como crio minha primeira API?</h2>
+<ol>
+  <li>
+    <p>Veja antes o que será criado. Nada é gravado:</p>
+<pre class="term"><code>$ npx {{package}} create minha-api --typescript --dry-run</code></pre>
+  </li>
+  <li>
+    <p>Crie o projeto. Use <code>--javascript</code> para o template JavaScript, ou deixe sem a flag para a CLI perguntar:</p>
+<pre class="term"><code>$ npx {{package}} create minha-api --typescript --git</code></pre>
+  </li>
+  <li>
+    <p>Instale as dependências do projeto:</p>
+<pre class="term"><code>$ cd minha-api
+$ npm install</code></pre>
+  </li>
+  <li>
+    <p>Suba o PostgreSQL. Ele escuta só em 127.0.0.1 e usa a senha aleatória gravada no <code>.env</code>:</p>
+<pre class="term"><code>$ npm run docker:up</code></pre>
+  </li>
+  <li>
+    <p>Rode a API com recarga automática e abra <code>http://localhost:3000/api-docs</code> para ver o Swagger:</p>
+<pre class="term"><code>$ npm run dev</code></pre>
+  </li>
+</ol>
+
+<h2 id="global" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Posso instalar globalmente?</h2>
+<p>Pode. A instalação global dá acesso ao comando curto <code>qn</code>:</p>
+<pre class="term"><code>$ npm install -g {{package}}
+$ qn create minha-api -ts</code></pre>
+
+<h2 id="ci" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como rodo no CI ou num script?</h2>
+<p>Passe todas as escolhas por flag. Sem terminal, a CLI nunca pergunta: usa os padrões do <code>--yes</code> ou falha dizendo qual flag falta. O <code>--json</code> imprime um resultado legível por máquina.</p>
+<pre class="term"><code>$ npx {{package}} create minha-api --yes --json</code></pre>
+
+<h2 id="after" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>O que ler em seguida?</h2>
+<ul class="list" role="list">
+  <li><a href="{{home}}structure/">Estrutura do projeto</a>: o papel de cada pasta.</li>
+  <li><a href="{{home}}tutorial/">Crie uma entidade e um caso de uso</a>.</li>
+  <li><a href="{{home}}commands/#create">Todas as flags do qn create</a>.</li>
+</ul>

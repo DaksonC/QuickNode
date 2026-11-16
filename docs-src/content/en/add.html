@@ -1,0 +1,37 @@
+<h1 tabindex="-1">qn add recipes</h1>
+<p class="answer">To add a tool to an existing QuickNode project, run <code>qn add &lt;recipe&gt;</code> inside it, for example <code>qn add docker</code>: the recipe writes its files, merges <code>package.json</code> and wires the code, and running it again changes nothing.</p>
+
+<h2 id="rules" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>How does it behave?</h2>
+<ol>
+  <li>Preview first: <code>qn add auth rate-limit --dry-run</code> prints a unified diff of every file it would create or change, and writes nothing.</li>
+  <li>Apply: <code>qn add auth rate-limit</code>. Several recipes can be given at once.</li>
+  <li>Install what changed: the output says when <code>package.json</code> got new dependencies (<code>npm install</code>).</li>
+</ol>
+<ul class="list" role="list">
+  <li>Idempotent: a recipe already in place is reported as <code>already in place, nothing to do</code>.</li>
+  <li>Non-destructive: a file you changed is not overwritten without <code>--force</code>, and a <code>package.json</code> value you changed is kept (the output says so).</li>
+  <li>Code is inserted before marker comments of the template, such as <code>// qn:middleware</code>. If you removed a marker, the output shows the lines to add by hand.</li>
+  <li>Recipes are data inside the CLI package: no download while they run, and no new dependency in your project for <code>auth</code> and <code>rate-limit</code>, which use Node.js APIs only.</li>
+  <li>Works without prompts, also with <code>--json</code>, in CI and for AI agents.</li>
+</ul>
+
+<h2 id="recipes" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Which recipes are there?</h2>
+<dl class="opts">
+  <dt>auth</dt>
+  <dd>JWT authentication (HS256) written with <code>node:crypto</code>: <code>signToken</code>, <code>verifyToken</code> and an <code>authenticate()</code> middleware; the secret comes from <code>JWT_SECRET</code> in <code>.env</code> and weak secrets are refused. With tests.</dd>
+  <dt>healthcheck</dt>
+  <dd>Liveness (<code>/health/live</code>) and readiness (<code>/health/ready</code>, 503 when the database does not answer) routes, wired in the server.</dd>
+  <dt>rate-limit</dt>
+  <dd>Requests per client and time window, in memory, with <code>RateLimit-*</code> and <code>Retry-After</code> headers; <code>RATE_LIMIT_MAX</code> and <code>RATE_LIMIT_WINDOW_MS</code> in <code>.env</code>.</dd>
+  <dt>graceful-shutdown</dt>
+  <dd>On SIGTERM/SIGINT: stop accepting connections, finish requests in flight, close the database, with a timeout (<code>SHUTDOWN_TIMEOUT_MS</code>).</dd>
+  <dt>docker</dt>
+  <dd>Multi-stage <code>Dockerfile</code> that installs production dependencies only and runs as the unprivileged <code>node</code> user, with a health check; <code>npm run docker:build</code>.</dd>
+  <dt>ci <span class="dim">(also github-actions)</span></dt>
+  <dd>GitHub Actions workflow with lint, tests, build, <code>qn check</code> and <code>npm audit</code>, actions pinned by commit SHA.</dd>
+  <dt>agents</dt>
+  <dd><code>AGENTS.md</code> and its copy <code>CLAUDE.md</code>, which tell AI coding assistants about the layers, the dependency rule and the commands to run.</dd>
+  <dt>eslint, husky, swagger, tests</dt>
+  <dd>Come with every new project; the recipes put them back in a project where they were removed, with the template's files and versions.</dd>
+</dl>
+<p>Recipes follow the package manager of the project (npm, pnpm or yarn) and its test runner (Jest or <code>node:test</code>). Next: the <a href="{{home}}commands/#add">command reference</a> and <a href="{{home}}tutorial/">how to add a feature with qn generate</a>.</p>

@@ -1,49 +1,95 @@
 name: 🧪 CI Tests
 
+# Feature branches are tested through their PR (feature/* as base covers stacked PRs);
+# pushes only run on the long-lived branches, so a push to an open PR runs CI once.
 on:
   push:
-    branches: [develop, feature/*]
-  pull_request:
     branches: [main, develop]
+  pull_request:
+    branches: [main, develop, feature/*]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Superseded PR runs are cancelled; every commit on main/develop keeps its own result.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
-    
+        node-version: [22.x, 24.x]
+
     steps:
       - name: 📦 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: 🔧 Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: 🧪 Run tests
-        run: npm test
+      - name: 🔏 Verify registry signatures and provenance of dependencies
+        run: npm audit signatures
 
       - name: 🔍 Run linting
         run: npm run lint
 
-      - name: 🏗️ Build project
-        run: npm run build
+      - name: 🧪 Build and run tests (coverage >= 80%)
+        run: npm run test:coverage
 
-      - name: 🧾 Test CLI functionality
+      - name: 📦 Zero runtime dependencies and no install scripts
         run: |
-          chmod +x dist/cli.js
-          node dist/cli.js create test-project --typescript
-          ls -la test-project/
-          
-      - name: 📊 Test generated project
+          node -e '
+            const { dependencies = {}, scripts = {} } = require("./package.json");
+            if (Object.keys(dependencies).length) { console.error("Runtime dependencies are not allowed (ADR-001):", dependencies); process.exit(1) }
+            const hooks = ["preinstall", "install", "postinstall", "prepare"].filter((name) => name in scripts);
+            if (hooks.length) { console.error("Lifecycle scripts run on the user machine and are not allowed (ADR-001):", hooks); process.exit(1) }
+          '
+
+      - name: 🛡️ Audit CLI dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: 📏 Package size budget (400 KB unpacked, ADR-001 D4)
         run: |
-          cd test-project
-          git init
-          npm install
-          npm run build || npm run lint || true
+          SIZE=$(npm pack --dry-run --json | node -e 'console.log(JSON.parse(require("fs").readFileSync(0))[0].unpackedSize)')
+          echo "Unpacked size: $SIZE bytes"
+          test "$SIZE" -le 409600
+
+  generated-project:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [typescript, javascript, typescript-node, javascript-node, typescript-sqlite, javascript-sqlite, typescript-none, javascript-none]
+
+    steps:
+      - name: 📦 Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: 🧾 Generate the ${{ matrix.template }} project, install, audit, lint, test and build it
+        run: npm run test:templates
+        env:
+          QN_E2E_TEMPLATES: ${{ matrix.template }}
+          # ubuntu-latest has Docker: PostgreSQL variants also start the API against a real database.
+          QN_E2E_DOCKER: '1'

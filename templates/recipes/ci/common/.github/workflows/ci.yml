@@ -1,0 +1,30 @@
+# Lint, tests, the dependency rule (qn check) and npm audit on every push and pull request.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+__corepackStep__
+      - run: __installAll__
+      - run: __run__ lint
+      - run: __pm__ test
+__buildStep__
+      - name: Dependency rule (qn check)
+        run: npx --yes @10565/quicknode-cli@3 check
+      - name: Vulnerabilities (high and critical)
+        run: __audit__

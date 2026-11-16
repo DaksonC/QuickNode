@@ -3,9 +3,9 @@
 ## 📋 Estratégia de Branches
 
 ```
-main     ←── Produção (auto-publish NPM)
+main      ←── Produção (tags v* publicam no npm)
   ↑
-develop  ←── Desenvolvimento
+develop   ←── Desenvolvimento
   ↑
 feature/* ←── Features individuais
 ```
@@ -14,171 +14,101 @@ feature/* ←── Features individuais
 
 ### 1. 🌟 Nova Feature
 ```bash
-# Criar branch feature
 git checkout develop
 git pull origin develop
 git checkout -b feature/minha-nova-feature
 
-# Desenvolver e commitar
 git add .
 git commit -m "feat: adicionar nova feature"
 
-# Push e criar PR
 git push origin feature/minha-nova-feature
 # Criar PR: feature/minha-nova-feature → develop
 ```
 
-### 2. 🧪 Testing na Develop
+### 2. 🧪 Antes de abrir o PR
 ```bash
-# Merge da feature para develop
-git checkout develop
-git merge feature/minha-nova-feature
-git push origin develop
-
-# CI roda automaticamente:
-# ✅ Testes em Node 18, 20, 22
-# ✅ Linting e build
-# ✅ Teste funcional do CLI
+npm run verify                                # lint, build + testes (cobertura >= 80%), audits
+QN_E2E_TEMPLATES=all npm run test:templates   # gera os dois templates e roda install, audit, lint, test e build
 ```
 
-### 3. 🚀 Release para Produção
+### 3. 🚀 Release
 
-#### Opção A: Script de Release (Recomendado)
+Só uma tag `v*` na `main` publica. Detalhes e configuração única em [NPM_SETUP.md](NPM_SETUP.md).
+
 ```bash
-# Na branch develop
-npm run release:patch    # 1.0.0 → 1.0.1
-npm run release:minor    # 1.0.0 → 1.1.0
-npm run release:major    # 1.0.0 → 2.0.0
+# 1. Na develop: checagens (npm run verify) + bump + commit + push
+git checkout develop && npm run release:minor   # patch / minor / major / prerelease
+# PR develop → main e merge
 
-# Depois merge develop → main
-git checkout main
-git merge develop
-git push origin main
+# 2. Na main: checagens + tag vX.Y.Z da versão atual + push da tag → publica
+git checkout main && npm run release:tag
 ```
 
-#### Opção B: Manual
-```bash
-# Bump version manualmente
-npm version patch
-git push origin develop
-
-# Merge para main
-git checkout main
-git merge develop
-git push origin main
-```
-
-#### Opção C: Via GitHub (UI)
-1. Criar PR: develop → main
-2. Review e merge
-3. Publicação automática
+> ⚠️ O `package.json` já está em `3.0.0` (primeira release depois da 1.1.1; a 2.0.0 nunca foi publicada): a primeira release é só `npm run release:tag` na `main`, sem bump.
 
 ## 🤖 Automação (GitHub Actions)
 
-### CI Tests (`ci.yml`)
-**Triggers:**
-- Push em `develop` ou `feature/*`
-- PRs para `main` ou `develop`
+Todas as actions são fixadas por SHA de commit (o Dependabot mantém atualizadas) e cada
+workflow pede só as permissões de que precisa.
 
-**Actions:**
-- ✅ Testa em Node.js 18, 20, 22
-- ✅ Executa `npm test`
-- ✅ Executa `npm run lint`
-- ✅ Faz build do projeto
-- ✅ Testa funcionalidade do CLI
+### CI Tests (`ci.yml`)
+**Gatilhos:** push em `main` e `develop`; PRs para `main`, `develop` e `feature/*` (PRs empilhados).
+Runs de PR substituídos são cancelados; cada commit de `main`/`develop` mantém o próprio resultado.
+
+- Node 22 e 24: `npm ci`, `npm audit signatures`, lint, testes com cobertura >= 80%
+- Zero dependências de runtime, `npm audit` e orçamento de tamanho do pacote (300 KB)
+- `generated-project`: `npm run test:templates` para TypeScript e JavaScript
 
 ### Publish to NPM (`publish.yml`)
-**Triggers:**
-- Push para `main`
-- Tags `v*`
-- GitHub Releases
+**Gatilho:** push de tag `v*`.
 
-**Actions:**
-- ✅ Executa todos os testes
-- ✅ Verifica se versão mudou
-- ✅ Publica no NPM (se versão nova)
-- ✅ Cria tag Git
-- ✅ Cria GitHub Release
+- `verify`: tag = versão do `package.json`, tag na `main`, `npm run verify` e `npm pack`
+- `publish`: publica o tarball testado com Trusted Publishing (OIDC) e `--provenance`,
+  environment `npm`, sem checkout e sem `npm install`
+- `release`: GitHub Release com notas geradas, tarball e SBOM CycloneDX
 
-## 📊 Monitoramento
+### CodeQL (`codeql.yml`) e OpenSSF Scorecard (`scorecard.yml`)
+Análise estática do código e dos workflows, e nota de supply chain; resultados na aba
+**Security → Code scanning**. Rodam em push/PR e semanalmente.
 
-### 🔍 Links Úteis
-- **GitHub Actions**: https://github.com/daksonfilho/quicknode/actions
-- **NPM Package**: https://www.npmjs.com/package/quicknode-cli
-- **Releases**: https://github.com/daksonfilho/quicknode/releases
-
-### 📈 Métricas
-- Downloads NPM
-- GitHub Stars
-- Issues/PRs
-- Build status
+### Dependabot (`dependabot.yml`)
+Semanal: dependências de desenvolvimento da CLI, dependências dos dois templates
+(`templates/typescript`, `templates/javascript`) e GitHub Actions. O CI valida cada PR
+gerando os templates.
 
 ## 🔧 Comandos Úteis
 
 ```bash
-# Desenvolvimento local
-npm run dev                 # Dev server da CLI
-npm run build              # Build completo
-npm test                   # Rodar testes
-npm run lint               # Verificar code style
+npm run dev                 # tsc --watch
+npm run build               # Build
+npm test                    # Build + testes
+npm run lint                # Lint
 
-# Testing local da CLI
-node dist/cli.js create test-project --typescript
+node dist/cli.js create test-project --typescript   # Testar a CLI localmente
 
-# Release (apenas develop/main)
-npm run release:patch      # Patch release
-npm run release:minor      # Minor release  
-npm run release:major      # Major release
-
-# Verificar status
-git status
-npm whoami                 # Verificar login NPM
-npm view quicknode-cli     # Ver package no NPM
+npm view @10565/quicknode-cli version               # Versão publicada
+npm view @10565/quicknode-cli@latest dist.attestations --json   # Provenance
 ```
 
 ## 🚨 Troubleshooting
 
-### ❌ CI Falhou
+### ❌ CI falhou
 ```bash
-# Verificar logs no GitHub Actions
-# Rodar localmente:
-npm test
 npm run lint
-npm run build
+npm run test:coverage
+QN_E2E_TEMPLATES=typescript npm run test:templates
 ```
 
-### ❌ NPM Publish Falhou
-```bash
-# Verificar se está logado
-npm whoami
+### ❌ Publicação falhou
+Veja a tabela de problemas comuns em [NPM_SETUP.md](NPM_SETUP.md#problemas-comuns).
 
-# Verificar token (GitHub Secrets)
-# Settings → Secrets → NPM_TOKEN
+## ✅ Checklist de Release
 
-# Verificar versão
-npm view quicknode-cli version
-```
-
-### ❌ Version Conflict
-```bash
-# Verificar versão atual
-node -p "require('./package.json').version"
-
-# Bump manualmente se necessário
-npm version patch --no-git-tag-version
-```
-
-## ✅ Checklist Release
-
-- [ ] Testes passando
-- [ ] Linting OK
-- [ ] Build OK
-- [ ] Versão bumped
-- [ ] CHANGELOG atualizado (se houver)
-- [ ] NPM_TOKEN configurado
-- [ ] Merge para main
-- [ ] Verificar GitHub Actions
-- [ ] Confirmar publicação NPM
-- [ ] Testar instalação global
-
-Agora o processo está 100% automatizado! 🎉
+- [ ] CI verde na `main`
+- [ ] `QN_E2E_TEMPLATES=all npm run test:templates` passando
+- [ ] Bump feito na `develop` (`npm run release:<tipo>`) e PR mergeado na `main`
+- [ ] `npm run release:tag` na `main`
+- [ ] Workflow `Publish to NPM` verde
+- [ ] Provenance visível na página do npm
+- [ ] GitHub Release criado com a SBOM
+- [ ] `npx @10565/quicknode-cli@latest --version` mostra a versão nova

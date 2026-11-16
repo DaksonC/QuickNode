@@ -1,0 +1,14 @@
+{
+  "controller": [
+    {
+      "file": "src/server.ts",
+      "marker": "imports",
+      "snippet": "import { register__Name__Module } from './infrastructure/modules/__name__-module';"
+    },
+    {
+      "file": "src/server.ts",
+      "marker": "modules",
+      "snippet": "register__Name__Module(app);"
+    }
+  ]
+}

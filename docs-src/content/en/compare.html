@@ -1,0 +1,45 @@
+<h1 tabindex="-1">QuickNode, Nest CLI or a manual template?</h1>
+<p class="answer">Use QuickNode for a plain Express API with clean architecture and no framework lock-in; use Nest CLI when you want the NestJS framework with its modules, dependency injection and large ecosystem; copy a template by hand when you need full control and will maintain the setup yourself.</p>
+
+<h2 id="table" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>How do they compare?</h2>
+<div class="scroll" role="region" aria-label="Comparison table" tabindex="0">
+<table>
+  <caption>Objective criteria, as of {{appliesTo}} of QuickNode.</caption>
+  <thead>
+    <tr><th scope="col">Criterion</th><th scope="col">QuickNode CLI</th><th scope="col">Nest CLI</th><th scope="col">Manual template</th></tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">What you get</th><td>Express API, TypeScript or JavaScript</td><td>NestJS application</td><td>Whatever the template has</td></tr>
+    <tr><th scope="row">Architecture</th><td>Clean architecture: domain and infrastructure layers</td><td>NestJS modules, controllers and providers</td><td>Up to you</td></tr>
+    <tr><th scope="row">Framework lock-in</th><td>Low: domain code is plain TypeScript/JavaScript</td><td>High: decorators and the Nest DI container everywhere</td><td>Depends on the template</td></tr>
+    <tr><th scope="row">CLI dependencies</th><td>Zero runtime dependencies</td><td>Many (bundles build tooling)</td><td>None (git or a download)</td></tr>
+    <tr><th scope="row">Code generators after creation</th><td>Yes: <code>qn generate crud</code> writes every layer, already wired; <code>qn check</code> enforces the dependency rule</td><td>Yes: <code>nest generate</code> for resources, modules, services</td><td>No</td></tr>
+    <tr><th scope="row">Database ready</th><td>PostgreSQL with Docker Compose, TypeORM or Sequelize</td><td>No: added through Nest modules</td><td>Depends on the template</td></tr>
+    <tr><th scope="row">Tests, lint, Git hooks</th><td>Jest, ESLint, Prettier, Husky, commitlint</td><td>Jest, ESLint, Prettier</td><td>Depends on the template</td></tr>
+    <tr><th scope="row">Maturity and community</th><td>Small, young project, one maintainer</td><td>Mature, large community and documentation</td><td>n/a</td></tr>
+    <tr><th scope="row">Updating later</th><td>Manual today (<code>qn upgrade</code> planned)</td><td>Framework upgrades through npm, with migration guides</td><td>Manual</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="quicknode" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>When is QuickNode the right choice?</h2>
+<ul class="list" role="list">
+  <li>You want an Express API whose business rules do not depend on the framework or the ORM.</li>
+  <li>You care about a small supply chain: one package, no install scripts, provenance on every release.</li>
+  <li>You are learning or teaching clean architecture and want a working, tested example to start from.</li>
+</ul>
+
+<h2 id="nest" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>When is Nest CLI the better choice?</h2>
+<ul class="list" role="list">
+  <li>Your team already uses NestJS or Angular-style modules and decorators.</li>
+  <li>You need official integrations (GraphQL, microservices, queues) and generators for every new resource.</li>
+  <li>You value a large community and long-term support over a minimal dependency tree.</li>
+</ul>
+
+<h2 id="manual" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>When is a manual template enough?</h2>
+<ul class="list" role="list">
+  <li>Your company already has an internal template with its own conventions.</li>
+  <li>You need a stack QuickNode does not offer (Fastify, Prisma, a monorepo) and do not want a framework.</li>
+  <li>You are fine updating dependencies and tooling by hand.</li>
+</ul>
+<p class="dim">Something wrong or outdated here? <a href="{{repo}}/issues" rel="noopener noreferrer">Open an issue</a>.</p>

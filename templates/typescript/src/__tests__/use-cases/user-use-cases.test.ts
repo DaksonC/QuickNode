@@ -1,117 +1,89 @@
+import assert from 'node:assert/strict';
 import { CreateUserUseCase, GetUserUseCase } from '../../domain/use-cases/user-use-cases';
 import { UserRepository } from '../../domain/repositories/user-repository';
-import { User } from '../../domain/entities/user';
+import { CreateUserData, User } from '../../domain/entities/user';
+
+/** In-memory repository: use cases are tested without a database or mocks. */
+class InMemoryUserRepository implements UserRepository {
+  readonly users = new Map<string, User>();
+
+  async findById(id: string): Promise<User | null> {
+    return this.users.get(id) ?? null;
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return [...this.users.values()].find(user => user.email === email) ?? null;
+  }
+
+  async create(data: CreateUserData): Promise<User> {
+    const user = new User(String(this.users.size + 1), data.name, data.email, data.age);
+    this.users.set(user.id, user);
+    return user;
+  }
+
+  async update(id: string, data: Partial<User>): Promise<User | null> {
+    const existing = this.users.get(id);
+    if (!existing) return null;
+    const updated = new User(
+      id,
+      data.name ?? existing.name,
+      data.email ?? existing.email,
+      data.age ?? existing.age,
+      existing.createdAt
+    );
+    this.users.set(id, updated);
+    return updated;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    return this.users.delete(id);
+  }
+
+  async findAll(): Promise<User[]> {
+    return [...this.users.values()];
+  }
+}
 
 describe('User Use Cases', () => {
-  let mockUserRepository: jest.Mocked<UserRepository>;
-  let createUserUseCase: CreateUserUseCase;
-  let getUserUseCase: GetUserUseCase;
+  let repository: InMemoryUserRepository;
 
   beforeEach(() => {
-    mockUserRepository = {
-      findById: jest.fn(),
-      findByEmail: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      findAll: jest.fn(),
-    };
-
-    createUserUseCase = new CreateUserUseCase(mockUserRepository);
-    getUserUseCase = new GetUserUseCase(mockUserRepository);
+    repository = new InMemoryUserRepository();
   });
 
   describe('CreateUserUseCase', () => {
-    it('should create a new user successfully', async () => {
-      // Arrange
-      const userData = {
+    it('creates a new user', async () => {
+      const user = await new CreateUserUseCase(repository).execute({
         name: 'Test User',
         email: 'test@example.com',
         age: 30,
-      };
-      
-      const expectedUser = new User(
-        '1',
-        userData.name,
-        userData.email,
-        30,
-        new Date(),
-        new Date()
-      );
+      });
 
-      mockUserRepository.findByEmail.mockResolvedValue(null);
-      mockUserRepository.create.mockResolvedValue(expectedUser);
-
-      // Act
-      const result = await createUserUseCase.execute(userData);
-
-      // Assert
-      expect(result).toEqual(expectedUser);
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(userData.email);
-      expect(mockUserRepository.create).toHaveBeenCalledWith(userData);
+      assert.equal(user.name, 'Test User');
+      assert.equal(repository.users.size, 1);
     });
 
-    it('should throw error if user already exists', async () => {
-      // Arrange
-      const userData = {
-        name: 'Test User',
-        email: 'test@example.com',
-        age: 30,
-      };
+    it('rejects an email that is already taken', async () => {
+      const useCase = new CreateUserUseCase(repository);
+      await useCase.execute({ name: 'Test User', email: 'test@example.com' });
 
-      const existingUser = new User(
-        '1',
-        userData.name,
-        userData.email,
-        30,
-        new Date(),
-        new Date()
+      await assert.rejects(
+        useCase.execute({ name: 'Other User', email: 'test@example.com' }),
+        /User with this email already exists/
       );
-
-      mockUserRepository.findByEmail.mockResolvedValue(existingUser);
-
-      // Act & Assert
-      await expect(createUserUseCase.execute(userData)).rejects.toThrow(
-        'User with this email already exists'
-      );
-      expect(mockUserRepository.create).not.toHaveBeenCalled();
+      assert.equal(repository.users.size, 1);
     });
   });
 
   describe('GetUserUseCase', () => {
-    it('should return user when found', async () => {
-      // Arrange
-      const userId = '1';
-      const expectedUser = new User(
-        userId,
-        'Test User',
-        'test@example.com',
-        30,
-        new Date(),
-        new Date()
-      );
+    it('returns the user when found', async () => {
+      const created = await repository.create({ name: 'Test User', email: 'test@example.com' });
 
-      mockUserRepository.findById.mockResolvedValue(expectedUser);
-
-      // Act
-      const result = await getUserUseCase.execute(userId);
-
-      // Assert
-      expect(result).toEqual(expectedUser);
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
+      assert.deepEqual(await new GetUserUseCase(repository).execute(created.id), created);
     });
 
-    it('should return null when user not found', async () => {
-      // Arrange
-      const userId = '999';
-      mockUserRepository.findById.mockResolvedValue(null);
-
-      // Act
-      const result = await getUserUseCase.execute(userId);
-
-      // Assert
-      expect(result).toBeNull();
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
+    it('returns null when the user does not exist', async () => {
+      assert.equal(await new GetUserUseCase(repository).execute('999'), null);
     });
   });
 });

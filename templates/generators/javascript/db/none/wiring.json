@@ -1,0 +1,14 @@
+{
+  "repository": [
+    {
+      "file": "src/infrastructure/database/repository-factory.js",
+      "marker": "imports",
+      "snippet": "const { InMemory__Name__Repository } = require('./repositories/__name__-repository');"
+    },
+    {
+      "file": "src/infrastructure/database/repository-factory.js",
+      "marker": "factories",
+      "snippet": "static create__Name__Repository() {\n  this.shared__Name__Repository ??= new InMemory__Name__Repository();\n  return this.shared__Name__Repository;\n}\n"
+    }
+  ]
+}

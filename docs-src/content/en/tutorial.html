@@ -1,0 +1,91 @@
+<h1 tabindex="-1">How to create an entity and a use case</h1>
+<p class="answer">To add a feature to a QuickNode API, run <code>qn generate crud product</code> inside the project: it writes the entity, the repository interface and its implementation, the use cases with a test, the controller and the route, and wires them into the server.</p>
+<p>This guide adds a <code>Product</code> with a price to the TypeScript template. The JavaScript template gets the same files with Sequelize models and express-validator rules.</p>
+
+<h2 id="generate" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1. How do I generate the feature?</h2>
+<p>Preview first, then generate. Names can be written as <code>product</code>, <code>order-item</code> or <code>orderItem</code>:</p>
+<pre class="term"><code>$ npx {{package}} generate crud product --dry-run
+$ npx {{package}} generate crud product</code></pre>
+<p>The short form is <code>qn g crud product</code> when the CLI is installed globally (<code>npm i -g {{package}}</code>). Running it again changes nothing; a file you edited is never overwritten without <code>--force</code>.</p>
+
+<h2 id="files" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2. What was created, and where?</h2>
+<dl class="opts">
+  <dt>src/domain/entities/product.ts</dt>
+  <dd>The <code>Product</code> class and its <code>CreateProductData</code> type. No Express, no TypeORM.</dd>
+  <dt>src/domain/repositories/product-repository.ts</dt>
+  <dd>The <code>ProductRepository</code> interface: what the domain needs from storage.</dd>
+  <dt>src/domain/use-cases/product-use-cases.ts</dt>
+  <dd>Create, get, list, update and delete, plus <code>ProductNotFoundError</code>.</dd>
+  <dt>src/__tests__/use-cases/product-use-cases.test.ts</dt>
+  <dd>Tests of the use cases with an in-memory repository: no database, no mocks.</dd>
+  <dt>src/infrastructure/database/…</dt>
+  <dd>The TypeORM entity (table <code>products</code>), the repository implementation and a <code>createProductRepository()</code> factory method.</dd>
+  <dt>src/infrastructure/controllers, routes, http/dtos, modules</dt>
+  <dd>HTTP handlers (domain errors become 404), routes under <code>/api/v1/products</code> with Swagger comments, request DTOs validated with class-validator, and <code>registerProductModule(app)</code>, which wires repository → use cases → controller → routes.</dd>
+</dl>
+<p>Existing files only get lines inserted before their marker comments: the entity in the list of <code>connection.ts</code> (<code>// qn:entities</code>), the factory method (<code>// qn:factories</code>) and the module in <code>server.ts</code> (<code>// qn:modules</code>).</p>
+
+<h2 id="fields" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3. How do I add fields?</h2>
+<p>The generated entity has a <code>name</code>. A price touches one file per layer. The entity, in the domain:</p>
+<pre class="term"><code>export class Product {
+  constructor(
+    public readonly id: string,
+    public readonly name: string,
+    public readonly priceInCents: number,
+    public readonly createdAt: Date = new Date(),
+    public readonly updatedAt: Date = new Date()
+  ) {}
+}
+
+export interface CreateProductData {
+  name: string;
+  priceInCents: number;
+}</code></pre>
+<p>The column, in <code>infrastructure/database/entities/product-entity.ts</code>, and the validation, in <code>infrastructure/http/dtos/product-dtos.ts</code>:</p>
+<pre class="term"><code>@Column('int')
+priceInCents!: number;
+
+@IsInt()
+@Min(1)
+priceInCents!: number;</code></pre>
+<p>Then pass <code>entity.priceInCents</code> in <code>toDomain()</code> of the repository implementation. The TypeScript compiler points to every place that still misses the new field.</p>
+
+<h2 id="rule" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>4. Where does a business rule go?</h2>
+<p>In the use case, which only knows the repository interface:</p>
+<pre class="term"><code>export class CreateProductUseCase {
+  constructor(private readonly repository: ProductRepository) {}
+
+  async execute(data: CreateProductData): Promise&lt;Product&gt; {
+    if (!Number.isInteger(data.priceInCents) || data.priceInCents &lt;= 0) {
+      throw new Error('Price must be a positive amount in cents');
+    }
+    return this.repository.create(data);
+  }
+}</code></pre>
+<p>And a test next to the generated ones, with the same in-memory repository:</p>
+<pre class="term"><code>it('rejects a price of zero', async () =&gt; {
+  const createUseCase = new CreateProductUseCase(repository);
+
+  await assert.rejects(createUseCase.execute({ name: 'Free', priceInCents: 0 }), /positive amount/);
+});</code></pre>
+
+<h2 id="run" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>5. How do I try it?</h2>
+<pre class="term"><code>$ npm test
+$ npm run docker:up
+$ npm run dev
+$ curl -X POST localhost:3000/api/v1/products -H 'content-type: application/json' -d '{"name":"Coffee","priceInCents":1500}'
+$ curl localhost:3000/api/v1/products</code></pre>
+<p>In development (<code>NODE_ENV=development</code>), TypeORM creates the table on start; for production, write a migration. The endpoints also show up at <code>/api-docs</code>.</p>
+
+<h2 id="check" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>How do I know I kept the architecture clean?</h2>
+<p>Run <code>qn check</code> (or <code>npm run check</code>). It fails, with file and line, when a file under <code>src/domain</code> imports <code>src/infrastructure</code>, Express, an ORM or any other package:</p>
+<pre class="term"><code>$ npx {{package}} check
+✔ Dependency rule respected: 6 domain files checked.</code></pre>
+<p>It exits with code 1 on a violation, so it can run in CI (<code>qn add ci</code> adds it) and before each commit.</p>
+
+<h2 id="parts" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Can I generate only some parts?</h2>
+<ul class="list" role="list">
+  <li><code>qn g crud product --only entity,repository</code>: some parts of the CRUD.</li>
+  <li><code>qn g usecase product</code>, <code>qn g controller product</code>…: one part (types: <code>entity</code>, <code>repository</code>, <code>usecase</code>, <code>controller</code>). The output says when a part needs another one that does not exist yet.</li>
+  <li><code>--no-test</code> skips the use case test; <code>--json</code> prints the files and the wiring for scripts and AI agents.</li>
+</ul>

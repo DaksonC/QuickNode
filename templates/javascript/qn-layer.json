@@ -1,0 +1,11 @@
+{
+  "text": {
+    "language": "JavaScript",
+    "ext": "js",
+    "devReload": "`node --watch` (no nodemon)",
+    "validation": "express-validator (rules in the route files)",
+    "dtosFolder": "",
+    "buildStep": "",
+    "startCommand": "npm start              # production"
+  }
+}

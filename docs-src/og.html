@@ -1,0 +1,38 @@
+<!doctype html>
+<!--
+  Source of docs/assets/img/og.png (Open Graph and Twitter Card preview, 1200x630).
+  Rebuild with a local Chromium (no dependency added to the project):
+    chrome --headless --hide-scrollbars --window-size=1200,630 \
+      --screenshot=docs/assets/img/og.png docs-src/og.html
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QuickNode CLI preview image</title>
+<style>
+  @font-face { font-family: "VT323"; src: url("../docs/assets/fonts/VT323-Regular.woff2") format("woff2"); }
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #000; }
+  body { box-sizing: border-box; padding: 56px 64px; color: #33ff66; font: 40px/1.25 "VT323", monospace; text-shadow: 0 0 6px rgba(51, 255, 102, 0.45); }
+  body::after { content: ""; position: fixed; inset: 0; background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.18) 2px 3px); }
+  .dim { color: #22b24a; }
+  .amber { color: #ffc94d; }
+  pre.logo { margin: 18px 0 26px; font: 25px/1 "DejaVu Sans Mono", "Cascadia Mono", monospace; letter-spacing: -0.5px; }
+  p { margin: 0; }
+  .tag { font-size: 52px; margin-bottom: 28px; }
+  .cmd { font-size: 44px; }
+  .foot { position: absolute; left: 64px; right: 64px; bottom: 44px; display: flex; justify-content: space-between; font-size: 34px; }
+</style>
+</head>
+<body>
+<p class="dim">C:\QUICKNODE&gt; qn --version</p>
+<pre class="logo"> ██████╗ ██╗   ██╗██╗ ██████╗██╗  ██╗███╗   ██╗ ██████╗ ██████╗ ███████╗
+██╔═══██╗██║   ██║██║██╔════╝██║ ██╔╝████╗  ██║██╔═══██╗██╔══██╗██╔════╝
+██║   ██║██║   ██║██║██║     █████╔╝ ██╔██╗ ██║██║   ██║██║  ██║█████╗
+██║▄▄ ██║██║   ██║██║██║     ██╔═██╗ ██║╚██╗██║██║   ██║██║  ██║██╔══╝
+╚██████╔╝╚██████╔╝██║╚██████╗██║  ██╗██║ ╚████║╚██████╔╝██████╔╝███████╗
+ ╚══▀▀═╝  ╚═════╝ ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝</pre>
+<p class="tag">Zero-dependency CLI to create Node.js APIs with clean architecture<span class="dim">_</span></p>
+<p class="cmd"><span class="dim">C:\&gt;</span> <span class="amber">npx @10565/quicknode-cli create my-api</span></p>
+<div class="foot"><span class="dim">Express · TypeScript · PostgreSQL · tests</span><span class="amber">daksonc.github.io/QuickNode</span></div>
+</body>
+</html>

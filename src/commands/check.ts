@@ -1,0 +1,161 @@
+import fs from 'node:fs/promises';
+import { builtinModules } from 'node:module';
+import path from 'node:path';
+import { isInside, isNotFound, toPosix } from '../core/fs.js';
+import { findImports } from '../core/imports.js';
+import { detectProject } from '../core/project.js';
+
+/**
+ * The dependency rule of clean architecture, as `qn check` applies it: code in
+ * src/domain may import only other domain files and Node's built-in modules.
+ * Frameworks, ORMs, other packages and src/infrastructure stay outside.
+ */
+export type Rule =
+  | 'domain-imports-infrastructure'
+  | 'domain-imports-http-framework'
+  | 'domain-imports-orm'
+  | 'domain-imports-package'
+  | 'domain-imports-outside';
+
+export interface Violation {
+  /** Path relative to the project root, with "/" separators. */
+  file: string;
+  line: number;
+  specifier: string;
+  rule: Rule;
+  message: string;
+}
+
+export interface CheckResult {
+  ok: boolean;
+  root: string;
+  filesChecked: number;
+  violations: Violation[];
+}
+
+const SOURCE_FILE = /\.(?:[cm]?[jt]s|tsx|jsx)$/;
+const SKIPPED_FILE = /\.(?:test|spec)\.[^.]+$|\.d\.[cm]?ts$/;
+const SKIPPED_DIRS = new Set(['node_modules', '__tests__', 'dist', 'coverage']);
+
+const HTTP_PACKAGES = new Set([
+  'express',
+  'fastify',
+  'koa',
+  'hapi',
+  '@hapi/hapi',
+  'restify',
+  'helmet',
+  'cors',
+  'body-parser',
+  'express-validator',
+  'swagger-ui-express',
+  'swagger-jsdoc'
+]);
+const ORM_PACKAGES = new Set([
+  'typeorm',
+  'sequelize',
+  'prisma',
+  '@prisma/client',
+  'mongoose',
+  'mongodb',
+  'knex',
+  'objection',
+  'drizzle-orm',
+  'pg',
+  'pg-hstore',
+  'mysql',
+  'mysql2',
+  'sqlite3',
+  'better-sqlite3',
+  'redis',
+  'ioredis'
+]);
+const HTTP_SCOPES = ['@nestjs/', '@fastify/', '@koa/'];
+const ORM_SCOPES = ['@mikro-orm/'];
+
+const builtins = new Set(builtinModules);
+
+/** "express/lib/router" -> "express", "@scope/pkg/sub" -> "@scope/pkg". */
+function packageName(specifier: string): string {
+  const parts = specifier.split('/');
+  return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+}
+
+
+/** Absolute folders of the two layers. */
+export interface LayerDirs {
+  domain: string;
+  infrastructure: string;
+}
+
+/**
+ * Why a domain file may not import `specifier`, or undefined when it may.
+ * `dirs` is the layer folders, or (as before quicknode.json) the src folder holding both.
+ */
+export function classifyDomainImport(
+  specifier: string,
+  fromFile: string,
+  dirs: LayerDirs | string
+): { rule: Rule; message: string } | undefined {
+  const { domain: domainDir, infrastructure: infrastructureDir } =
+    typeof dirs === 'string' ? { domain: path.join(dirs, 'domain'), infrastructure: path.join(dirs, 'infrastructure') } : dirs;
+  if (specifier.startsWith('.') || specifier.startsWith('/')) {
+    const target = path.resolve(path.dirname(fromFile), specifier);
+    if (isInside(target, domainDir)) return undefined;
+    if (isInside(target, infrastructureDir)) {
+      return { rule: 'domain-imports-infrastructure', message: 'domain must not import infrastructure' };
+    }
+    return { rule: 'domain-imports-outside', message: 'domain must only import files inside the domain layer' };
+  }
+  if (specifier.startsWith('node:') || builtins.has(specifier) || builtins.has(packageName(specifier))) return undefined;
+  // Path aliases such as "@/infrastructure/..." or "src/infrastructure/...".
+  if (/(^|\/)infrastructure(\/|$)/.test(specifier)) {
+    return { rule: 'domain-imports-infrastructure', message: 'domain must not import infrastructure' };
+  }
+  const name = packageName(specifier);
+  if (HTTP_PACKAGES.has(name) || HTTP_SCOPES.some((scope) => name.startsWith(scope))) {
+    return { rule: 'domain-imports-http-framework', message: `domain must not depend on the HTTP layer ("${name}")` };
+  }
+  if (ORM_PACKAGES.has(name) || ORM_SCOPES.some((scope) => name.startsWith(scope))) {
+    return { rule: 'domain-imports-orm', message: `domain must not depend on the database or ORM ("${name}")` };
+  }
+  return {
+    rule: 'domain-imports-package',
+    message: `domain must not depend on third-party packages ("${name}"); keep it in infrastructure`
+  };
+}
+
+async function listSources(dir: string): Promise<string[]> {
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch (error) {
+    if (isNotFound(error)) return [];
+    throw error;
+  }
+  const files: string[] = [];
+  for (const entry of entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory() && !SKIPPED_DIRS.has(entry.name)) files.push(...(await listSources(full)));
+    else if (entry.isFile() && SOURCE_FILE.test(entry.name) && !SKIPPED_FILE.test(entry.name)) files.push(full);
+  }
+  return files;
+}
+
+/** Checks the dependency rule in the QuickNode project that contains `cwd`. */
+export async function checkProject(cwd: string): Promise<CheckResult> {
+  const { root, layers } = detectProject(cwd);
+  const dirs: LayerDirs = { domain: path.join(root, layers.domain), infrastructure: path.join(root, layers.infrastructure) };
+  const files = await listSources(dirs.domain);
+  const violations: Violation[] = [];
+
+  for (const file of files) {
+    const source = await fs.readFile(file, 'utf8');
+    for (const { specifier, line } of findImports(source)) {
+      const problem = classifyDomainImport(specifier, file, dirs);
+      if (problem) violations.push({ file: toPosix(path.relative(root, file)), line, specifier, ...problem });
+    }
+  }
+
+  return { ok: violations.length === 0, root, filesChecked: files.length, violations };
+}

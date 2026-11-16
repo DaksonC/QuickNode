@@ -1,0 +1,29 @@
+<h1 tabindex="-1">When to use QuickNode CLI, and when not to</h1>
+<p class="answer">Use QuickNode CLI to start an Express REST API in TypeScript or JavaScript with clean architecture, PostgreSQL, tests and linting, and to keep that architecture as it grows; do not use it for front ends, monorepos, NestJS projects or databases other than SQL.</p>
+
+<h2 id="use" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>When is it a good fit?</h2>
+<ul class="list" role="list">
+  <li>A new HTTP API in Node.js {{node}}+ with Express, in TypeScript (TypeORM) or JavaScript (Sequelize).</li>
+  <li>You want domain and infrastructure layers from day one, and a check (<code>qn check</code>) that keeps them apart in CI.</li>
+  <li>You add features often and want them in the right layers: <code>qn generate crud</code> writes and wires them.</li>
+  <li>PostgreSQL (with Docker Compose), or MySQL and SQLite through the same ORM.</li>
+  <li>A small supply chain matters: the CLI has zero runtime dependencies and works offline.</li>
+  <li>An AI agent does part of the work: every command runs without prompts, with <code>--json</code>, <code>qn schema</code> and an MCP server.</li>
+</ul>
+
+<h2 id="dont" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>When should I pick something else?</h2>
+<ul class="list" role="list">
+  <li>Front ends, full-stack frameworks or static sites: QuickNode only creates back-end APIs.</li>
+  <li>Monorepos with several services in one repository: each QuickNode project is a single package.</li>
+  <li>You want NestJS modules, decorators and its DI container: use the <a href="https://docs.nestjs.com/cli/overview" rel="noopener noreferrer">Nest CLI</a>.</li>
+  <li>Fastify, Koa or another HTTP framework, Prisma or MongoDB: they are not supported today.</li>
+  <li>GraphQL or gRPC as the main interface: the templates are REST with OpenAPI.</li>
+  <li>You need a large, mature community and long-term support guarantees: this is a young project with one maintainer.</li>
+</ul>
+
+<h2 id="unsure" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>How do I decide quickly?</h2>
+<ol>
+  <li>Preview without writing anything: <code>npx {{package}}@3 create my-api --typescript --dry-run</code>.</li>
+  <li>Read the <a href="{{home}}structure/">project structure</a> and the <a href="{{home}}compare/">comparison with Nest CLI and a manual template</a>.</li>
+  <li>If the layers and tools match your needs, create the project; if not, nothing was written.</li>
+</ol>

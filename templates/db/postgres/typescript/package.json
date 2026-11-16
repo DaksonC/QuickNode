@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f postgres",
+    "docker:reset": "docker-compose down -v && docker-compose up -d",
+    "db:seed": "tsx src/infrastructure/database/seeder.ts",
+    "db:setup": "npm run docker:up && sleep 5 && npm run db:seed",
+    "dev:docker": "npm run db:setup && npm run dev"
+  },
+  "dependencies": {
+    "pg": "^8.11.3",
+    "typeorm": "^0.3.17"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.7"
+  }
+}

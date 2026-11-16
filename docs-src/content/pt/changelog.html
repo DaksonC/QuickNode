@@ -1,0 +1,85 @@
+<h1 tabindex="-1">Changelog</h1>
+<p class="answer">A versão {{version}} registra como cada projeto foi criado no <code>quicknode.json</code>, traz <code>--db postgres|sqlite|none</code> e presets no <code>qn create</code>, e os comandos <code>qn env</code> e <code>qn upgrade</code>; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um <code>qn create</code> seguro. Exige Node.js {{node}}+.</p>
+<p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="{{repo}}/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
+
+<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// em breve</span></h2>
+<h3>Mudanças incompatíveis</h3>
+<ul class="list" role="list">
+  <li>O código de banco gerado tem o mesmo formato em todos os bancos: <code>src/infrastructure/database/connection</code> exporta <code>databaseConnection</code> com <code>initialize()</code>, <code>ping()</code> e <code>close()</code>. Nos projetos JavaScript ele substitui o export padrão <code>sequelizeConnection</code>, e os models são carregados pelo <code>initialize()</code>.</li>
+  <li>A conexão é só PostgreSQL: saem o <code>DB_TYPE</code> e os ramos de MySQL e SQLite que funcionavam pela metade (use <code>--db sqlite</code>). O <code>@types/sqlite3</code> saiu do template TypeScript.</li>
+  <li>Os comandos escritos nos projetos novos e na documentação usam <code>npx {{package}}@3</code>.</li>
+  <li>O orçamento de tamanho do pacote publicado passa a 400 KB (era 300 KB), registrado na D4 do ADR-001.</li>
+  <li>O <code>qn create</code> pergunta o banco no terminal (<code>--yes</code> e <code>--preset</code> pulam a pergunta).</li>
+</ul>
+<h3>Adicionado</h3>
+<ul class="list" role="list">
+  <li><code>quicknode.json</code> nos projetos novos: template, banco, gerenciador de pacotes, executor de testes, pastas das camadas, versão do template e o hash de cada arquivo gerado. O <code>qn generate</code>, o <code>qn add</code>, o <code>qn check</code>, o <code>qn doctor</code> e o <code>qn upgrade</code> leem esse arquivo; projetos sem ele continuam detectados pelo layout.</li>
+  <li><code>qn create --db postgres|sqlite|none</code>: templates feitos de uma base mínima mais um add-on de banco. O SQLite usa o <code>node:sqlite</code>, nativo do Node.js (sem driver, sem Docker); o <code>none</code> usa repositórios em memória. O <code>qn generate</code> escreve o repositório do banco do projeto.</li>
+  <li><code>qn create --preset api-minima|api-postgres</code> ou <code>--preset ./arquivo.json</code>, validado antes de gravar qualquer coisa; as flags vencem o preset.</li>
+  <li><code>qn env</code>: compara o <code>.env</code> com o <code>.env.example</code> pelos nomes e, com <code>--generate-secrets</code>, adiciona o que falta com segredos aleatórios (<code>crypto.randomBytes</code>). Nunca imprime valores.</li>
+  <li><code>qn upgrade</code>: aplica um template mais novo. Arquivos que você não alterou são atualizados, os alterados recebem um diff e uma cópia <code>.qn-new</code>, e o <code>package.json</code> só recebe versões mais novas das dependências que já tem; primeiro <code>--dry-run</code>, depois confirmação (ou <code>--yes</code>) para aplicar.</li>
+  <li>Códigos de erro <code>E_CONFIG_INVALID</code>, <code>E_PRESET_INVALID</code>, <code>E_ENV_EXAMPLE_MISSING</code>, <code>E_CONFIRM_REQUIRED</code> e <code>E_CLI_OUTDATED</code>; ferramentas MCP <code>qn_env</code> e <code>qn_upgrade</code> (simulação, a menos que <code>"apply": true</code>).</li>
+  <li>O <code>qn doctor</code> pula o Docker quando o projeto não usa PostgreSQL e avisa quando o <code>qn upgrade</code> tem novidade.</li>
+</ul>
+
+<h3>Corrigido</h3>
+<ul class="list" role="list">
+  <li>O template TypeScript caía ao iniciar com <code>NODE_ENV=development</code>: faltava o <code>pino-pretty</code> nas dependências.</li>
+  <li>Template JavaScript: um usuário inexistente respondia 500 em vez de 404 (e um email repetido, 500 em vez de 409); os erros de domínio agora têm tipo e viram códigos HTTP.</li>
+  <li>No WSL, o <code>qn ui</code> dizia que abria o navegador, mas nada abria; agora usa o navegador do Windows pelo <code>explorer.exe</code>.</li>
+  <li>Rodar o <code>qn generate</code> duas vezes podia inserir a mesma ligação de novo quando o trecho tinha linhas em branco.</li>
+</ul>
+
+<h2 id="v2.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>2.0.0 <span class="dim">// não publicada: estas mudanças saem na 3.0.0</span></h2>
+<h3>Mudanças incompatíveis</h3>
+<ul class="list" role="list">
+  <li>Exige Node.js {{node}} ou mais novo, na CLI e nos projetos gerados.</li>
+  <li>Sem terminal, o <code>qn create</code> não pergunta mais: passe o nome e <code>--typescript</code>/<code>--javascript</code>, ou <code>--yes</code>.</li>
+  <li>Uma pasta de destino não vazia é recusada, a menos que se passe <code>--force</code>.</li>
+</ul>
+<h3>Adicionado</h3>
+<ul class="list" role="list">
+  <li><code>qn generate &lt;tipo&gt; &lt;nome&gt;</code> (apelido <code>qn g</code>): entidade, repositório, casos de uso com teste, controller e rota de uma funcionalidade nas camadas certas, já ligados; <code>--only</code>, <code>--no-test</code>, <code>--dry-run</code>.</li>
+  <li><code>qn check</code>: falha quando <code>src/domain</code> importa infrastructure, Express, um ORM ou outro pacote; saída legível ou <code>--json</code>, código de saída 1 para o CI.</li>
+  <li><code>qn add &lt;receita&gt;</code>: auth (JWT com <code>node:crypto</code>), healthcheck, rate-limit, graceful-shutdown, docker, ci, agents, eslint, husky, swagger e tests, idempotentes, com <code>--dry-run</code> mostrando o diff.</li>
+  <li><code>qn doctor</code>: verifica Node.js, <code>.env</code>, Docker, <code>npm audit</code> e a regra de dependência.</li>
+  <li><code>AGENTS.md</code> e <code>CLAUDE.md</code> nos projetos novos, para assistentes de código com IA; script <code>npm run check</code>; <code>docs/adr/</code> com um modelo para as decisões de arquitetura.</li>
+  <li>Para agentes de IA: <code>qn schema</code> (também <code>qn --help --json</code>) com a especificação completa; códigos de erro estáveis (<code>E_USAGE</code>, <code>E_DIR_NOT_EMPTY</code>…) com <code>fix</code>; <code>schemaVersion</code> em toda saída JSON; <code>qn mcp</code>, um servidor MCP no stdio que só planeja por padrão; <code>llms.txt</code>, <code>llms-full.txt</code> e cada página em Markdown.</li>
+  <li><code>--dry-run</code>, <code>--yes</code>, <code>--force</code>, <code>--json</code>, <code>--git</code>, <code>--install</code>, <code>--no-credits</code>, <code>--pm npm|pnpm|yarn</code> e <code>--test jest|node</code> no <code>qn create</code>.</li>
+  <li><code>qn ui [tópico]</code> (apelido <code>qn docs</code>) abre esta documentação; <code>qn help &lt;comando&gt;</code> com exemplos.</li>
+  <li><code>DB_PASSWORD</code> e <code>JWT_SECRET</code> aleatórios num <code>.env</code> ignorado pelo git.</li>
+  <li>Site de documentação bilíngue, com a referência de comandos gerada a partir da CLI.</li>
+  <li>Publicação pelo GitHub Actions com provenance do npm e SBOM; <code>SECURITY.md</code>.</li>
+</ul>
+<h3>Alterado</h3>
+<ul class="list" role="list">
+  <li>Zero dependências de runtime: chalk, commander, figlet, fs-extra, inquirer e ora trocados por APIs do Node.js (de 56 pacotes instalados para 1).</li>
+  <li>Templates sem lockfiles congelados e com dependências atualizadas: 0 vulnerabilidades altas ou críticas na data da versão; ESLint 10, Husky 9, Postgres preso a 127.0.0.1.</li>
+  <li>Pacote publicado de 1,6 MB para menos de 300 KB.</li>
+  <li>Projetos gerados: cada funcionalidade é ligada em <code>infrastructure/modules</code>; os DTOs do TypeScript saíram do domínio para <code>infrastructure/http/dtos</code>; os testes usam repositórios em memória e <code>node:assert</code>, então rodam no Jest e no <code>node:test</code>.</li>
+</ul>
+<h3>Corrigido</h3>
+<ul class="list" role="list">
+  <li>Arquivos existentes (como o seu README) eram sobrescritos sem aviso.</li>
+  <li>Nomes como <code>../escaped</code> criavam o projeto fora da pasta atual.</li>
+</ul>
+
+<h2 id="v1.1.1" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1.1.1 <span class="dim">// 2025-09-28</span></h2>
+<ul class="list" role="list">
+  <li>Informação de financiamento no npm; <code>.gitignore</code> incluído nos projetos novos.</li>
+</ul>
+
+<h2 id="v1.1.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1.1.0 <span class="dim">// 2025-09-28</span></h2>
+<ul class="list" role="list">
+  <li>Templates independentes de banco com TypeORM (TypeScript) e Sequelize (JavaScript); revisão da injeção de dependência.</li>
+</ul>
+
+<h2 id="v1.0.1" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1.0.1 <span class="dim">// 2025-09-21</span></h2>
+<ul class="list" role="list">
+  <li>Pacote renomeado para {{package}} com o comando <code>qn</code>; banner novo.</li>
+</ul>
+
+<h2 id="v1.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>1.0.0 <span class="dim">// 2025-09-18</span></h2>
+<ul class="list" role="list">
+  <li>Primeira versão: <code>create</code> com templates TypeScript e JavaScript.</li>
+</ul>

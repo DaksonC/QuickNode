@@ -1,0 +1,37 @@
+<h1 tabindex="-1">Receitas do qn add</h1>
+<p class="answer">Para adicionar uma ferramenta a um projeto QuickNode existente, rode <code>qn add &lt;receita&gt;</code> dentro dele, por exemplo <code>qn add docker</code>: a receita grava os arquivos, mescla o <code>package.json</code> e liga o código, e rodar de novo não muda nada.</p>
+
+<h2 id="rules" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Como ele se comporta?</h2>
+<ol>
+  <li>Veja antes: <code>qn add auth rate-limit --dry-run</code> mostra o diff unificado de cada arquivo que seria criado ou alterado, sem gravar nada.</li>
+  <li>Aplique: <code>qn add auth rate-limit</code>. Dá para passar várias receitas de uma vez.</li>
+  <li>Instale o que mudou: a saída avisa quando o <code>package.json</code> ganhou dependências novas (<code>npm install</code>).</li>
+</ol>
+<ul class="list" role="list">
+  <li>Idempotente: uma receita já aplicada aparece como <code>already in place, nothing to do</code>.</li>
+  <li>Não destrutivo: um arquivo que você alterou não é sobrescrito sem <code>--force</code>, e um valor do <code>package.json</code> que você mudou é mantido (a saída avisa).</li>
+  <li>O código entra antes dos comentários-marcadores do template, como <code>// qn:middleware</code>. Se você apagou um marcador, a saída mostra as linhas para colar à mão.</li>
+  <li>As receitas são dados dentro do pacote da CLI: nenhum download durante a execução, e nenhuma dependência nova no seu projeto para <code>auth</code> e <code>rate-limit</code>, que usam só APIs do Node.js.</li>
+  <li>Funciona sem perguntas, também com <code>--json</code>, no CI e para agentes de IA.</li>
+</ul>
+
+<h2 id="recipes" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Quais receitas existem?</h2>
+<dl class="opts">
+  <dt>auth</dt>
+  <dd>Autenticação JWT (HS256) escrita com <code>node:crypto</code>: <code>signToken</code>, <code>verifyToken</code> e um middleware <code>authenticate()</code>; o segredo vem do <code>JWT_SECRET</code> no <code>.env</code> e segredos fracos são recusados. Com testes.</dd>
+  <dt>healthcheck</dt>
+  <dd>Rotas de saúde (<code>/health/live</code>) e de prontidão (<code>/health/ready</code>, 503 quando o banco não responde), ligadas no servidor.</dd>
+  <dt>rate-limit</dt>
+  <dd>Limite de requisições por cliente e janela de tempo, em memória, com os cabeçalhos <code>RateLimit-*</code> e <code>Retry-After</code>; <code>RATE_LIMIT_MAX</code> e <code>RATE_LIMIT_WINDOW_MS</code> no <code>.env</code>.</dd>
+  <dt>graceful-shutdown</dt>
+  <dd>No SIGTERM/SIGINT: para de aceitar conexões, termina as requisições em andamento e fecha o banco, com tempo limite (<code>SHUTDOWN_TIMEOUT_MS</code>).</dd>
+  <dt>docker</dt>
+  <dd><code>Dockerfile</code> em etapas que instala só as dependências de produção e roda com o usuário sem privilégios <code>node</code>, com healthcheck; <code>npm run docker:build</code>.</dd>
+  <dt>ci <span class="dim">(também github-actions)</span></dt>
+  <dd>Workflow do GitHub Actions com lint, testes, build, <code>qn check</code> e <code>npm audit</code>, com as actions fixadas por SHA de commit.</dd>
+  <dt>agents</dt>
+  <dd><code>AGENTS.md</code> e a cópia <code>CLAUDE.md</code>, que explicam aos assistentes de código com IA as camadas, a regra de dependência e os comandos a rodar.</dd>
+  <dt>eslint, husky, swagger, tests</dt>
+  <dd>Já vêm em todo projeto novo; as receitas os devolvem a um projeto de onde foram removidos, com os arquivos e versões do template.</dd>
+</dl>
+<p>As receitas seguem o gerenciador de pacotes do projeto (npm, pnpm ou yarn) e o executor de testes (Jest ou <code>node:test</code>). Próximo: a <a href="{{home}}commands/#add">referência de comandos</a> e <a href="{{home}}tutorial/">como adicionar uma funcionalidade com o qn generate</a>.</p>

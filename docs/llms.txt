@@ -1,0 +1,43 @@
+# QuickNode CLI
+
+> Zero-dependency CLI to create Node.js APIs with clean architecture: Express, TypeScript or JavaScript, PostgreSQL, SQLite or no database, tests and linting ready, plus generators (qn generate), a dependency rule check (qn check), recipes (qn add), .env checks (qn env), template upgrades (qn upgrade) and an MCP server (qn mcp).
+
+- Package: @10565/quicknode-cli (always with the scope). Command: qn. Run without installing: npx @10565/quicknode-cli@3 <command>.
+- Not related to QuickNode, the blockchain infrastructure provider.
+- Requires Node.js 22.13 or newer. Zero runtime dependencies, no telemetry, no network while generating.
+- Non-interactive use: pass every value as a flag (or --yes) and add --json; errors have a stable code and a fix.
+- Full machine-readable specification: qn schema (or qn --help --json).
+
+## Docs
+
+- [Home](https://daksonc.github.io/QuickNode/index.md): Create a Node.js API with clean architecture in one command: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready. Zero runtime dependencies.
+- [Getting started](https://daksonc.github.io/QuickNode/start.md): Install nothing: run npx @10565/quicknode-cli create my-api, start PostgreSQL with Docker and run the API. Step-by-step guide for Node.js 22.13+.
+- [Commands](https://daksonc.github.io/QuickNode/commands.md): Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.
+- [Project structure](https://daksonc.github.io/QuickNode/structure.md): What each folder of a QuickNode project does: domain entities, repository interfaces and use cases, and the infrastructure layer with Express, TypeORM or Sequelize.
+- [Entity and use case](https://daksonc.github.io/QuickNode/tutorial.md): Add a Product to an Express + TypeScript API with qn generate crud: entity, repository, use cases, test, controller and route in the right layers, then fields, rules and qn check.
+- [qn add](https://daksonc.github.io/QuickNode/add.md): qn add recipes for QuickNode projects: JWT auth, health checks, rate limit, graceful shutdown, Docker, GitHub Actions and AI agent instructions, idempotent and with --dry-run.
+- [For AI agents](https://daksonc.github.io/QuickNode/agents.md): How AI coding agents should use QuickNode CLI: exact non-interactive commands with a pinned version, --json and --dry-run, qn schema, the MCP server and stable error codes with fixes.
+- [When to use](https://daksonc.github.io/QuickNode/when.md): Clear criteria for choosing QuickNode CLI: use it for Express REST APIs with clean architecture and PostgreSQL; do not use it for front ends, monorepos, NestJS projects or other databases.
+- [FAQ](https://daksonc.github.io/QuickNode/faq.md): Answers about QuickNode CLI: required Node.js version, writing into existing folders, generated secrets, offline use, telemetry and the QuickNode name.
+- [Comparison](https://daksonc.github.io/QuickNode/compare.md): An honest comparison of QuickNode CLI, Nest CLI and copying a template by hand, with objective criteria: dependencies, architecture, framework lock-in and maintenance.
+- [Changelog](https://daksonc.github.io/QuickNode/changelog.md): Release notes of QuickNode CLI from v1.0.0 to v3: zero runtime dependencies, safe project generation, verifiable publishing and the documentation site.
+
+## Português
+
+- [Início](https://daksonc.github.io/QuickNode/pt/index.md): Crie uma API Node.js com arquitetura limpa em um comando: Express, TypeScript ou JavaScript, PostgreSQL, testes e lint prontos. Zero dependências de runtime.
+- [Primeiros passos](https://daksonc.github.io/QuickNode/pt/start.md): Sem instalar nada: rode npx @10565/quicknode-cli create minha-api, suba o PostgreSQL com Docker e rode a API. Passo a passo para Node.js 22.13+.
+- [Comandos](https://daksonc.github.io/QuickNode/pt/commands.md): Todos os comandos e flags do QuickNode CLI, gerados da mesma definição que a CLI usa: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, códigos de saída e de erro.
+- [Estrutura do projeto](https://daksonc.github.io/QuickNode/pt/structure.md): O papel de cada pasta de um projeto QuickNode: entidades, interfaces de repositório e casos de uso no domínio, e a infraestrutura com Express, TypeORM ou Sequelize.
+- [Entidade e caso de uso](https://daksonc.github.io/QuickNode/pt/tutorial.md): Adicione um Product a uma API Express + TypeScript com qn generate crud: entidade, repositório, casos de uso, teste, controller e rota nas camadas certas, depois campos, regras e qn check.
+- [qn add](https://daksonc.github.io/QuickNode/pt/add.md): Receitas do qn add para projetos QuickNode: autenticação JWT, healthcheck, rate limit, encerramento gracioso, Docker, GitHub Actions e instruções para agentes de IA, idempotentes e com --dry-run.
+- [Para agentes de IA](https://daksonc.github.io/QuickNode/pt/agents.md): Como agentes de código com IA devem usar o QuickNode CLI: comandos não interativos com versão fixada, --json e --dry-run, qn schema, o servidor MCP e códigos de erro estáveis com correção.
+- [Quando usar](https://daksonc.github.io/QuickNode/pt/when.md): Critérios claros para escolher o QuickNode CLI: use para APIs REST com Express, arquitetura limpa e PostgreSQL; não use para front-end, monorepos, projetos NestJS ou outros bancos.
+- [Perguntas frequentes](https://daksonc.github.io/QuickNode/pt/faq.md): Respostas sobre o QuickNode CLI: versão do Node.js, gerar em pastas existentes, segredos gerados, uso offline, telemetria e o nome QuickNode.
+- [Comparação](https://daksonc.github.io/QuickNode/pt/compare.md): Comparação honesta entre QuickNode CLI, Nest CLI e copiar um template à mão, com critérios objetivos: dependências, arquitetura, acoplamento ao framework e manutenção.
+- [Changelog](https://daksonc.github.io/QuickNode/pt/changelog.md): Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.
+
+## Optional
+
+- [ADRs](https://daksonc.github.io/QuickNode/adr.md): The architecture decision records behind QuickNode CLI: why it has zero dependencies, how it is published and how the documentation is built.
+- [ADR-001](https://daksonc.github.io/QuickNode/adr/001.md): ADR-001 in full: diagnosis of v1.1.1, the five principles, decisions D1 to D9 (zero dependencies, safe templates, supply chain, docs, SEO, AI agents) and the phased plan.
+- [Full documentation in one file](https://daksonc.github.io/QuickNode/llms-full.txt): every English page above, in Markdown

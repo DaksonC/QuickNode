@@ -1,0 +1,14 @@
+{
+  "repository": [
+    {
+      "file": "src/infrastructure/database/repository-factory.ts",
+      "marker": "imports",
+      "snippet": "import { __Name__Repository } from '../../domain/repositories/__name__-repository';\nimport { Sqlite__Name__Repository } from './repositories/__name__-repository';"
+    },
+    {
+      "file": "src/infrastructure/database/repository-factory.ts",
+      "marker": "factories",
+      "snippet": "static create__Name__Repository(): __Name__Repository {\n  return Sqlite__Name__Repository.create();\n}\n"
+    }
+  ]
+}

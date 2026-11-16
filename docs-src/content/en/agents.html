@@ -1,0 +1,60 @@
+<h1 tabindex="-1">QuickNode CLI for AI agents</h1>
+<p class="answer">An AI coding agent creates a Node.js API with clean architecture by running <code>npx {{package}}@3 create my-api --typescript --yes --json</code>: without a terminal no command prompts, commands print JSON with <code>--json</code>, plan with <code>--dry-run</code> and fail with a stable error code and a fix.</p>
+<p class="note">Not to be confused with QuickNode, the blockchain infrastructure provider. Always use the scoped package name <code>{{package}}</code>; the command it installs is <code>qn</code>.</p>
+
+<h2 id="commands" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Which commands should an agent run?</h2>
+<p>Pin the major version and pass every value as a flag. Without a terminal, <code>qn</code> never asks: it uses the declared defaults or stops with <code>E_USAGE</code> and the exact command that fixes it.</p>
+<pre class="term"><code>$ npx {{package}}@3 schema
+$ npx {{package}}@3 create my-api --typescript --yes --json
+$ cd my-api
+$ npx {{package}}@3 generate crud product --dry-run --json
+$ npx {{package}}@3 generate crud product --json
+$ npx {{package}}@3 add healthcheck docker --dry-run --json
+$ npx {{package}}@3 check --json</code></pre>
+
+<h2 id="flow" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>What is the recommended flow?</h2>
+<ol>
+  <li>Discover: <code>qn schema</code> returns every command, flag, accepted value, default and error code. Do not invent flags.</li>
+  <li>Plan: run the command with <code>--dry-run --json</code> and show the person the files it would create or change (each with a diff).</li>
+  <li>Apply: run it again without <code>--dry-run</code> once the person agrees.</li>
+  <li>Verify: run the tests and <code>qn check</code> after every change. Both are deterministic and exit with a non-zero code on failure.</li>
+</ol>
+<p>Generated projects carry an <code>AGENTS.md</code> (and an identical <code>CLAUDE.md</code>) with the layers, the dependency rule and these commands, and record architecture decisions in <code>docs/adr/</code>.</p>
+
+<h2 id="json" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>What does the JSON look like?</h2>
+<p>Every <code>--json</code> output has <code>ok</code> and <code>schemaVersion</code>; the format only changes incompatibly in a major version. A failure adds <code>error</code> with <code>code</code>, <code>message</code> and, when known, <code>fix</code>:</p>
+<pre class="term"><code>{
+  "schemaVersion": 1,
+  "ok": false,
+  "error": {
+    "code": "E_DIR_NOT_EMPTY",
+    "message": "Directory /work/my-api is not empty. Use --force to write into it anyway.",
+    "fix": "qn create my-api --typescript --yes --json --force",
+    "conflicts": ["README.md"]
+  }
+}</code></pre>
+<p>Every code and exit code is listed in the <a href="{{home}}commands/#errors">command reference</a>.</p>
+
+<h2 id="mcp" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>How do I connect it as an MCP server?</h2>
+<p><code>qn mcp</code> runs a Model Context Protocol server on stdio, inside the same package and with no dependencies. Its tools are <code>qn_schema</code>, <code>qn_check</code>, <code>qn_doctor</code>, <code>qn_generate</code>, <code>qn_add</code>, <code>qn_env</code>, <code>qn_upgrade</code> and <code>qn_create</code>. The ones that write files only plan unless called with <code>"apply": true</code>.</p>
+<pre class="term"><code>{
+  "mcpServers": {
+    "quicknode": { "command": "npx", "args": ["{{package}}@3", "mcp"] }
+  }
+}</code></pre>
+<p>For Claude Code: <code>claude mcp add quicknode -- npx {{package}}@3 mcp</code>.</p>
+<ul class="list" role="list">
+  <li>Dry run by default: tools that write return the plan unless called with <code>"apply": true</code>, and files with other content are only overwritten with <code>"force": true</code>.</li>
+  <li>The agent sets <code>apply</code> itself, so the server cannot tell it from a person's approval. The person stays in control through the MCP client (Claude Code, Cursor…), which asks before running a tool that writes: those tools are marked <code>readOnlyHint: false</code>.</li>
+  <li>Works only inside the folder the server was started in; paths outside it are refused.</li>
+  <li>No network and no other programs: <code>qn_create</code> does not install dependencies or run git, and <code>qn_doctor</code> skips Docker and <code>npm audit</code>.</li>
+</ul>
+
+<h2 id="safety" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>Is it safe to install without review?</h2>
+<ul class="list" role="list">
+  <li>No lifecycle scripts (<code>preinstall</code>, <code>postinstall</code>) and zero runtime dependencies.</li>
+  <li>Nothing is downloaded while a project is generated; templates and recipes ship inside the package.</li>
+  <li>Every release is published from GitHub Actions with npm provenance, so its origin can be verified.</li>
+  <li>Nothing is overwritten without <code>--force</code>, and <code>npm install</code> or <code>git init</code> run only with <code>--install</code> or <code>--git</code>.</li>
+</ul>
+<p>Not sure the CLI fits the task? See <a href="{{home}}when/">when to use it, and when not to</a>.</p>

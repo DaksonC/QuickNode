@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <title>Command reference: qn create, generate, check, add, doctor and every flag</title>
+  <meta name="description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.">
+  <link rel="canonical" href="https://daksonc.github.io/QuickNode/commands/">
+  <link rel="alternate" hreflang="en" href="https://daksonc.github.io/QuickNode/commands/">
+  <link rel="alternate" hreflang="pt-BR" href="https://daksonc.github.io/QuickNode/pt/commands/">
+  <link rel="alternate" hreflang="x-default" href="https://daksonc.github.io/QuickNode/commands/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="QuickNode CLI">
+  <meta property="og:title" content="Command reference: qn create, generate, check, add, doctor and every flag">
+  <meta property="og:description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.">
+  <meta property="og:url" content="https://daksonc.github.io/QuickNode/commands/">
+  <meta property="og:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Black terminal screen with green text: QuickNode CLI, create Node.js APIs with clean architecture.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="pt_BR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Command reference: qn create, generate, check, add, doctor and every flag">
+  <meta name="twitter:description" content="Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.">
+  <meta name="twitter:image" content="https://daksonc.github.io/QuickNode/assets/img/og.png">
+  <meta name="twitter:image:alt" content="Black terminal screen with green text: QuickNode CLI, create Node.js APIs with clean architecture.">
+
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../assets/fonts/VT323-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/docs.css">
+  <script src="../assets/js/theme.js"></script>
+  <script src="../assets/js/qn-data.js" defer></script>
+  <script src="../assets/js/docs.js" defer></script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "Commands",
+      "name": "Command reference: qn create, generate, check, add, doctor and every flag",
+      "description": "Every QuickNode CLI command and flag, generated from the same definition the CLI parses: qn create, generate, check, add, doctor, schema, mcp, ui, --dry-run, --json, exit and error codes.",
+      "url": "https://daksonc.github.io/QuickNode/commands/",
+      "inLanguage": "en",
+      "dateModified": "2026-11-15",
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      },
+      "about": {
+        "@id": "https://daksonc.github.io/QuickNode/#software"
+      },
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://daksonc.github.io/QuickNode/#software",
+      "name": "QuickNode CLI",
+      "alternateName": "@10565/quicknode-cli",
+      "description": "Zero-dependency CLI to create Node.js APIs with clean architecture",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Windows, macOS, Linux",
+      "softwareRequirements": "Node.js 22.13+",
+      "softwareVersion": "3.0.0",
+      "license": "https://opensource.org/licenses/MIT",
+      "url": "https://daksonc.github.io/QuickNode/",
+      "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "installUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
+      "sameAs": [
+        "https://www.npmjs.com/package/@10565/quicknode-cli",
+        "https://github.com/DaksonC/QuickNode"
+      ],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Dakson Chaves Cruz",
+        "url": "https://daksonc.github.io/"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://daksonc.github.io/QuickNode/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Commands",
+          "item": "https://daksonc.github.io/QuickNode/commands/"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+</head>
+<body id="top">
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="wrap site-header">
+    <p class="title"><a href="../" class="home"><span aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">QuickNode CLI documentation, home</span></a></p>
+    <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="header-panel">[MENU]</button>
+
+    <div class="panel" id="header-panel">
+      <div class="controls">
+        <ul class="lang" role="list" aria-label="Language">
+          <li><a href="./" hreflang="en" lang="en" aria-current="page">[EN]<span class="sr-only"> English</span></a></li>
+          <li><a href="../pt/commands/" hreflang="pt-BR" lang="pt-BR">[PT]<span class="sr-only"> Português</span></a></li>
+        </ul>
+        <button type="button" id="fx-toggle" hidden>[FX: <span id="fx-state">ON</span>]<span class="sr-only"> visual effects and animation</span></button>
+        <button type="button" id="theme-toggle" hidden>[<span id="theme-state">LIGHT</span>]<span class="sr-only" id="theme-hint"> switch to light theme</span></button>
+      </div>
+
+      <nav class="menu" aria-label="Documentation">
+        <ul>
+          <li><a href="../start/">[start]</a></li>
+          <li><a href="../commands/" aria-current="page">[commands]</a></li>
+          <li><a href="../structure/">[structure]</a></li>
+          <li><a href="../tutorial/">[tutorial]</a></li>
+          <li><a href="../add/">[add]</a></li>
+          <li><a href="../agents/">[agents]</a></li>
+          <li><a href="../when/">[when]</a></li>
+          <li><a href="../faq/">[faq]</a></li>
+          <li><a href="../compare/">[compare]</a></li>
+          <li><a href="../changelog/">[changelog]</a></li>
+          <li><a href="../adr/">[adr]</a></li>
+        </ul>
+      </nav>
+
+      <section class="cli-wrap" id="cli-wrap" aria-label="Optional command line. Type help to list commands." hidden>
+        <form class="cli" id="cli">
+          <label for="cli-input"><span class="prompt" aria-hidden="true">C:\QUICKNODE&gt;</span><span class="sr-only">Optional command line. Type help to list commands.</span></label>
+          <input id="cli-input" name="command" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type help">
+        </form>
+        <div class="cli-output" id="cli-output" role="log" aria-live="polite" aria-label="Command output"></div>
+      </section>
+    </div>
+
+    <span class="sr-only" role="status" id="status"></span>
+  </header>
+
+  <main id="main" class="wrap" tabindex="-1">
+    <nav aria-label="Breadcrumb"><ol class="crumbs" role="list"><li><a href="../">Home</a></li><li aria-current="page">Commands</li></ol></nav>
+    <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui commands</p>
+    <p class="meta">Updated on <time datetime="2026-11-15">2026-11-15</time> · valid for v3.x</p>
+<h1 tabindex="-1">Command reference</h1>
+<p class="answer">QuickNode CLI creates a project with <code>qn create</code>, grows it with <code>qn generate</code> and <code>qn add</code>, checks it with <code>qn check</code>, <code>qn doctor</code> and <code>qn env</code>, upgrades its template with <code>qn upgrade</code>, describes itself with <code>qn schema</code>, serves AI assistants with <code>qn mcp</code> and opens this documentation with <code>qn ui</code>; run <code>qn help &lt;command&gt;</code> for the same reference offline.</p>
+<p class="dim">This page is generated from the definition the CLI parses (<code>src/spec.ts</code>), so it always matches the installed version.</p>
+<section aria-labelledby="create">
+<h2 id="create" tabindex="-1">qn create</h2>
+<p>Create a new project with clean architecture.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn create [name] [options]</code></pre>
+<h3>Argument</h3>
+<dl class="opts">
+  <dt><code>[name]</code></dt>
+  <dd>Project folder and package name (&quot;.&quot; for the current directory)</dd>
+</dl>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="create-typescript"><code>-t, --typescript</code></dt>
+  <dd>Use the TypeScript template (also -ts)</dd>
+  <dt id="create-javascript"><code>-j, --javascript</code></dt>
+  <dd>Use the JavaScript template (also -js)</dd>
+  <dt id="create-force"><code>-f, --force</code></dt>
+  <dd>Write into a non-empty directory, overwriting conflicting files</dd>
+  <dt id="create-yes"><code>-y, --yes</code></dt>
+  <dd>Accept defaults without prompting (name, TypeScript, PostgreSQL)</dd>
+  <dt id="create-dry-run"><code>--dry-run</code></dt>
+  <dd>Show what would be created without writing anything</dd>
+  <dt id="create-install"><code>--install</code></dt>
+  <dd>Install the dependencies with the --pm package manager after creating the project</dd>
+  <dt id="create-git"><code>--git</code></dt>
+  <dd>Initialize a git repository</dd>
+  <dt id="create-no-credits"><code>--no-credits</code></dt>
+  <dd>Leave the &quot;Generated with QuickNode&quot; line out of the README</dd>
+  <dt id="create-pm"><code>--pm &lt;npm|pnpm|yarn&gt;</code></dt>
+  <dd>Package manager used in scripts, docs and --install (default: npm)</dd>
+  <dt id="create-test"><code>--test &lt;jest|node&gt;</code></dt>
+  <dd>Test runner (default: jest; node uses the built-in node:test)</dd>
+  <dt id="create-db"><code>--db &lt;postgres|sqlite|none&gt;</code></dt>
+  <dd>Database: postgres (Docker), sqlite (node:sqlite, no driver) or none (in-memory repositories)</dd>
+  <dt id="create-preset"><code>--preset &lt;name|file.json&gt;</code></dt>
+  <dd>Start from a preset (api-minima, api-postgres) or a local JSON file; flags win over it</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api -ts --git --install
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --pm pnpm --test node
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --db sqlite
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --preset api-minima
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --preset ./team-preset.json
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create . --javascript --force
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --dry-run
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --yes --json</code></pre>
+<details>
+<summary>Same text as <code>qn help create</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help create
+qn create [name] [options]
+
+Create a new project with clean architecture
+
+Arguments:
+  name  Project folder and package name (&quot;.&quot; for the current directory)
+
+Options:
+  -t, --typescript                 Use the TypeScript template (also -ts)
+  -j, --javascript                 Use the JavaScript template (also -js)
+  -f, --force                      Write into a non-empty directory, overwriting conflicting files
+  -y, --yes                        Accept defaults without prompting (name, TypeScript, PostgreSQL)
+      --dry-run                    Show what would be created without writing anything
+      --install                    Install the dependencies with the --pm package manager after creating the project
+      --git                        Initialize a git repository
+      --no-credits                 Leave the &quot;Generated with QuickNode&quot; line out of the README
+      --pm &lt;npm|pnpm|yarn&gt;         Package manager used in scripts, docs and --install (default: npm)
+      --test &lt;jest|node&gt;           Test runner (default: jest; node uses the built-in node:test)
+      --db &lt;postgres|sqlite|none&gt;  Database: postgres (Docker), sqlite (node:sqlite, no driver) or none (in-memory repositories)
+      --preset &lt;name|file.json&gt;    Start from a preset (api-minima, api-postgres) or a local JSON file; flags win over it
+  -h, --help                       Show help
+  -v, --version                    Show the version
+      --json                       Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn create my-api
+  qn create my-api -ts --git --install
+  qn create my-api --pm pnpm --test node
+  qn create my-api --db sqlite
+  qn create my-api --preset api-minima
+  qn create my-api --preset ./team-preset.json
+  qn create . --javascript --force
+  qn create my-api --dry-run
+  qn create my-api --yes --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="generate">
+<h2 id="generate" tabindex="-1">qn generate</h2>
+<p>Generate a feature in the clean architecture layers, already wired.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn generate &lt;type&gt; &lt;name&gt; [options]</code></pre>
+<p><span class="key">Alias:</span> <code>qn g</code></p>
+<h3>Arguments</h3>
+<dl class="opts">
+  <dt><code>[type]</code></dt>
+  <dd>What to generate (crud = all the parts) <span class="dim">(accepted values: <code>crud</code>, <code>entity</code>, <code>usecase</code>, <code>repository</code>, <code>controller</code>)</span></dd>
+  <dt><code>[name]</code></dt>
+  <dd>Feature name, e.g. product or order-item</dd>
+</dl>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="generate-only"><code>--only &lt;parts&gt;</code></dt>
+  <dd>With crud, generate only these parts (comma-separated: entity, repository, usecase, controller)</dd>
+  <dt id="generate-no-test"><code>--no-test</code></dt>
+  <dd>Do not generate the use case test</dd>
+  <dt id="generate-dry-run"><code>--dry-run</code></dt>
+  <dd>Show the files to create or change without writing anything</dd>
+  <dt id="generate-force"><code>-f, --force</code></dt>
+  <dd>Overwrite existing files with different content</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn generate crud product
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn g crud order-item --dry-run
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn g crud product --only entity,repository
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn g usecase product --no-test
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn g crud product --json</code></pre>
+<details>
+<summary>Same text as <code>qn help generate</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help generate
+qn generate &lt;type&gt; &lt;name&gt; [options]
+
+Generate a feature in the clean architecture layers, already wired (alias: qn g)
+
+Arguments:
+  type  What to generate (crud = all the parts) (crud, entity, usecase, repository, controller)
+  name  Feature name, e.g. product or order-item
+
+Options:
+      --only &lt;parts&gt;  With crud, generate only these parts (comma-separated: entity, repository, usecase, controller)
+      --no-test       Do not generate the use case test
+      --dry-run       Show the files to create or change without writing anything
+  -f, --force         Overwrite existing files with different content
+  -h, --help          Show help
+  -v, --version       Show the version
+      --json          Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn generate crud product
+  qn g crud order-item --dry-run
+  qn g crud product --only entity,repository
+  qn g usecase product --no-test
+  qn g crud product --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="check">
+<h2 id="check" tabindex="-1">qn check</h2>
+<p>Check the dependency rule: domain must not import infrastructure, frameworks or ORMs.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn check [options]</code></pre>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn check
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn check --json</code></pre>
+<details>
+<summary>Same text as <code>qn help check</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help check
+qn check [options]
+
+Check the dependency rule: domain must not import infrastructure, frameworks or ORMs
+
+Options:
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn check
+  qn check --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="add">
+<h2 id="add" tabindex="-1">qn add</h2>
+<p>Add a tool to an existing project (idempotent).</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn add &lt;recipe...&gt; [options]</code></pre>
+<h3>Argument</h3>
+<dl class="opts">
+  <dt><code>[recipe...]</code></dt>
+  <dd>Recipes to apply <span class="dim">(accepted values: <code>agents</code>, <code>auth</code>, <code>ci</code>, <code>docker</code>, <code>eslint</code>, <code>github-actions</code>, <code>graceful-shutdown</code>, <code>healthcheck</code>, <code>husky</code>, <code>rate-limit</code>, <code>swagger</code>, <code>tests</code>)</span></dd>
+</dl>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="add-dry-run"><code>--dry-run</code></dt>
+  <dd>Show the diff without writing anything</dd>
+  <dt id="add-force"><code>-f, --force</code></dt>
+  <dd>Overwrite existing files with different content</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn add docker
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn add auth rate-limit --dry-run
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn add ci --json
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn add agents</code></pre>
+<details>
+<summary>Same text as <code>qn help add</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help add
+qn add &lt;recipe...&gt; [options]
+
+Add a tool to an existing project (idempotent)
+
+Arguments:
+  recipe...  Recipes to apply (agents, auth, ci, docker, eslint, github-actions, graceful-shutdown, healthcheck, husky, rate-limit, swagger, tests)
+
+Options:
+      --dry-run  Show the diff without writing anything
+  -f, --force    Overwrite existing files with different content
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn add docker
+  qn add auth rate-limit --dry-run
+  qn add ci --json
+  qn add agents
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="doctor">
+<h2 id="doctor" tabindex="-1">qn doctor</h2>
+<p>Check Node.js, .env, Docker, vulnerabilities and the dependency rule.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn doctor [options]</code></pre>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="doctor-offline"><code>--offline</code></dt>
+  <dd>Skip npm audit (no network)</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn doctor
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn doctor --offline
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn doctor --json</code></pre>
+<details>
+<summary>Same text as <code>qn help doctor</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help doctor
+qn doctor [options]
+
+Check Node.js, .env, Docker, vulnerabilities and the dependency rule
+
+Options:
+      --offline  Skip npm audit (no network)
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn doctor
+  qn doctor --offline
+  qn doctor --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="env">
+<h2 id="env" tabindex="-1">qn env</h2>
+<p>Compare .env with .env.example and generate missing secrets (values are never printed).</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn env [options]</code></pre>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="env-generate-secrets"><code>--generate-secrets</code></dt>
+  <dd>Write missing variables to .env, with random values for secrets and change-me placeholders</dd>
+  <dt id="env-dry-run"><code>--dry-run</code></dt>
+  <dd>With --generate-secrets, show what would change without writing</dd>
+  <dt id="env-force"><code>-f, --force</code></dt>
+  <dd>With --generate-secrets, also replace secrets that already have a value</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn env
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn env --generate-secrets
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn env --generate-secrets --dry-run
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn env --json</code></pre>
+<details>
+<summary>Same text as <code>qn help env</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help env
+qn env [options]
+
+Compare .env with .env.example and generate missing secrets (values are never printed)
+
+Options:
+      --generate-secrets  Write missing variables to .env, with random values for secrets and change-me placeholders
+      --dry-run           With --generate-secrets, show what would change without writing
+  -f, --force             With --generate-secrets, also replace secrets that already have a value
+  -h, --help              Show help
+  -v, --version           Show the version
+      --json              Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn env
+  qn env --generate-secrets
+  qn env --generate-secrets --dry-run
+  qn env --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="upgrade">
+<h2 id="upgrade" tabindex="-1">qn upgrade</h2>
+<p>Apply the improvements of a newer template: updates files you did not change, diffs the rest.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn upgrade [options]</code></pre>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="upgrade-dry-run"><code>--dry-run</code></dt>
+  <dd>Show the plan and the diffs without writing anything</dd>
+  <dt id="upgrade-yes"><code>-y, --yes</code></dt>
+  <dd>Apply without asking (required without a terminal)</dd>
+  <dt id="upgrade-force"><code>-f, --force</code></dt>
+  <dd>Also overwrite files you changed (their diff is shown first)</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn upgrade --dry-run
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn upgrade
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn upgrade --yes --json</code></pre>
+<details>
+<summary>Same text as <code>qn help upgrade</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help upgrade
+qn upgrade [options]
+
+Apply the improvements of a newer template: updates files you did not change, diffs the rest
+
+Options:
+      --dry-run  Show the plan and the diffs without writing anything
+  -y, --yes      Apply without asking (required without a terminal)
+  -f, --force    Also overwrite files you changed (their diff is shown first)
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn upgrade --dry-run
+  qn upgrade
+  qn upgrade --yes --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="schema">
+<h2 id="schema" tabindex="-1">qn schema</h2>
+<p>Print the full specification of commands, flags, values and error codes as JSON.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn schema</code></pre>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn schema
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn --help --json
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn help generate --json</code></pre>
+<details>
+<summary>Same text as <code>qn help schema</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help schema
+qn schema
+
+Print the full specification of commands, flags, values and error codes as JSON
+
+Options:
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn schema
+  qn --help --json
+  qn help generate --json
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="mcp">
+<h2 id="mcp" tabindex="-1">qn mcp</h2>
+<p>Run a Model Context Protocol server on stdio for AI assistants (dry run by default).</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn mcp</code></pre>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn mcp
+<span class="ps" aria-hidden="true">C:\&gt; </span>npx @10565/quicknode-cli@3 mcp</code></pre>
+<details>
+<summary>Same text as <code>qn help mcp</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help mcp
+qn mcp
+
+Run a Model Context Protocol server on stdio for AI assistants (dry run by default)
+
+Options:
+  -h, --help     Show help
+  -v, --version  Show the version
+      --json     Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn mcp
+  npx @10565/quicknode-cli@3 mcp
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="ui">
+<h2 id="ui" tabindex="-1">qn ui</h2>
+<p>Open the documentation in the browser.</p>
+<h3>Usage</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn ui [topic] [options]</code></pre>
+<p><span class="key">Alias:</span> <code>qn docs</code></p>
+<h3>Argument</h3>
+<dl class="opts">
+  <dt><code>[topic]</code></dt>
+  <dd>Page to open <span class="dim">(accepted values: <code>start</code>, <code>commands</code>, <code>create</code>, <code>ui</code>, <code>structure</code>, <code>tutorial</code>, <code>generate</code>, <code>agents</code>, <code>when</code>, <code>errors</code>, <code>check</code>, <code>add</code>, <code>doctor</code>, <code>env</code>, <code>upgrade</code>, <code>faq</code>, <code>compare</code>, <code>changelog</code>, <code>adr</code>)</span></dd>
+</dl>
+<h3>Options</h3>
+<dl class="opts">
+  <dt id="ui-print"><code>-p, --print</code></dt>
+  <dd>Only print the link, do not open the browser</dd>
+  <dt id="ui-lang"><code>--lang &lt;en|pt&gt;</code></dt>
+  <dd>Language of the page (default: from LANG)</dd>
+</dl>
+<h3>Examples</h3>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn ui
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn docs create
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn ui structure --lang pt
+<span class="ps" aria-hidden="true">C:\&gt; </span>qn ui faq --print</code></pre>
+<details>
+<summary>Same text as <code>qn help ui</code></summary>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn help ui
+qn ui [topic] [options]
+
+Open the documentation in the browser (alias: qn docs)
+
+Arguments:
+  topic  Page to open (start, commands, create, ui, structure, tutorial, generate, agents, when, errors, check, add, doctor, env, upgrade, faq, compare, changelog, adr)
+
+Options:
+  -p, --print         Only print the link, do not open the browser
+      --lang &lt;en|pt&gt;  Language of the page (default: from LANG)
+  -h, --help          Show help
+  -v, --version       Show the version
+      --json          Print a JSON result to stdout (no prompts, no colors)
+
+Examples:
+  qn ui
+  qn docs create
+  qn ui structure --lang pt
+  qn ui faq --print
+
+Docs: https://daksonc.github.io/QuickNode/</code></pre>
+</details>
+</section>
+<section aria-labelledby="global">
+<h2 id="global" tabindex="-1">Global options</h2>
+<p>Accepted by every command.</p>
+<dl class="opts">
+  <dt id="help"><code>-h, --help</code></dt>
+  <dd>Show help</dd>
+  <dt id="version"><code>-v, --version</code></dt>
+  <dd>Show the version</dd>
+  <dt id="json"><code>--json</code></dt>
+  <dd>Print a JSON result to stdout (no prompts, no colors)</dd>
+</dl>
+</section>
+<section aria-labelledby="exit-codes">
+<h2 id="exit-codes" tabindex="-1">Exit codes</h2>
+<dl class="opts">
+  <dt><code>0</code></dt>
+  <dd>success</dd>
+  <dt><code>1</code></dt>
+  <dd>the command failed (for example, the target folder is not empty, or qn check found violations)</dd>
+  <dt><code>2</code></dt>
+  <dd>invalid usage: unknown command, flag or value</dd>
+</dl>
+</section>
+<section aria-labelledby="errors">
+<h2 id="errors" tabindex="-1">Error codes</h2>
+<p>Every error has a stable code, a short message and, when known, a fix. With --json it goes to stdout as below; without it, to stderr with a "Fix:" line. Codes never change within a major version.</p>
+<pre class="term"><code><span class="ps" aria-hidden="true">C:\&gt; </span>qn create my-api --json
+{
+  &quot;schemaVersion&quot;: 1,
+  &quot;ok&quot;: false,
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;E_USAGE&quot;,
+    &quot;message&quot;: &quot;Choose a template with --typescript or --javascript (or pass --yes).&quot;,
+    &quot;fix&quot;: &quot;qn create my-api --typescript&quot;
+  }
+}</code></pre>
+<dl class="opts">
+  <dt id="E_USAGE"><code>E_USAGE</code> <span class="dim">(exit 2)</span></dt>
+  <dd>Invalid usage: unknown command, flag or value, or a missing argument</dd>
+  <dt id="E_DIR_NOT_EMPTY"><code>E_DIR_NOT_EMPTY</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn create: the target folder is not empty (use --force to write into it)</dd>
+  <dt id="E_PATH_BLOCKED"><code>E_PATH_BLOCKED</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn create: a project path is taken by a file or folder of another type</dd>
+  <dt id="E_FILES_EXIST"><code>E_FILES_EXIST</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn generate / qn add: files exist with other content (use --force to overwrite)</dd>
+  <dt id="E_NOT_A_PROJECT"><code>E_NOT_A_PROJECT</code> <span class="dim">(exit 1)</span></dt>
+  <dd>The command must run inside a project created with qn create</dd>
+  <dt id="E_CONFIG_INVALID"><code>E_CONFIG_INVALID</code> <span class="dim">(exit 1)</span></dt>
+  <dd>quicknode.json is not valid JSON or has unknown keys or values</dd>
+  <dt id="E_PRESET_INVALID"><code>E_PRESET_INVALID</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn create --preset: unknown preset, unreadable file, or unknown keys or values</dd>
+  <dt id="E_ENV_EXAMPLE_MISSING"><code>E_ENV_EXAMPLE_MISSING</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn env: the project has no .env.example to compare .env with</dd>
+  <dt id="E_CONFIRM_REQUIRED"><code>E_CONFIRM_REQUIRED</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn upgrade: confirmation needed and there is no terminal (pass --yes)</dd>
+  <dt id="E_CLI_OUTDATED"><code>E_CLI_OUTDATED</code> <span class="dim">(exit 1)</span></dt>
+  <dd>qn upgrade: the project was created by a newer CLI than this one</dd>
+  <dt id="E_ABORTED"><code>E_ABORTED</code> <span class="dim">(exit 1)</span></dt>
+  <dd>An interactive prompt was cancelled</dd>
+  <dt id="E_INTERNAL"><code>E_INTERNAL</code> <span class="dim">(exit 1)</span></dt>
+  <dd>Unexpected error (rerun with DEBUG=1 and report it)</dd>
+</dl>
+</section>
+    <nav class="pager" aria-label="More pages"><ul class="list" role="list"><li><a href="../start/" rel="prev"><span class="dim">Previous:</span> Getting started</a></li><li><a href="../structure/" rel="next"><span class="dim">Next:</span> Project structure</a></li></ul></nav>
+  </main>
+
+  <footer class="wrap">
+    <p>© 2026 <a href="https://daksonc.github.io/">Dakson Chaves Cruz</a>. MIT License. Plain HTML, CSS and JavaScript: no frameworks, no trackers, no third-party resources.</p>
+    <ul class="list" role="list">
+      <li><a href="https://github.com/DaksonC/QuickNode" rel="noopener noreferrer">Source code on GitHub</a></li>
+      <li><a href="https://www.npmjs.com/package/@10565/quicknode-cli" rel="noopener noreferrer">Package on npm: <code>@10565/quicknode-cli</code></a></li>
+    </ul>
+    <p class="dim"><a href="../assets/fonts/OFL.txt">VT323</a>: SIL Open Font License.</p>
+  </footer>
+
+  <a class="to-top" id="to-top" href="#top"><span aria-hidden="true">[^]</span> top</a>
+</body>
+</html>

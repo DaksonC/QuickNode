@@ -1,0 +1,14 @@
+{
+  "controller": [
+    {
+      "file": "src/server.js",
+      "marker": "imports",
+      "snippet": "const { register__Name__Module } = require('./infrastructure/modules/__name__-module');"
+    },
+    {
+      "file": "src/server.js",
+      "marker": "modules",
+      "snippet": "register__Name__Module(app);"
+    }
+  ]
+}

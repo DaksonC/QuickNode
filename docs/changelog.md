@@ -1,6 +1,6 @@
 # Changelog
 
-Version 3.0.0 records how each project was created in `quicknode.json`, adds `--db postgres|sqlite|none` and presets to `qn create`, and brings `qn env` and `qn upgrade`; it also ships the rewrite planned as 2.0.0, which was never published: zero runtime dependencies and a safe `qn create`. It requires Node.js 22.13+.
+Version 3.1.0 records how each project was created in `quicknode.json`, adds `--db postgres|sqlite|none` and presets to `qn create`, and brings `qn env` and `qn upgrade`; it also ships the rewrite planned as 2.0.0, which was never published: zero runtime dependencies and a safe `qn create`. It requires Node.js 22.13+.
 
 Versions follow [semantic versioning](https://semver.org/). Release notes with the build provenance are on [GitHub Releases](https://github.com/DaksonC/QuickNode/releases).
 

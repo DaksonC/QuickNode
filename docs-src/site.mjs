@@ -18,7 +18,7 @@ export const SITE = {
    * before a release; a test fails if package.json gets ahead of it. 3.0.0 is
    * the first release after 1.1.1 (2.0.0 was never published).
    */
-  version: '3.0.0',
+  version: '3.1.0',
   appliesTo: 'v3.x',
   /** Minimum Node.js version, from package.json engines (">=22.13.0" -> "22.13"). */
   node: pkg.engines.node.replace(/^>=\s*/, '').replace(/\.0$/, ''),

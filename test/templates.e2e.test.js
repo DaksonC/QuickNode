@@ -121,6 +121,17 @@ async function exerciseApi(project, template, port) {
     assert.match((await call('/api/v1/users')).body, /ana@example\.com/);
     assert.equal((await call('/api/v1/products', { name: 'Chair' })).status, 201, log);
     assert.match((await call('/api/v1/products')).body, /Chair/);
+    // Bad input is a client error, never a 500: no body at all and malformed JSON.
+    for (const route of ['/api/v1/users', '/api/v1/products']) {
+      const noBody = await fetch(url(route), { method: 'POST' });
+      assert.equal(noBody.status, 400, `${route} without a body:\n${log}`);
+      const malformed = await fetch(url(route), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{x',
+      });
+      assert.equal(malformed.status, 400, `${route} with malformed JSON:\n${log}`);
+    }
   } finally {
     server.kill('SIGTERM');
   }

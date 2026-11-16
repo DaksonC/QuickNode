@@ -1168,6 +1168,18 @@ Version 3.0.0 records how each project was created in `quicknode.json`, adds `--
 
 Versions follow [semantic versioning](https://semver.org/). Release notes with the build provenance are on [GitHub Releases](https://github.com/DaksonC/QuickNode/releases).
 
+## 3.1.0 // 2026-11-16
+
+### Changed
+
+- New projects use Express 5 and, with PostgreSQL in TypeScript, TypeORM 1; also newer pg, Sequelize, class-validator 0.15, reflect-metadata 0.2, pino-pretty, Prettier and swagger-ui-express.
+- `qn upgrade` offers these versions to existing projects. Express 5 changes route patterns (`*` wildcards need a name, e.g. `/*splat`) and leaves `req.body` undefined without a JSON body: review the plan before applying it.
+
+### Fixed
+
+- Generated APIs answered 500 to malformed JSON; they now answer 400 (413 for a body that is too large).
+- TypeScript: a `qn generate` route answers 400, not 500, to a POST or PUT without a body.
+
 ## 3.0.0 // 2026-11-16
 
 ### Breaking changes

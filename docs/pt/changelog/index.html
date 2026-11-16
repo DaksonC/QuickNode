@@ -69,7 +69,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "softwareRequirements": "Node.js 22.13+",
-      "softwareVersion": "3.0.0",
+      "softwareVersion": "3.1.0",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://daksonc.github.io/QuickNode/",
       "downloadUrl": "https://www.npmjs.com/package/@10565/quicknode-cli",
@@ -161,8 +161,20 @@
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui changelog</p>
     <p class="meta">Atualizado em <time datetime="2026-11-16">2026-11-16</time> · válido para a v3.x</p>
 <h1 tabindex="-1">Changelog</h1>
-<p class="answer">A versão 3.0.0 registra como cada projeto foi criado no <code>quicknode.json</code>, traz <code>--db postgres|sqlite|none</code> e presets no <code>qn create</code>, e os comandos <code>qn env</code> e <code>qn upgrade</code>; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um <code>qn create</code> seguro. Exige Node.js 22.13+.</p>
+<p class="answer">A versão 3.1.0 registra como cada projeto foi criado no <code>quicknode.json</code>, traz <code>--db postgres|sqlite|none</code> e presets no <code>qn create</code>, e os comandos <code>qn env</code> e <code>qn upgrade</code>; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um <code>qn create</code> seguro. Exige Node.js 22.13+.</p>
 <p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="https://github.com/DaksonC/QuickNode/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
+
+<h2 id="v3.1.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.1.0 <span class="dim">// 2026-11-16</span></h2>
+<h3>Alterado</h3>
+<ul class="list" role="list">
+  <li>Projetos novos usam Express 5 e, com PostgreSQL em TypeScript, TypeORM 1; também pg, Sequelize, class-validator 0.15, reflect-metadata 0.2, pino-pretty, Prettier e swagger-ui-express mais novos.</li>
+  <li>O <code>qn upgrade</code> oferece essas versões a projetos existentes. O Express 5 muda os padrões de rota (o curinga <code>*</code> precisa de nome, ex.: <code>/*splat</code>) e deixa <code>req.body</code> indefinido quando não há corpo JSON: revise o plano antes de aplicar.</li>
+</ul>
+<h3>Corrigido</h3>
+<ul class="list" role="list">
+  <li>As APIs geradas respondiam 500 a JSON malformado; agora respondem 400 (413 para corpo grande demais).</li>
+  <li>TypeScript: uma rota do <code>qn generate</code> responde 400, e não 500, a um POST ou PUT sem corpo.</li>
+</ul>
 
 <h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// 2026-11-16</span></h2>
 <h3>Mudanças incompatíveis</h3>

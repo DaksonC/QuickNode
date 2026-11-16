@@ -14,9 +14,15 @@ const errorHandler = (error, req, res, _next) => {
   let statusCode = 500;
   let message = 'Internal Server Error';
 
+  // Client errors raised by Express itself (malformed JSON, body too large) carry a 4xx status.
+  const { status, expose } = error;
+
   if (error instanceof AppError) {
     statusCode = error.statusCode;
     message = error.message;
+  } else if (typeof status === 'number' && status >= 400 && status < 500) {
+    statusCode = status;
+    message = expose ? error.message : 'Bad Request';
   }
 
   logger.error(

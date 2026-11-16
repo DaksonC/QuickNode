@@ -2,6 +2,18 @@
 <p class="answer">Version {{version}} records how each project was created in <code>quicknode.json</code>, adds <code>--db postgres|sqlite|none</code> and presets to <code>qn create</code>, and brings <code>qn env</code> and <code>qn upgrade</code>; it also ships the rewrite planned as 2.0.0, which was never published: zero runtime dependencies and a safe <code>qn create</code>. It requires Node.js {{node}}+.</p>
 <p>Versions follow <a href="https://semver.org/" rel="noopener noreferrer">semantic versioning</a>. Release notes with the build provenance are on <a href="{{repo}}/releases" rel="noopener noreferrer">GitHub Releases</a>.</p>
 
+<h2 id="v3.1.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.1.0 <span class="dim">// 2026-11-16</span></h2>
+<h3>Changed</h3>
+<ul class="list" role="list">
+  <li>New projects use Express 5 and, with PostgreSQL in TypeScript, TypeORM 1; also newer pg, Sequelize, class-validator 0.15, reflect-metadata 0.2, pino-pretty, Prettier and swagger-ui-express.</li>
+  <li><code>qn upgrade</code> offers these versions to existing projects. Express 5 changes route patterns (<code>*</code> wildcards need a name, e.g. <code>/*splat</code>) and leaves <code>req.body</code> undefined without a JSON body: review the plan before applying it.</li>
+</ul>
+<h3>Fixed</h3>
+<ul class="list" role="list">
+  <li>Generated APIs answered 500 to malformed JSON; they now answer 400 (413 for a body that is too large).</li>
+  <li>TypeScript: a <code>qn generate</code> route answers 400, not 500, to a POST or PUT without a body.</li>
+</ul>
+
 <h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// 2026-11-16</span></h2>
 <h3>Breaking changes</h3>
 <ul class="list" role="list">

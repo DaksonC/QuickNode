@@ -1,6 +1,6 @@
 {
   "name": "@10565/quicknode-cli",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Zero-dependency CLI to create Node.js APIs with clean architecture: Express, TypeScript or JavaScript, PostgreSQL, tests and linting ready.",
   "type": "module",
   "bin": {

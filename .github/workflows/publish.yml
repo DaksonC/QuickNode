@@ -100,14 +100,15 @@ jobs:
           npm --version
           node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); if (a<11||(a===11&&(b<5||(b===5&&c<1)))) { console.error("npm >= 11.5.1 is required for Trusted Publishing"); process.exit(1) }' "$(npm --version)"
 
-      # Prereleases (v1.2.3-beta.0) go to the "next" dist-tag.
+      # Prereleases (v1.2.3-beta.0) go to the "next" dist-tag. The "./" matters: without it
+      # npm reads "pack/<file>.tgz" as a GitHub "user/repo" shorthand and tries git over SSH.
       - name: 🚀 Publish with provenance
         run: |
           case "$GITHUB_REF_NAME" in
             *-*) DIST_TAG=next ;;
             *) DIST_TAG=latest ;;
           esac
-          npm publish pack/*.tgz --provenance --access public --tag "$DIST_TAG"
+          npm publish ./pack/*.tgz --provenance --access public --tag "$DIST_TAG"
 
   release:
     needs: publish

@@ -2,6 +2,16 @@
 <p class="answer">A versão {{version}} registra como cada projeto foi criado no <code>quicknode.json</code>, traz <code>--db postgres|sqlite|none</code> e presets no <code>qn create</code>, e os comandos <code>qn env</code> e <code>qn upgrade</code>; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um <code>qn create</code> seguro. Exige Node.js {{node}}+.</p>
 <p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="{{repo}}/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
 
+<h2 id="v3.2.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.2.0 <span class="dim">// 2026-11-16</span></h2>
+<h3>Alterado</h3>
+<ul class="list" role="list">
+  <li>Projetos novos usam helmet 8 (o <code>Strict-Transport-Security</code> passa a durar um ano, eram 180 dias), pino 10 e jest-extended 7; também express-validator, swagger-jsdoc, Jest e tsx mais novos. O <code>qn upgrade</code> oferece essas versões a projetos existentes.</li>
+</ul>
+<h3>Corrigido</h3>
+<ul class="list" role="list">
+  <li>Template TypeScript: quando o servidor não conseguia iniciar, o erro sumia do log (<code>logger.error(mensagem, erro)</code> não é como o pino recebe um erro); agora ele é registrado como <code>err</code>.</li>
+</ul>
+
 <h2 id="v3.1.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.1.0 <span class="dim">// 2026-11-16</span></h2>
 <h3>Alterado</h3>
 <ul class="list" role="list">

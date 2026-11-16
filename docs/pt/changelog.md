@@ -4,7 +4,7 @@ A versão 3.0.0 registra como cada projeto foi criado no `quicknode.json`, traz 
 
 As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/). As notas de versão com a procedência do build ficam nas [Releases do GitHub](https://github.com/DaksonC/QuickNode/releases).
 
-## 3.0.0 // em breve
+## 3.0.0 // 2026-11-16
 
 ### Mudanças incompatíveis
 
@@ -83,6 +83,6 @@ As versões seguem o [versionamento semântico](https://semver.org/lang/pt-BR/).
 
 ---
 
-Atualizado em 2026-11-15 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/changelog/
+Atualizado em 2026-11-16 · válido para a v3.x · https://daksonc.github.io/QuickNode/pt/changelog/
 
 > Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.

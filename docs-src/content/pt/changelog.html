@@ -2,7 +2,7 @@
 <p class="answer">A versão {{version}} registra como cada projeto foi criado no <code>quicknode.json</code>, traz <code>--db postgres|sqlite|none</code> e presets no <code>qn create</code>, e os comandos <code>qn env</code> e <code>qn upgrade</code>; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um <code>qn create</code> seguro. Exige Node.js {{node}}+.</p>
 <p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="{{repo}}/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
 
-<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// em breve</span></h2>
+<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// 2026-11-16</span></h2>
 <h3>Mudanças incompatíveis</h3>
 <ul class="list" role="list">
   <li>O código de banco gerado tem o mesmo formato em todos os bancos: <code>src/infrastructure/database/connection</code> exporta <code>databaseConnection</code> com <code>initialize()</code>, <code>ping()</code> e <code>close()</code>. Nos projetos JavaScript ele substitui o export padrão <code>sequelizeConnection</code>, e os models são carregados pelo <code>initialize()</code>.</li>

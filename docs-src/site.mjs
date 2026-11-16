@@ -252,7 +252,7 @@ export const PAGES = [
     slug: 'changelog/',
     file: 'changelog',
     menu: 'changelog',
-    updated: '2026-11-15',
+    updated: '2026-11-16',
     en: {
       title: 'QuickNode CLI changelog: what changed in each version',
       description:

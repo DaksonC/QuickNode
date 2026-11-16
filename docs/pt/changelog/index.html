@@ -49,7 +49,7 @@
       "description": "Notas de versão do QuickNode CLI da v1.0.0 à v3: zero dependências de runtime, geração segura de projetos, publicação verificável e o site de documentação.",
       "url": "https://daksonc.github.io/QuickNode/pt/changelog/",
       "inLanguage": "pt-BR",
-      "dateModified": "2026-11-15",
+      "dateModified": "2026-11-16",
       "author": {
         "@type": "Person",
         "name": "Dakson Chaves Cruz",
@@ -159,12 +159,12 @@
   <main id="main" class="wrap" tabindex="-1">
     <nav aria-label="Trilha de navegação"><ol class="crumbs" role="list"><li><a href="../">Início</a></li><li aria-current="page">Changelog</li></ol></nav>
     <p class="prompt" aria-hidden="true">C:\QUICKNODE&gt; qn ui changelog</p>
-    <p class="meta">Atualizado em <time datetime="2026-11-15">2026-11-15</time> · válido para a v3.x</p>
+    <p class="meta">Atualizado em <time datetime="2026-11-16">2026-11-16</time> · válido para a v3.x</p>
 <h1 tabindex="-1">Changelog</h1>
 <p class="answer">A versão 3.0.0 registra como cada projeto foi criado no <code>quicknode.json</code>, traz <code>--db postgres|sqlite|none</code> e presets no <code>qn create</code>, e os comandos <code>qn env</code> e <code>qn upgrade</code>; ela também traz a reescrita planejada como 2.0.0, que nunca foi publicada: zero dependências de runtime e um <code>qn create</code> seguro. Exige Node.js 22.13+.</p>
 <p>As versões seguem o <a href="https://semver.org/lang/pt-BR/" rel="noopener noreferrer">versionamento semântico</a>. As notas de versão com a procedência do build ficam nas <a href="https://github.com/DaksonC/QuickNode/releases" rel="noopener noreferrer">Releases do GitHub</a>.</p>
 
-<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// em breve</span></h2>
+<h2 id="v3.0.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.0.0 <span class="dim">// 2026-11-16</span></h2>
 <h3>Mudanças incompatíveis</h3>
 <ul class="list" role="list">
   <li>O código de banco gerado tem o mesmo formato em todos os bancos: <code>src/infrastructure/database/connection</code> exporta <code>databaseConnection</code> com <code>initialize()</code>, <code>ping()</code> e <code>close()</code>. Nos projetos JavaScript ele substitui o export padrão <code>sequelizeConnection</code>, e os models são carregados pelo <code>initialize()</code>.</li>

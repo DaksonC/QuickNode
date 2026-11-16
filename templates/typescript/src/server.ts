@@ -65,7 +65,7 @@ async function startServer() {
     process.once('SIGINT', () => shutdown('SIGINT'));
     // qn:shutdown:end
   } catch (error) {
-    logger.error('❌ Failed to start server:', error);
+    logger.error({ err: error }, '❌ Failed to start server');
     process.exit(1);
   }
 }

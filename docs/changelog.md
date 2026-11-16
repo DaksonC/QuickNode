@@ -4,6 +4,16 @@ Version 3.1.0 records how each project was created in `quicknode.json`, adds `--
 
 Versions follow [semantic versioning](https://semver.org/). Release notes with the build provenance are on [GitHub Releases](https://github.com/DaksonC/QuickNode/releases).
 
+## 3.2.0 // 2026-11-16
+
+### Changed
+
+- New projects use helmet 8 (`Strict-Transport-Security` now lasts one year, was 180 days), pino 10 and jest-extended 7; also newer express-validator, swagger-jsdoc, Jest and tsx. `qn upgrade` offers them to existing projects.
+
+### Fixed
+
+- TypeScript template: when the server failed to start, the error was dropped from the log (`logger.error(message, error)` is not how pino takes an error); it is now logged as `err`.
+
 ## 3.1.0 // 2026-11-16
 
 ### Changed

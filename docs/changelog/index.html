@@ -164,6 +164,16 @@
 <p class="answer">Version 3.1.0 records how each project was created in <code>quicknode.json</code>, adds <code>--db postgres|sqlite|none</code> and presets to <code>qn create</code>, and brings <code>qn env</code> and <code>qn upgrade</code>; it also ships the rewrite planned as 2.0.0, which was never published: zero runtime dependencies and a safe <code>qn create</code>. It requires Node.js 22.13+.</p>
 <p>Versions follow <a href="https://semver.org/" rel="noopener noreferrer">semantic versioning</a>. Release notes with the build provenance are on <a href="https://github.com/DaksonC/QuickNode/releases" rel="noopener noreferrer">GitHub Releases</a>.</p>
 
+<h2 id="v3.2.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.2.0 <span class="dim">// 2026-11-16</span></h2>
+<h3>Changed</h3>
+<ul class="list" role="list">
+  <li>New projects use helmet 8 (<code>Strict-Transport-Security</code> now lasts one year, was 180 days), pino 10 and jest-extended 7; also newer express-validator, swagger-jsdoc, Jest and tsx. <code>qn upgrade</code> offers them to existing projects.</li>
+</ul>
+<h3>Fixed</h3>
+<ul class="list" role="list">
+  <li>TypeScript template: when the server failed to start, the error was dropped from the log (<code>logger.error(message, error)</code> is not how pino takes an error); it is now logged as <code>err</code>.</li>
+</ul>
+
 <h2 id="v3.1.0" tabindex="-1"><span class="prompt" aria-hidden="true">C:\&gt; </span>3.1.0 <span class="dim">// 2026-11-16</span></h2>
 <h3>Changed</h3>
 <ul class="list" role="list">

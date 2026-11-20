@@ -234,7 +234,7 @@ export const PAGES = [
     slug: 'compare/',
     file: 'compare',
     menu: 'compare',
-    updated: '2026-11-14',
+    updated: '2026-11-20',
     en: {
       title: 'QuickNode vs Nest CLI vs a manual template: which one to use',
       description:

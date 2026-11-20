@@ -30,11 +30,11 @@ npx @10565/quicknode-cli create my-api
 - **Recipes**: `qn add auth|healthcheck|rate-limit|graceful-shutdown|docker|ci|agents|...`, idempotent, with `--dry-run` diffs
 - **Ready for AI agents**: `AGENTS.md`/`CLAUDE.md` in every project; every command works without prompts and with `--json`
 - **Pre-configured Dependencies**: All essential tools ready to use
-- **Databases**: `--db postgres` (Docker; TypeORM or Sequelize), `--db sqlite` (built-in `node:sqlite`, no driver) or `--db none` (in-memory)
+- **Databases**: `--db postgres` (Docker; TypeORM in TypeScript, Sequelize in JavaScript), `--db sqlite` (built-in `node:sqlite`, no driver) or `--db none` (in-memory)
 - **Lifecycle**: `quicknode.json` records each project; `qn upgrade` applies newer templates, `qn env` checks `.env`
 - **API Documentation**: Swagger/OpenAPI 3.0 integration
 - **Security & Validation**: Helmet, express-validator, and class-validator
-- **Testing Setup**: Jest with extended matchers and coverage
+- **Testing Setup**: Jest with extended matchers and coverage, or the built-in `node:test` (`--test node`)
 - **Code Quality**: ESLint 10 (flat config), Prettier, Husky 9 hooks and commitlint
 - **Development Tools**: Hot reload with tsx (TypeScript) / `node --watch` (JavaScript)
 - **Zero runtime dependencies**: the CLI itself is a single package built only on Node.js APIs

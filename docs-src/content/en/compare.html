@@ -14,8 +14,8 @@
     <tr><th scope="row">Framework lock-in</th><td>Low: domain code is plain TypeScript/JavaScript</td><td>High: decorators and the Nest DI container everywhere</td><td>Depends on the template</td></tr>
     <tr><th scope="row">CLI dependencies</th><td>Zero runtime dependencies</td><td>Many (bundles build tooling)</td><td>None (git or a download)</td></tr>
     <tr><th scope="row">Code generators after creation</th><td>Yes: <code>qn generate crud</code> writes every layer, already wired; <code>qn check</code> enforces the dependency rule</td><td>Yes: <code>nest generate</code> for resources, modules, services</td><td>No</td></tr>
-    <tr><th scope="row">Database ready</th><td><code>--db</code>: PostgreSQL with Docker Compose (TypeORM or Sequelize), SQLite with the built-in <code>node:sqlite</code>, or none</td><td>No: added through Nest modules</td><td>Depends on the template</td></tr>
-    <tr><th scope="row">Tests, lint, Git hooks</th><td>Jest, ESLint, Prettier, Husky, commitlint</td><td>Jest, ESLint, Prettier</td><td>Depends on the template</td></tr>
+    <tr><th scope="row">Database ready</th><td><code>--db</code>: PostgreSQL with Docker Compose (TypeORM in TypeScript, Sequelize in JavaScript), SQLite with the built-in <code>node:sqlite</code>, or none</td><td>No: added through Nest modules</td><td>Depends on the template</td></tr>
+    <tr><th scope="row">Tests, lint, Git hooks</th><td>Jest or the built-in <code>node:test</code> (<code>--test</code>), ESLint, Prettier, Husky, commitlint</td><td>Jest, ESLint, Prettier</td><td>Depends on the template</td></tr>
     <tr><th scope="row">Maturity and community</th><td>Small, young project, one maintainer</td><td>Mature, large community and documentation</td><td>n/a</td></tr>
     <tr><th scope="row">Updating later</th><td><code>qn upgrade</code> applies newer template improvements and saves the new versions of files you changed next to them (<code>.qn-new</code>)</td><td>Framework upgrades through npm, with migration guides</td><td>Manual</td></tr>
   </tbody>

@@ -176,10 +176,10 @@
     <tr><th scope="row">Acoplamento ao framework</th><td>Baixo: o domínio é TypeScript/JavaScript puro</td><td>Alto: decorators e o contêiner de DI do Nest em todo lugar</td><td>Depende do template</td></tr>
     <tr><th scope="row">Dependências da CLI</th><td>Zero dependências de runtime</td><td>Muitas (inclui ferramentas de build)</td><td>Nenhuma (git ou um download)</td></tr>
     <tr><th scope="row">Geradores de código depois de criar</th><td>Sim: <code>qn generate crud</code> escreve todas as camadas, já ligadas; <code>qn check</code> garante a regra de dependência</td><td>Sim: <code>nest generate</code> para resources, módulos, services</td><td>Não</td></tr>
-    <tr><th scope="row">Banco de dados pronto</th><td>PostgreSQL com Docker Compose, TypeORM ou Sequelize</td><td>Não: adicionado por módulos do Nest</td><td>Depende do template</td></tr>
+    <tr><th scope="row">Banco de dados pronto</th><td><code>--db</code>: PostgreSQL com Docker Compose (TypeORM ou Sequelize), SQLite com o <code>node:sqlite</code> nativo, ou nenhum</td><td>Não: adicionado por módulos do Nest</td><td>Depende do template</td></tr>
     <tr><th scope="row">Testes, lint, hooks do Git</th><td>Jest, ESLint, Prettier, Husky, commitlint</td><td>Jest, ESLint, Prettier</td><td>Depende do template</td></tr>
     <tr><th scope="row">Maturidade e comunidade</th><td>Projeto pequeno e novo, um mantenedor</td><td>Maduro, comunidade e documentação grandes</td><td>n/a</td></tr>
-    <tr><th scope="row">Atualizar depois</th><td>Manual hoje (<code>qn upgrade</code> planejado)</td><td>Atualizações do framework pelo npm, com guias de migração</td><td>Manual</td></tr>
+    <tr><th scope="row">Atualizar depois</th><td><code>qn upgrade</code> aplica as melhorias de templates novos e guarda ao lado (<code>.qn-new</code>) as versões dos arquivos que você alterou</td><td>Atualizações do framework pelo npm, com guias de migração</td><td>Manual</td></tr>
   </tbody>
 </table>
 </div>

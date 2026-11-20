@@ -1129,10 +1129,10 @@ Use QuickNode for a plain Express API with clean architecture and no framework l
 | Framework lock-in | Low: domain code is plain TypeScript/JavaScript | High: decorators and the Nest DI container everywhere | Depends on the template |
 | CLI dependencies | Zero runtime dependencies | Many (bundles build tooling) | None (git or a download) |
 | Code generators after creation | Yes: `qn generate crud` writes every layer, already wired; `qn check` enforces the dependency rule | Yes: `nest generate` for resources, modules, services | No |
-| Database ready | PostgreSQL with Docker Compose, TypeORM or Sequelize | No: added through Nest modules | Depends on the template |
+| Database ready | `--db`: PostgreSQL with Docker Compose (TypeORM or Sequelize), SQLite with the built-in `node:sqlite`, or none | No: added through Nest modules | Depends on the template |
 | Tests, lint, Git hooks | Jest, ESLint, Prettier, Husky, commitlint | Jest, ESLint, Prettier | Depends on the template |
 | Maturity and community | Small, young project, one maintainer | Mature, large community and documentation | n/a |
-| Updating later | Manual today (`qn upgrade` planned) | Framework upgrades through npm, with migration guides | Manual |
+| Updating later | `qn upgrade` applies newer template improvements and saves the new versions of files you changed next to them (`.qn-new`) | Framework upgrades through npm, with migration guides | Manual |
 
 ## When is QuickNode the right choice?
 
